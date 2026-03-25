@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Mo</string>
+    
+    <string name="todo_reminder_channel_name">待办提醒</string>
+    <string name="todo_reminder_channel_description">待办事项到期提醒</string>
+    <string name="todo_reminder_default_text">您有一个待办事项需要处理</string>
+    
+    <string name="general_channel_name">通用通知</string>
+    <string name="general_channel_description">应用通用通知</string>
+</resources>
