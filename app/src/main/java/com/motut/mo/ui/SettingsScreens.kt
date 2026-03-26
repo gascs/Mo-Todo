@@ -35,6 +35,69 @@ fun openUrl(context: android.content.Context, url: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun BaseSettingsDialog(
+    title: String,
+    onDismiss: () -> Unit,
+    content: @Composable (PaddingValues) -> Unit
+) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = true
+        )
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(title, fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "返回")
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            content(paddingValues)
+        }
+    }
+}
+
+@Composable
+fun SettingsContentColumn(
+    paddingValues: PaddingValues,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        content = content
+    )
+}
+
+@Composable
+fun SettingsCard(
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(content = content)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun NotificationSettingsScreen(onDismiss: () -> Unit) {
     var notificationsEnabled by remember { mutableStateOf(true) }
     var reminderEnabled by remember { mutableStateOf(true) }
@@ -874,7 +937,7 @@ fun PrivacyPolicyScreen(onDismiss: () -> Unit) {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "最后更新：2024年1月",
+                            text = "最后更新：2026年3月",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1173,7 +1236,7 @@ fun LicenseScreen(onDismiss: () -> Unit) {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Copyright (c) 2024 MoTuT",
+                            text = "Copyright (c) 2026 MoTuT",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

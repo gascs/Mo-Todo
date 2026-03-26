@@ -1,7 +1,6 @@
 package com.motut.mo.ui
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,18 +20,39 @@ fun SplashScreen(
     onSplashFinished: () -> Unit
 ) {
     val alpha = remember { Animatable(0f) }
-    val scale = remember { Animatable(0.8f) }
+    val scale = remember { Animatable(0.5f) }
+    val slideY = remember { Animatable(30f) }
 
     LaunchedEffect(Unit) {
         alpha.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 800)
+            animationSpec = spring(
+                dampingRatio = 0.6f,
+                stiffness = 200f
+            )
         )
         scale.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 800)
+            animationSpec = spring(
+                dampingRatio = 0.6f,
+                stiffness = 200f
+            )
         )
-        delay(2000)
+        slideY.animateTo(
+            targetValue = 0f,
+            animationSpec = spring(
+                dampingRatio = 0.6f,
+                stiffness = 200f
+            )
+        )
+        delay(1800)
+        alpha.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(
+                durationMillis = 300,
+                easing = FastOutSlowInEasing
+            )
+        )
         onSplashFinished()
     }
 
@@ -47,16 +67,17 @@ fun SplashScreen(
             modifier = Modifier
                 .alpha(alpha.value)
                 .scale(scale.value)
+                .offset(y = slideY.value.dp)
         ) {
             Text(
                 text = "Mo",
                 style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 72.sp,
+                    fontSize = 80.sp,
                     fontWeight = FontWeight.Bold
                 ),
                 color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = "一个不会忘的APP",
                 style = MaterialTheme.typography.titleLarge.copy(

@@ -9,6 +9,14 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
+inline fun <T> Cursor.use(block: (Cursor) -> T): T {
+    try {
+        return block(this)
+    } finally {
+        close()
+    }
+}
+
 class AppDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
@@ -105,16 +113,17 @@ class AppDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_N
         val db = readableDatabase
         val cursor: Cursor = db.query(TABLE_CATEGORIES, null, null, null, null, null, null)
         
-        while (cursor.moveToNext()) {
-            categories.add(
-                MemoCategory(
-                    id = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_ID)),
-                    name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)),
-                    color = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_COLOR))
+        cursor.use {
+            while (it.moveToNext()) {
+                categories.add(
+                    MemoCategory(
+                        id = it.getLong(it.getColumnIndexOrThrow(COLUMN_ID)),
+                        name = it.getString(it.getColumnIndexOrThrow(COLUMN_NAME)),
+                        color = it.getLong(it.getColumnIndexOrThrow(COLUMN_COLOR))
+                    )
                 )
-            )
+            }
         }
-        cursor.close()
         return categories
     }
 
@@ -123,10 +132,11 @@ class AppDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_N
         val db = readableDatabase
         val cursor: Cursor = db.query(TABLE_TODOS, null, null, null, null, null, "$COLUMN_CREATED_AT DESC")
         
-        while (cursor.moveToNext()) {
-            todos.add(cursorToTodo(cursor))
+        cursor.use {
+            while (it.moveToNext()) {
+                todos.add(cursorToTodo(it))
+            }
         }
-        cursor.close()
         return todos
     }
 
@@ -171,10 +181,11 @@ class AppDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_N
         val db = readableDatabase
         val cursor: Cursor = db.query(TABLE_MEMOS, null, null, null, null, null, "$COLUMN_CREATED_AT DESC")
         
-        while (cursor.moveToNext()) {
-            memos.add(cursorToMemo(cursor))
+        cursor.use {
+            while (it.moveToNext()) {
+                memos.add(cursorToMemo(it))
+            }
         }
-        cursor.close()
         return memos
     }
 

@@ -59,8 +59,10 @@ class AppViewModel : ViewModel() {
                 categoryId = categoryId
             )
             val id = dbHelper.insertMemo(newMemo)
-            val insertedMemo = newMemo.copy(id = id)
-            _memos.value = _memos.value + insertedMemo
+            _memos.value = buildList {
+                add(newMemo.copy(id = id))
+                addAll(_memos.value)
+            }
         }
     }
 
@@ -95,7 +97,7 @@ class AppViewModel : ViewModel() {
         viewModelScope.launch {
             dbHelper.deleteMemo(id)
             _memos.value = _memos.value.filter { it.id != id }
-            _selectedMemoIds.value = _selectedMemoIds.value - id
+            _selectedMemoIds.value -= id
         }
     }
 
@@ -123,10 +125,8 @@ class AppViewModel : ViewModel() {
 
     fun deleteSelectedMemos() {
         viewModelScope.launch {
-            _selectedMemoIds.value.forEach { id ->
-                dbHelper.deleteMemo(id)
-            }
-            _memos.value = _memos.value.filter { !_selectedMemoIds.value.contains(it.id) }
+            _selectedMemoIds.value.forEach { dbHelper.deleteMemo(it) }
+            _memos.value = _memos.value.filterNot { _selectedMemoIds.value.contains(it.id) }
             _selectedMemoIds.value = emptySet()
         }
     }
@@ -150,8 +150,10 @@ class AppViewModel : ViewModel() {
                 priority = priority
             )
             val id = dbHelper.insertTodo(newTodo)
-            val insertedTodo = newTodo.copy(id = id)
-            _todos.value = _todos.value + insertedTodo
+            _todos.value = buildList {
+                add(newTodo.copy(id = id))
+                addAll(_todos.value)
+            }
         }
     }
 
@@ -171,7 +173,7 @@ class AppViewModel : ViewModel() {
         viewModelScope.launch {
             dbHelper.deleteTodo(id)
             _todos.value = _todos.value.filter { it.id != id }
-            _selectedTodoIds.value = _selectedTodoIds.value - id
+            _selectedTodoIds.value -= id
         }
     }
 
@@ -199,10 +201,8 @@ class AppViewModel : ViewModel() {
 
     fun deleteSelectedTodos() {
         viewModelScope.launch {
-            _selectedTodoIds.value.forEach { id ->
-                dbHelper.deleteTodo(id)
-            }
-            _todos.value = _todos.value.filter { !_selectedTodoIds.value.contains(it.id) }
+            _selectedTodoIds.value.forEach { dbHelper.deleteTodo(it) }
+            _todos.value = _todos.value.filterNot { _selectedTodoIds.value.contains(it.id) }
             _selectedTodoIds.value = emptySet()
         }
     }

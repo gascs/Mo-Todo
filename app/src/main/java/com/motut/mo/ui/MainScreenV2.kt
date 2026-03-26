@@ -1,7 +1,8 @@
 package com.motut.mo.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
@@ -40,6 +41,10 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
 
+private val dateFormatter by lazy { DateTimeFormatter.ofPattern("yyyy年MM月dd日") }
+private val shortDateFormatter by lazy { DateTimeFormatter.ofPattern("MM-dd") }
+private val timeFormatter by lazy { DateTimeFormatter.ofPattern("HH:mm") }
+
 enum class MainScreenTab(val title: String, val icon: ImageVector) {
     HOME("首页", Icons.Default.Home),
     TASKS("待办", Icons.Default.Checklist),
@@ -64,10 +69,14 @@ enum class SettingsScreen {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreenV2(viewModel: AppViewModel = viewModel()) {
+fun MainScreenV2(
+    viewModel: AppViewModel = viewModel(),
+    onBackPressed: ((Boolean) -> Unit)? = null
+) {
     var selectedTab by remember { mutableStateOf(MainScreenTab.HOME) }
     var showFabMenu by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
     var showAddTask by remember { mutableStateOf(false) }
     var showAddNote by remember { mutableStateOf(false) }
     var showMemoDetail by remember { mutableStateOf<Memo?>(null) }
@@ -81,6 +90,25 @@ fun MainScreenV2(viewModel: AppViewModel = viewModel()) {
     val todos by viewModel.todos.collectAsState()
     val memos by viewModel.memos.collectAsState()
     val sortedMemos by remember(memos) { derivedStateOf { viewModel.getSortedMemos(memos) } }
+    
+    val searchResults = remember(todos, memos, searchQuery) {
+        derivedStateOf {
+            if (searchQuery.isBlank()) {
+                emptyList<Todo>() to emptyList<Memo>()
+            } else {
+                val query = searchQuery.lowercase()
+                val matchedTodos = todos.filter { 
+                    it.title.lowercase().contains(query) || 
+                    it.content.lowercase().contains(query)
+                }
+                val matchedMemos = memos.filter { 
+                    it.title.lowercase().contains(query) || 
+                    it.content.lowercase().contains(query)
+                }
+                matchedTodos to matchedMemos
+            }
+        }
+    }
     
     val hasPendingTodos by remember {
         derivedStateOf { todos.any { !it.isCompleted } }
@@ -105,11 +133,68 @@ fun MainScreenV2(viewModel: AppViewModel = viewModel()) {
         }
     }
 
+    val canGoBack = remember(
+        showSearch, 
+        showAddTask, 
+        showAddNote, 
+        showMemoDetail, 
+        showTaskDetail, 
+        currentSettingsScreen
+    ) {
+        showSearch || 
+        showAddTask || 
+        showAddNote || 
+        showMemoDetail != null || 
+        showTaskDetail != null || 
+        currentSettingsScreen != SettingsScreen.NONE
+    }
+
+    BackHandler(enabled = canGoBack) {
+        when {
+            showSearch -> {
+                showSearch = false
+                searchQuery = ""
+            }
+            showAddTask -> {
+                showAddTask = false
+            }
+            showAddNote -> {
+                showAddNote = false
+            }
+            showMemoDetail != null -> {
+                showMemoDetail = null
+            }
+            showTaskDetail != null -> {
+                showTaskDetail = null
+            }
+            currentSettingsScreen != SettingsScreen.NONE -> {
+                when (currentSettingsScreen) {
+                    SettingsScreen.PRIVACY_POLICY, 
+                    SettingsScreen.OPEN_SOURCE_STATEMENT, 
+                    SettingsScreen.LICENSE -> {
+                        currentSettingsScreen = SettingsScreen.ABOUT
+                    }
+                    else -> {
+                        currentSettingsScreen = SettingsScreen.NONE
+                    }
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(canGoBack) {
+        onBackPressed?.invoke(canGoBack)
+    }
+
     Scaffold(
         topBar = {
             if (showSearch) {
                 SearchTopBar(
-                    onClose = { showSearch = false }
+                    onClose = { 
+                        showSearch = false 
+                        searchQuery = ""
+                    },
+                    onSearch = { searchQuery = it }
                 )
             } else {
                 MainTopBar(
@@ -148,21 +233,50 @@ fun MainScreenV2(viewModel: AppViewModel = viewModel()) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            AnimatedContent(
-                targetState = selectedTab,
-                label = "ScreenTransition",
-                transitionSpec = {
-                    val isForward = targetState.ordinal > initialState.ordinal
-                    slideInHorizontally(
-                        initialOffsetX = { if (isForward) it else -it },
-                        animationSpec = tween(280)
-                    ) + fadeIn(animationSpec = tween(220)) togetherWith
-                    slideOutHorizontally(
-                        targetOffsetX = { if (isForward) -it else it },
-                        animationSpec = tween(280)
-                    ) + fadeOut(animationSpec = tween(220))
-                }
-            ) { tab ->
+            if (showSearch) {
+                SearchResultsScreen(
+                    searchQuery = searchQuery,
+                    matchedTodos = searchResults.value.first,
+                    matchedMemos = searchResults.value.second,
+                    onTodoClick = { todo -> 
+                        showSearch = false
+                        searchQuery = ""
+                        showTaskDetail = todo
+                    },
+                    onMemoClick = { memo -> 
+                        showSearch = false
+                        searchQuery = ""
+                        showMemoDetail = memo
+                    }
+                )
+            } else {
+                AnimatedContent(
+                    targetState = selectedTab,
+                    label = "ScreenTransition",
+                    transitionSpec = {
+                        val isForward = targetState.ordinal > initialState.ordinal
+                        slideInHorizontally(
+                            initialOffsetX = { if (isForward) it else -it },
+                            animationSpec = tween(
+                                durationMillis = 180,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + fadeIn(animationSpec = tween(
+                            durationMillis = 150,
+                            easing = LinearEasing
+                        )) togetherWith
+                        slideOutHorizontally(
+                            targetOffsetX = { if (isForward) -it else it },
+                            animationSpec = tween(
+                                durationMillis = 180,
+                                easing = FastOutSlowInEasing
+                            )
+                        ) + fadeOut(animationSpec = tween(
+                            durationMillis = 150,
+                            easing = LinearEasing
+                        ))
+                    }
+                ) { tab ->
                 when (tab) {
                     MainScreenTab.HOME -> HomeDashboardScreen(
                         todos = todos,
@@ -218,6 +332,7 @@ fun MainScreenV2(viewModel: AppViewModel = viewModel()) {
                             }
                         }
                     )
+                }
                 }
             }
         }
@@ -296,14 +411,54 @@ fun MainScreenV2(viewModel: AppViewModel = viewModel()) {
         targetState = currentSettingsScreen,
         label = "SettingsScreenTransition",
         transitionSpec = {
-            slideInHorizontally(
-                initialOffsetX = { it },
-                animationSpec = tween(280)
-            ) + fadeIn(animationSpec = tween(220)) togetherWith
-            slideOutHorizontally(
-                targetOffsetX = { -it },
-                animationSpec = tween(280)
-            ) + fadeOut(animationSpec = tween(220))
+            val isForward = targetState.ordinal > initialState.ordinal
+            val enter = if (isForward) {
+                slideInHorizontally(
+                    initialOffsetX = { it },
+                    animationSpec = tween(
+                        durationMillis = 160,
+                        easing = FastOutSlowInEasing
+                    )
+                ) + fadeIn(animationSpec = tween(
+                    durationMillis = 130,
+                    easing = LinearEasing
+                ))
+            } else {
+                slideInHorizontally(
+                    initialOffsetX = { -it },
+                    animationSpec = tween(
+                        durationMillis = 160,
+                        easing = FastOutSlowInEasing
+                    )
+                ) + fadeIn(animationSpec = tween(
+                    durationMillis = 130,
+                    easing = LinearEasing
+                ))
+            }
+            val exit = if (isForward) {
+                slideOutHorizontally(
+                    targetOffsetX = { -it },
+                    animationSpec = tween(
+                        durationMillis = 160,
+                        easing = FastOutSlowInEasing
+                    )
+                ) + fadeOut(animationSpec = tween(
+                    durationMillis = 130,
+                    easing = LinearEasing
+                ))
+            } else {
+                slideOutHorizontally(
+                    targetOffsetX = { it },
+                    animationSpec = tween(
+                        durationMillis = 160,
+                        easing = FastOutSlowInEasing
+                    )
+                ) + fadeOut(animationSpec = tween(
+                    durationMillis = 130,
+                    easing = LinearEasing
+                ))
+            }
+            enter togetherWith exit
         }
     ) { screen ->
         when (screen) {
@@ -435,15 +590,28 @@ fun MainTopBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchTopBar(
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onSearch: (String) -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    val debounceHandler = remember { com.motut.mo.util.DebounceHandler(300L) }
+    
+    DisposableEffect(Unit) {
+        onDispose {
+            debounceHandler.cancel()
+        }
+    }
     
     TopAppBar(
         title = {
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = { 
+                    searchQuery = it
+                    debounceHandler.debounce {
+                        onSearch(it)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("搜索任务和备忘录...") },
                 leadingIcon = {
@@ -518,16 +686,30 @@ fun MainFAB(
     ) {
         AnimatedVisibility(
             visible = expanded,
-            enter = fadeIn(animationSpec = tween(150)) + 
-                    slideInVertically(
-                        initialOffsetY = { it }, 
-                        animationSpec = tween(200)
-                    ),
-            exit = fadeOut(animationSpec = tween(100)) + 
-                    slideOutVertically(
-                        targetOffsetY = { it }, 
-                        animationSpec = tween(150)
-                    )
+            enter = fadeIn(
+                animationSpec = tween(
+                    durationMillis = 150,
+                    easing = FastOutLinearInEasing
+                )
+            ) + slideInVertically(
+                initialOffsetY = { it }, 
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                )
+            ),
+            exit = fadeOut(
+                animationSpec = tween(
+                    durationMillis = 100,
+                    easing = LinearOutSlowInEasing
+                )
+            ) + slideOutVertically(
+                targetOffsetY = { it }, 
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessHigh
+                )
+            )
         ) {
             Column(
                 horizontalAlignment = Alignment.End,
@@ -602,8 +784,18 @@ fun MainFAB(
                 targetState = expanded,
                 label = "FABIcon",
                 transitionSpec = {
-                    fadeIn(animationSpec = tween(180)) togetherWith 
-                    fadeOut(animationSpec = tween(150))
+                    fadeIn(
+                        animationSpec = spring(
+                            dampingRatio = 1f,
+                            stiffness = 400f
+                        )
+                    ) togetherWith 
+                    fadeOut(
+                        animationSpec = spring(
+                            dampingRatio = 1f,
+                            stiffness = 400f
+                        )
+                    )
                 }
             ) { isExpanded ->
                 Icon(
@@ -627,7 +819,6 @@ fun HomeDashboardScreen(
     onToggleComplete: (Long) -> Unit = {}
 ) {
     val currentDate = remember { LocalDateTime.now() }
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy年MM月dd日") }
     val dayOfWeek = remember { currentDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.CHINA) }
     
     val pendingTodos by remember(todos) {
@@ -992,7 +1183,6 @@ fun UpcomingTaskCard(
         com.motut.mo.data.Priority.MEDIUM -> MaterialTheme.colorScheme.tertiary
         com.motut.mo.data.Priority.LOW -> MaterialTheme.colorScheme.secondary
     }
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("MM-dd HH:mm") }
     
     Surface(
         modifier = Modifier.width(260.dp),
@@ -1017,10 +1207,10 @@ fun UpcomingTaskCard(
                 ) {}
                 val timeText = remember(todo.date, todo.time) {
                     buildString {
-                        todo.date?.let { append(it.format(DateTimeFormatter.ofPattern("MM-dd"))) }
+                        todo.date?.let { append(it.format(shortDateFormatter)) }
                         todo.time?.let { 
                             if (isNotEmpty()) append(" ")
-                            append(it.format(DateTimeFormatter.ofPattern("HH:mm")))
+                            append(it.format(timeFormatter))
                         }
                     }
                 }
@@ -1424,6 +1614,8 @@ fun NotesScreen(
     }
 }
 
+private val noteDateFormatter by lazy { DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm") }
+
 @Composable
 fun NoteItemCard(
     memo: Memo,
@@ -1433,7 +1625,6 @@ fun NoteItemCard(
     onTogglePin: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm") }
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1489,13 +1680,17 @@ fun NoteItemCard(
                 )
             }
             Text(
-                text = memo.createdAt.format(dateFormatter),
+                text = memo.createdAt.format(noteDateFormatter),
                 style = MaterialTheme.typography.labelSmall,
                 color = contentColor.copy(alpha = 0.5f)
             )
         }
     }
 }
+
+private val monthFormatter by lazy { DateTimeFormatter.ofPattern("yyyy年MM月") }
+private val calendarDateFormatter by lazy { DateTimeFormatter.ofPattern("yyyy年MM月dd日") }
+private val calendarTimeFormatter by lazy { DateTimeFormatter.ofPattern("HH:mm") }
 
 @Composable
 fun CalendarScreen(
@@ -1505,9 +1700,6 @@ fun CalendarScreen(
     val today = remember { LocalDate.now() }
     var selectedMonth by remember { mutableStateOf(today) }
     var selectedDate by remember { mutableStateOf(today) }
-    
-    val monthFormatter = remember { DateTimeFormatter.ofPattern("yyyy年MM月") }
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy年MM月dd日") }
     val daysOfWeek = listOf("日", "一", "二", "三", "四", "五", "六")
     
     val firstDayOfMonth = selectedMonth.withDayOfMonth(1)
@@ -1646,7 +1838,7 @@ fun CalendarScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "${selectedDate.format(dateFormatter)} 安排",
+                text = "${selectedDate.format(calendarDateFormatter)} 安排",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -1680,7 +1872,6 @@ fun CalendarEventCard(
         MaterialTheme.colorScheme.error
     )
     val color = colors[todo.id.toInt() % 3]
-    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1715,7 +1906,7 @@ fun CalendarEventCard(
                 )
                 todo.time?.let {
                     Text(
-                        text = it.format(timeFormatter),
+                        text = it.format(calendarTimeFormatter),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -2398,6 +2589,109 @@ fun TaskDetailBottomSheet(
             }
             
             Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+@Composable
+fun SearchResultsScreen(
+    searchQuery: String,
+    matchedTodos: List<Todo>,
+    matchedMemos: List<Memo>,
+    onTodoClick: (Todo) -> Unit,
+    onMemoClick: (Memo) -> Unit
+) {
+    val colors = listOf(
+        MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer,
+        MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer,
+        MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer,
+        MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+    )
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        if (searchQuery.isBlank()) {
+            EmptyState(
+                icon = Icons.Default.Search,
+                title = "搜索你的任务和备忘录",
+                description = "输入关键词开始搜索"
+            )
+        } else if (matchedTodos.isEmpty() && matchedMemos.isEmpty()) {
+            EmptyState(
+                icon = Icons.Default.SearchOff,
+                title = "未找到结果",
+                description = "尝试使用其他关键词搜索"
+            )
+        } else {
+            if (matchedTodos.isNotEmpty()) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Checklist,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "任务 (${matchedTodos.size})",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    matchedTodos.forEach { todo ->
+                        TaskItemCard(
+                            todo = todo,
+                            onClick = { onTodoClick(todo) },
+                            onToggleComplete = {},
+                            onDelete = {}
+                        )
+                    }
+                }
+            }
+            
+            if (matchedMemos.isNotEmpty()) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.Note,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "备忘录 (${matchedMemos.size})",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    matchedMemos.forEachIndexed { index, memo ->
+                        val (containerColor, contentColor) = colors[index % 4]
+                        NoteItemCard(
+                            memo = memo,
+                            containerColor = containerColor,
+                            contentColor = contentColor,
+                            onClick = { onMemoClick(memo) },
+                            onTogglePin = {},
+                            onDelete = {}
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
