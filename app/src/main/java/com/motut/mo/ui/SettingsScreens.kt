@@ -12,6 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import android.app.Activity
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,12 +23,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
+import com.motut.mo.data.ThemeMode
 import com.motut.mo.viewmodel.AppViewModel
+import kotlinx.coroutines.launch
 
 fun openUrl(context: android.content.Context, url: String) {
     try {
         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, url.toUri())
         context.startActivity(intent)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun sendEmail(context: android.content.Context, email: String, subject: String = "", body: String = "") {
+    try {
+        val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+            data = "mailto:${email}".toUri()
+            putExtra(android.content.Intent.EXTRA_SUBJECT, subject)
+            putExtra(android.content.Intent.EXTRA_TEXT, body)
+        }
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -99,9 +121,63 @@ fun SettingsCard(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationSettingsScreen(onDismiss: () -> Unit) {
-    var notificationsEnabled by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val userPreferences = remember { (context.applicationContext as com.motut.mo.MoApplication).userPreferences }
+    val notificationsEnabled by userPreferences.notificationsEnabled.collectAsState(initial = true)
+    val reminderTimeMinutes by userPreferences.notificationReminderTime.collectAsState(initial = 10)
+    
     var reminderEnabled by remember { mutableStateOf(true) }
-    var reminderTime by remember { mutableStateOf("10分钟前") }
+    var showReminderTimeDialog by remember { mutableStateOf(false) }
+
+    val reminderOptions = listOf(5, 10, 15, 30, 60)
+
+    if (showReminderTimeDialog) {
+        AlertDialog(
+            onDismissRequest = { showReminderTimeDialog = false },
+            title = { Text("选择提醒时间") },
+            text = {
+                Column {
+                    reminderOptions.forEach { minutes ->
+                        Surface(
+                            onClick = {
+                                scope.launch {
+                                    userPreferences.setNotificationReminderTime(minutes)
+                                }
+                                showReminderTimeDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Transparent
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                RadioButton(
+                                    selected = reminderTimeMinutes == minutes,
+                                    onClick = {
+                                        scope.launch {
+                                            userPreferences.setNotificationReminderTime(minutes)
+                                        }
+                                        showReminderTimeDialog = false
+                                    }
+                                )
+                                Text("${minutes}分钟前")
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showReminderTimeDialog = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 
     androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
@@ -141,7 +217,11 @@ fun NotificationSettingsScreen(onDismiss: () -> Unit) {
                             title = "启用通知",
                             description = "接收任务提醒和更新通知",
                             checked = notificationsEnabled,
-                            onCheckedChange = { notificationsEnabled = it }
+                            onCheckedChange = { 
+                                scope.launch {
+                                    userPreferences.setNotificationsEnabled(it)
+                                }
+                            }
                         )
                         if (notificationsEnabled) {
                             HorizontalDivider()
@@ -155,8 +235,8 @@ fun NotificationSettingsScreen(onDismiss: () -> Unit) {
                                 HorizontalDivider()
                                 SettingItem(
                                     title = "提醒时间",
-                                    description = reminderTime,
-                                    onClick = { }
+                                    description = "${reminderTimeMinutes}分钟前",
+                                    onClick = { showReminderTimeDialog = true }
                                 )
                             }
                         }
@@ -170,8 +250,101 @@ fun NotificationSettingsScreen(onDismiss: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppearanceSettingsScreen(onDismiss: () -> Unit) {
-    var darkMode by remember { mutableStateOf(false) }
-    var themeColor by remember { mutableStateOf("蓝色") }
+    val context = LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val userPreferences = remember { (context.applicationContext as com.motut.mo.MoApplication).userPreferences }
+    val themeMode by userPreferences.themeMode.collectAsState(initial = ThemeMode.SYSTEM.name)
+    val useDynamicColor by userPreferences.useDynamicColor.collectAsState(initial = true)
+    val customPrimaryColor by userPreferences.customPrimaryColor.collectAsState(initial = 0)
+    val backgroundImageUri by userPreferences.backgroundImageUri.collectAsState(initial = "")
+    val currentThemeMode = remember { mutableStateOf(ThemeMode.valueOf(themeMode)) }
+    var showColorPicker by remember { mutableStateOf(false) }
+
+    val colorOptions = listOf(
+        0 to "跟随系统取色",
+        0xFF6650a4.toInt() to "紫色",
+        0xFFE57373.toInt() to "红色",
+        0xFFFFB74D.toInt() to "橙色",
+        0xFF81C784.toInt() to "绿色",
+        0xFF64B5F6.toInt() to "蓝色",
+        0xFFBA68C8.toInt() to "粉色"
+    )
+
+    val pickImageLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                userPreferences.setBackgroundImageUri(it.toString())
+            }
+        }
+    }
+
+    if (showColorPicker) {
+        AlertDialog(
+            onDismissRequest = { showColorPicker = false },
+            title = { Text("选择主题颜色") },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    colorOptions.forEach { (color, name) ->
+                        Surface(
+                            onClick = {
+                                scope.launch {
+                                    if (color == 0) {
+                                        userPreferences.setUseDynamicColor(true)
+                                        userPreferences.setCustomPrimaryColor(0)
+                                    } else {
+                                        userPreferences.setUseDynamicColor(false)
+                                        userPreferences.setCustomPrimaryColor(color)
+                                    }
+                                }
+                                showColorPicker = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Transparent
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                if (color != 0) {
+                                    Surface(
+                                        modifier = Modifier.size(24.dp),
+                                        color = Color(color),
+                                        shape = CircleShape
+                                    ) {}
+                                } else {
+                                    Surface(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        shape = CircleShape
+                                    ) {}
+                                }
+                                Text(name)
+                                if ((color == 0 && useDynamicColor) || (color != 0 && customPrimaryColor == color && !useDynamicColor)) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showColorPicker = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 
     androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
@@ -207,20 +380,122 @@ fun AppearanceSettingsScreen(onDismiss: () -> Unit) {
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column {
-                        SettingSwitchItem(
-                            title = "深色模式",
-                            description = "使用深色主题",
-                            checked = darkMode,
-                            onCheckedChange = { darkMode = it }
+                        ThemeOptionItem(
+                            title = "跟随系统",
+                            description = "自动跟随系统设置",
+                            selected = currentThemeMode.value == ThemeMode.SYSTEM,
+                            onClick = {
+                                currentThemeMode.value = ThemeMode.SYSTEM
+                                scope.launch {
+                                    userPreferences.setThemeMode(ThemeMode.SYSTEM)
+                                }
+                            }
                         )
                         HorizontalDivider()
-                        SettingItem(
-                            title = "主题颜色",
-                            description = themeColor,
-                            onClick = { }
+                        ThemeOptionItem(
+                            title = "浅色模式",
+                            description = "始终使用浅色主题",
+                            selected = currentThemeMode.value == ThemeMode.LIGHT,
+                            onClick = {
+                                currentThemeMode.value = ThemeMode.LIGHT
+                                scope.launch {
+                                    userPreferences.setThemeMode(ThemeMode.LIGHT)
+                                }
+                            }
+                        )
+                        HorizontalDivider()
+                        ThemeOptionItem(
+                            title = "深色模式",
+                            description = "始终使用深色主题",
+                            selected = currentThemeMode.value == ThemeMode.DARK,
+                            onClick = {
+                                currentThemeMode.value = ThemeMode.DARK
+                                scope.launch {
+                                    userPreferences.setThemeMode(ThemeMode.DARK)
+                                }
+                            }
                         )
                     }
                 }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column {
+                        SettingItem(
+                            title = "主题颜色",
+                            description = if (useDynamicColor) "跟随系统取色" else "自定义颜色",
+                            icon = Icons.Default.Palette,
+                            onClick = { showColorPicker = true }
+                        )
+                        HorizontalDivider()
+                        SettingItem(
+                            title = "背景图片",
+                            description = if (backgroundImageUri.isNotEmpty()) "已设置" else "未设置",
+                            icon = Icons.Default.Image,
+                            onClick = { pickImageLauncher.launch("image/*") }
+                        )
+                        if (backgroundImageUri.isNotEmpty()) {
+                            HorizontalDivider()
+                            SettingItem(
+                                title = "清除背景",
+                                description = "恢复默认背景",
+                                icon = Icons.Default.Delete,
+                                onClick = {
+                                    scope.launch {
+                                        userPreferences.setBackgroundImageUri("")
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ThemeOptionItem(
+    title: String,
+    description: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.Transparent
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (selected) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
@@ -229,8 +504,157 @@ fun AppearanceSettingsScreen(onDismiss: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SyncSettingsScreen(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val userPreferences = remember { (context.applicationContext as com.motut.mo.MoApplication).userPreferences }
+    val customSyncSource by userPreferences.customSyncSource.collectAsState(initial = "")
+    
     var autoSync by remember { mutableStateOf(true) }
     var syncOnlyOnWifi by remember { mutableStateOf(false) }
+    var syncSource by remember { mutableStateOf(if (customSyncSource.isEmpty()) "本地" else "自定义") }
+    var saveFormat by remember { mutableStateOf("JSON") }
+    var showSyncSourceDialog by remember { mutableStateOf(false) }
+    var showSaveFormatDialog by remember { mutableStateOf(false) }
+    var showCustomSourceDialog by remember { mutableStateOf(false) }
+    var customSourceInput by remember { mutableStateOf(customSyncSource) }
+
+    if (showSyncSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showSyncSourceDialog = false },
+            title = { Text("选择同步源") },
+            text = {
+                Column {
+                    listOf("本地", "Google Drive", "WebDAV", "OneDrive", "自定义").forEach { source ->
+                        Surface(
+                            onClick = {
+                                if (source == "自定义") {
+                                    showSyncSourceDialog = false
+                                    showCustomSourceDialog = true
+                                } else {
+                                    syncSource = source
+                                    scope.launch {
+                                        userPreferences.setCustomSyncSource("")
+                                    }
+                                    showSyncSourceDialog = false
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Transparent
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                RadioButton(
+                                    selected = syncSource == source || (source == "自定义" && customSyncSource.isNotEmpty()),
+                                    onClick = {
+                                        if (source == "自定义") {
+                                            showSyncSourceDialog = false
+                                            showCustomSourceDialog = true
+                                        } else {
+                                            syncSource = source
+                                            scope.launch {
+                                                userPreferences.setCustomSyncSource("")
+                                            }
+                                            showSyncSourceDialog = false
+                                        }
+                                    }
+                                )
+                                Text(source)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showSyncSourceDialog = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
+    
+    if (showCustomSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showCustomSourceDialog = false },
+            title = { Text("自定义同步源") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = customSourceInput,
+                        onValueChange = { customSourceInput = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("输入同步源地址") },
+                        placeholder = { Text("https://example.com/sync") }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            userPreferences.setCustomSyncSource(customSourceInput)
+                        }
+                        syncSource = if (customSourceInput.isNotEmpty()) "自定义" else "本地"
+                        showCustomSourceDialog = false
+                    }
+                ) {
+                    Text("确定")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCustomSourceDialog = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
+
+    if (showSaveFormatDialog) {
+        AlertDialog(
+            onDismissRequest = { showSaveFormatDialog = false },
+            title = { Text("选择保存格式") },
+            text = {
+                Column {
+                    listOf("JSON", "CSV", "XML").forEach { format ->
+                        Surface(
+                            onClick = {
+                                saveFormat = format
+                                showSaveFormatDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Transparent
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                RadioButton(
+                                    selected = saveFormat == format,
+                                    onClick = {
+                                        saveFormat = format
+                                        showSaveFormatDialog = false
+                                    }
+                                )
+                                Text(format)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showSaveFormatDialog = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 
     androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
@@ -283,6 +707,28 @@ fun SyncSettingsScreen(onDismiss: () -> Unit) {
                         }
                     }
                 }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column {
+                        SettingItem(
+                            title = "同步源",
+                            description = if (customSyncSource.isNotEmpty()) customSyncSource else syncSource,
+                            icon = Icons.Default.CloudSync,
+                            onClick = { showSyncSourceDialog = true }
+                        )
+                        HorizontalDivider()
+                        SettingItem(
+                            title = "保存格式",
+                            description = saveFormat,
+                            icon = Icons.Default.Description,
+                            onClick = { showSaveFormatDialog = true }
+                        )
+                    }
+                }
                 Button(
                     onClick = { },
                     modifier = Modifier.fillMaxWidth(),
@@ -299,9 +745,79 @@ fun SyncSettingsScreen(onDismiss: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrivacySettingsScreen(onDismiss: () -> Unit) {
-    var lockApp by remember { mutableStateOf(false) }
+fun PrivacySettingsScreen(
+    onDismiss: () -> Unit,
+    onNavigateToPrivacyPolicy: () -> Unit,
+    onNavigateToUserAgreement: () -> Unit
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val userPreferences = remember { (context.applicationContext as com.motut.mo.MoApplication).userPreferences }
+    val appLockEnabled by userPreferences.appLockEnabled.collectAsState(initial = false)
+    val showAnnouncement by userPreferences.showAnnouncement.collectAsState(initial = true)
+    var lockApp by remember { mutableStateOf(appLockEnabled) }
     var hideContent by remember { mutableStateOf(false) }
+    var showBiometricPrompt by remember { mutableStateOf(false) }
+
+    LaunchedEffect(appLockEnabled) {
+        lockApp = appLockEnabled
+    }
+
+    val biometricManager = remember { BiometricManager.from(context) }
+    val canAuthenticate = remember {
+        biometricManager.canAuthenticate(
+            BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        ) == BiometricManager.BIOMETRIC_SUCCESS
+    }
+
+    if (showBiometricPrompt) {
+        LaunchedEffect(Unit) {
+            val activity = context as? FragmentActivity
+            if (activity != null) {
+                val executor = ContextCompat.getMainExecutor(activity)
+                val biometricPrompt = BiometricPrompt(
+                    activity,
+                    executor,
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                            super.onAuthenticationSucceeded(result)
+                            lockApp = true
+                            scope.launch {
+                                userPreferences.setAppLockEnabled(true)
+                            }
+                            showBiometricPrompt = false
+                        }
+
+                        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                            super.onAuthenticationError(errorCode, errString)
+                            lockApp = false
+                            showBiometricPrompt = false
+                        }
+
+                        override fun onAuthenticationFailed() {
+                            super.onAuthenticationFailed()
+                            lockApp = false
+                            showBiometricPrompt = false
+                        }
+                    }
+                )
+
+                val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                    .setTitle("启用应用锁定")
+                    .setSubtitle("请验证您的身份以启用应用锁定")
+                    .setAllowedAuthenticators(
+                        BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                    )
+                    .build()
+
+                biometricPrompt.authenticate(promptInfo)
+            } else {
+                showBiometricPrompt = false
+            }
+        }
+    }
 
     androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
@@ -339,9 +855,29 @@ fun PrivacySettingsScreen(onDismiss: () -> Unit) {
                     Column {
                         SettingSwitchItem(
                             title = "应用锁定",
-                            description = "使用生物识别或PIN锁定应用",
+                            description = if (canAuthenticate) "使用生物识别锁定应用" else "设备不支持生物识别",
                             checked = lockApp,
-                            onCheckedChange = { lockApp = it }
+                            onCheckedChange = { enabled ->
+                                if (enabled && canAuthenticate) {
+                                    showBiometricPrompt = true
+                                } else if (!enabled) {
+                                    lockApp = false
+                                    scope.launch {
+                                        userPreferences.setAppLockEnabled(false)
+                                    }
+                                }
+                            }
+                        )
+                        HorizontalDivider()
+                        SettingSwitchItem(
+                            title = "显示公告",
+                            description = "接收和显示应用公告",
+                            checked = showAnnouncement,
+                            onCheckedChange = { enabled ->
+                                scope.launch {
+                                    userPreferences.setShowAnnouncement(enabled)
+                                }
+                            }
                         )
                         HorizontalDivider()
                         SettingSwitchItem(
@@ -354,13 +890,13 @@ fun PrivacySettingsScreen(onDismiss: () -> Unit) {
                         SettingItem(
                             title = "隐私政策",
                             description = "查看我们的隐私政策",
-                            onClick = { }
+                            onClick = onNavigateToPrivacyPolicy
                         )
                         HorizontalDivider()
                         SettingItem(
                             title = "用户协议",
                             description = "查看用户使用协议",
-                            onClick = { }
+                            onClick = onNavigateToUserAgreement
                         )
                     }
                 }
@@ -505,7 +1041,11 @@ fun BackupSettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelpFeedbackScreen(onDismiss: () -> Unit) {
+    val context = LocalContext.current
     var feedback by remember { mutableStateOf("") }
+    var showContactDialog by remember { mutableStateOf(false) }
+    var showFaqDialog by remember { mutableStateOf(false) }
+    var showTutorialDialog by remember { mutableStateOf(false) }
 
     androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
@@ -545,14 +1085,14 @@ fun HelpFeedbackScreen(onDismiss: () -> Unit) {
                             title = "常见问题",
                             description = "查看使用帮助和常见问题",
                             icon = Icons.AutoMirrored.Default.Help,
-                            onClick = { }
+                            onClick = { showFaqDialog = true }
                         )
                         HorizontalDivider()
                         SettingItem(
                             title = "使用教程",
                             description = "学习如何使用Mo",
                             icon = Icons.Default.School,
-                            onClick = { }
+                            onClick = { showTutorialDialog = true }
                         )
                     }
                 }
@@ -581,7 +1121,15 @@ fun HelpFeedbackScreen(onDismiss: () -> Unit) {
                             shape = MaterialTheme.shapes.large
                         )
                         Button(
-                            onClick = { },
+                            onClick = {
+                                sendEmail(
+                                    context = context,
+                                    email = "gascs@qq.com",
+                                    subject = "Mo 应用反馈",
+                                    body = feedback
+                                )
+                                feedback = ""
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = feedback.isNotBlank(),
                             shape = MaterialTheme.shapes.large
@@ -599,19 +1147,305 @@ fun HelpFeedbackScreen(onDismiss: () -> Unit) {
                     Column {
                         SettingItem(
                             title = "联系我们",
-                            description = "通过邮件联系我们",
+                            description = "通过多种方式联系我们",
                             icon = Icons.Default.Email,
-                            onClick = { }
-                        )
-                        HorizontalDivider()
-                        SettingItem(
-                            title = "给我们评分",
-                            description = "在应用商店为Mo评分",
-                            icon = Icons.Default.Star,
-                            onClick = { }
+                            onClick = { showContactDialog = true }
                         )
                     }
                 }
+            }
+        }
+    }
+
+    if (showContactDialog) {
+        ContactUsDialog(onDismiss = { showContactDialog = false })
+    }
+
+    if (showFaqDialog) {
+        FaqDialog(onDismiss = { showFaqDialog = false })
+    }
+
+    if (showTutorialDialog) {
+        TutorialDialog(onDismiss = { showTutorialDialog = false })
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ContactUsDialog(onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = true
+        )
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("联系我们", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "返回")
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column {
+                        SettingItem(
+                            title = "GitHub",
+                            description = "github.com/gascs",
+                            icon = Icons.Default.Code,
+                            onClick = { openUrl(context, "https://www.github.com/gascs") }
+                        )
+                        HorizontalDivider()
+                        SettingItem(
+                            title = "MoTuT 官网",
+                            description = "motut.net.cn",
+                            icon = Icons.Default.Language,
+                            onClick = { openUrl(context, "https://motut.net.cn") }
+                        )
+                        HorizontalDivider()
+                        SettingItem(
+                            title = "邮箱",
+                            description = "gascs@qq.com",
+                            icon = Icons.Default.Email,
+                            onClick = { sendEmail(context, "gascs@qq.com") }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FaqDialog(onDismiss: () -> Unit) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = true
+        )
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("常见问题", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "返回")
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FaqItem(
+                    question = "如何添加新的待办事项？",
+                    answer = "点击主页右下角的 + 按钮，填写任务标题和详细信息，设置日期、时间和优先级后保存即可。"
+                )
+                FaqItem(
+                    question = "如何添加备忘录？",
+                    answer = "在备忘录页面点击右下角的 + 按钮，填写标题和内容后保存。"
+                )
+                FaqItem(
+                    question = "如何备份数据？",
+                    answer = "在设置页面选择\"数据备份\"，点击\"导出数据\"将数据保存为JSON文件。"
+                )
+                FaqItem(
+                    question = "如何切换深色模式？",
+                    answer = "在设置页面选择\"外观主题\"，可以选择跟随系统、浅色模式或深色模式。"
+                )
+                FaqItem(
+                    question = "数据会上传到云端吗？",
+                    answer = "不会。所有数据都存储在您的设备本地，我们不会收集或上传任何个人信息。"
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FaqItem(question: String, answer: String) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column {
+            Surface(
+                onClick = { expanded = !expanded },
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Transparent
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = question,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            if (expanded) {
+                HorizontalDivider()
+                Text(
+                    text = answer,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TutorialDialog(onDismiss: () -> Unit) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = true
+        )
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("使用教程", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "返回")
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                TutorialStep(
+                    number = 1,
+                    title = "添加待办事项",
+                    description = "点击主页右下角的 + 按钮，填写任务信息后保存。"
+                )
+                TutorialStep(
+                    number = 2,
+                    title = "添加备忘录",
+                    description = "切换到备忘录页面，点击右下角的 + 按钮添加备忘。"
+                )
+                TutorialStep(
+                    number = 3,
+                    title = "查看日历",
+                    description = "切换到日历页面，查看按日期排列的任务。"
+                )
+                TutorialStep(
+                    number = 4,
+                    title = "数据备份",
+                    description = "进入设置页面，选择数据备份进行导出或导入。"
+                )
+                TutorialStep(
+                    number = 5,
+                    title = "个性化设置",
+                    description = "在设置中可以调整主题、通知等个性化选项。"
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TutorialStep(number: Int, title: String, description: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Surface(
+                modifier = Modifier.size(40.dp),
+                color = MaterialTheme.colorScheme.primary,
+                shape = CircleShape
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = number.toString(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
             }
         }
     }
@@ -655,7 +1489,7 @@ fun AboutMoScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(0.9f),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                     shape = RoundedCornerShape(24.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -1035,6 +1869,182 @@ fun PrivacyPolicyScreen(onDismiss: () -> Unit) {
                             text = "如有任何关于隐私政策的问题，请通过官网或 GitHub 联系我们。",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UserAgreementScreen(onDismiss: () -> Unit) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = true
+        )
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("用户协议", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "返回")
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "用户协议",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "最后更新：2026年3月",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "1. 协议条款",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = "欢迎使用 Mo 应用！使用本应用即表示您同意本用户协议的所有条款。",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "2. 使用许可",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Text(
+                            text = "我们授予您个人的、非独占的、不可转让的许可，允许您在您的设备上使用本应用。",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "3. 用户责任",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                        Text(
+                            text = "您应负责妥善保管您的设备和数据。我们建议您定期备份数据，以防止数据丢失。",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "4. 免责声明",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "本应用按\"原样\"提供，不提供任何明示或暗示的保证。在法律允许的最大范围内，我们不对因使用本应用而造成的任何损失承担责任。",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "5. 协议更新",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = "我们保留随时修改本协议的权利。修改后的协议将在应用内发布，继续使用本应用即表示您接受修改后的协议。",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }

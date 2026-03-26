@@ -25,6 +25,8 @@ class AppViewModel : ViewModel() {
     private val _selectedMemoIds = MutableStateFlow<Set<Long>>(emptySet())
     val selectedMemoIds: StateFlow<Set<Long>> = _selectedMemoIds.asStateFlow()
 
+    private val memoMap = mutableMapOf<Long, Memo>()
+
     fun getSortedMemos(memos: List<Memo>): List<Memo> {
         return memos.sortedWith(compareByDescending<Memo> { !it.isPinned }.thenByDescending { it.createdAt })
     }
@@ -38,6 +40,8 @@ class AppViewModel : ViewModel() {
     private val _selectedTodoIds = MutableStateFlow<Set<Long>>(emptySet())
     val selectedTodoIds: StateFlow<Set<Long>> = _selectedTodoIds.asStateFlow()
 
+    private val todoMap = mutableMapOf<Long, Todo>()
+
     init {
         loadData()
     }
@@ -45,8 +49,14 @@ class AppViewModel : ViewModel() {
     private fun loadData() {
         viewModelScope.launch {
             _categories.value = dbHelper.getAllCategories()
-            _memos.value = dbHelper.getAllMemos()
-            _todos.value = dbHelper.getAllTodos()
+            val memoList = dbHelper.getAllMemos()
+            val todoList = dbHelper.getAllTodos()
+            memoMap.clear()
+            todoMap.clear()
+            memoList.forEach { memoMap[it.id] = it }
+            todoList.forEach { todoMap[it.id] = it }
+            _memos.value = memoList
+            _todos.value = todoList
         }
     }
 
@@ -59,8 +69,10 @@ class AppViewModel : ViewModel() {
                 categoryId = categoryId
             )
             val id = dbHelper.insertMemo(newMemo)
+            val memoWithId = newMemo.copy(id = id)
+            memoMap[id] = memoWithId
             _memos.value = buildList {
-                add(newMemo.copy(id = id))
+                add(memoWithId)
                 addAll(_memos.value)
             }
         }
@@ -68,7 +80,7 @@ class AppViewModel : ViewModel() {
 
     fun updateMemo(id: Long, title: String, content: String, categoryId: Long? = null, isPinned: Boolean? = null) {
         viewModelScope.launch {
-            val existingMemo = _memos.value.find { it.id == id } ?: return@launch
+            val existingMemo = memoMap[id] ?: return@launch
             val updatedMemo = existingMemo.copy(
                 title = title,
                 content = content,
@@ -77,18 +89,20 @@ class AppViewModel : ViewModel() {
                 updatedAt = LocalDateTime.now()
             )
             dbHelper.updateMemo(updatedMemo)
+            memoMap[id] = updatedMemo
             _memos.value = _memos.value.map { if (it.id == id) updatedMemo else it }
         }
     }
 
     fun toggleMemoPin(id: Long) {
         viewModelScope.launch {
-            val existingMemo = _memos.value.find { it.id == id } ?: return@launch
+            val existingMemo = memoMap[id] ?: return@launch
             val updatedMemo = existingMemo.copy(
                 isPinned = !existingMemo.isPinned,
                 updatedAt = LocalDateTime.now()
             )
             dbHelper.updateMemo(updatedMemo)
+            memoMap[id] = updatedMemo
             _memos.value = _memos.value.map { if (it.id == id) updatedMemo else it }
         }
     }
@@ -96,6 +110,7 @@ class AppViewModel : ViewModel() {
     fun deleteMemo(id: Long) {
         viewModelScope.launch {
             dbHelper.deleteMemo(id)
+            memoMap.remove(id)
             _memos.value = _memos.value.filter { it.id != id }
             _selectedMemoIds.value -= id
         }
@@ -113,7 +128,7 @@ class AppViewModel : ViewModel() {
 
     fun selectAllMemos() {
         viewModelScope.launch {
-            _selectedMemoIds.value = _memos.value.map { it.id }.toSet()
+            _selectedMemoIds.value = memoMap.keys
         }
     }
 
@@ -125,7 +140,10 @@ class AppViewModel : ViewModel() {
 
     fun deleteSelectedMemos() {
         viewModelScope.launch {
-            _selectedMemoIds.value.forEach { dbHelper.deleteMemo(it) }
+            _selectedMemoIds.value.forEach { 
+                dbHelper.deleteMemo(it) 
+                memoMap.remove(it)
+            }
             _memos.value = _memos.value.filterNot { _selectedMemoIds.value.contains(it.id) }
             _selectedMemoIds.value = emptySet()
         }
@@ -150,8 +168,10 @@ class AppViewModel : ViewModel() {
                 priority = priority
             )
             val id = dbHelper.insertTodo(newTodo)
+            val todoWithId = newTodo.copy(id = id)
+            todoMap[id] = todoWithId
             _todos.value = buildList {
-                add(newTodo.copy(id = id))
+                add(todoWithId)
                 addAll(_todos.value)
             }
         }
@@ -159,12 +179,13 @@ class AppViewModel : ViewModel() {
 
     fun toggleTodoCompletion(id: Long) {
         viewModelScope.launch {
-            val existingTodo = _todos.value.find { it.id == id } ?: return@launch
+            val existingTodo = todoMap[id] ?: return@launch
             val updatedTodo = existingTodo.copy(
                 isCompleted = !existingTodo.isCompleted,
                 updatedAt = LocalDateTime.now()
             )
             dbHelper.updateTodo(updatedTodo)
+            todoMap[id] = updatedTodo
             _todos.value = _todos.value.map { if (it.id == id) updatedTodo else it }
         }
     }
@@ -172,6 +193,7 @@ class AppViewModel : ViewModel() {
     fun deleteTodo(id: Long) {
         viewModelScope.launch {
             dbHelper.deleteTodo(id)
+            todoMap.remove(id)
             _todos.value = _todos.value.filter { it.id != id }
             _selectedTodoIds.value -= id
         }
@@ -189,7 +211,7 @@ class AppViewModel : ViewModel() {
 
     fun selectAllTodos() {
         viewModelScope.launch {
-            _selectedTodoIds.value = _todos.value.map { it.id }.toSet()
+            _selectedTodoIds.value = todoMap.keys
         }
     }
 
@@ -201,7 +223,10 @@ class AppViewModel : ViewModel() {
 
     fun deleteSelectedTodos() {
         viewModelScope.launch {
-            _selectedTodoIds.value.forEach { dbHelper.deleteTodo(it) }
+            _selectedTodoIds.value.forEach { 
+                dbHelper.deleteTodo(it) 
+                todoMap.remove(it)
+            }
             _todos.value = _todos.value.filterNot { _selectedTodoIds.value.contains(it.id) }
             _selectedTodoIds.value = emptySet()
         }

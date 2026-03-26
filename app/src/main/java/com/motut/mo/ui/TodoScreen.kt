@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -11,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -309,6 +311,126 @@ fun AddTodoDialog(
     var selectedPriority by remember { mutableStateOf(Priority.MEDIUM) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showReminderPicker by remember { mutableStateOf(false) }
+    var reminderMinutes by remember { mutableStateOf(10) }
+    var hasReminder by remember { mutableStateOf(false) }
+    var selectedColor by remember { mutableStateOf<androidx.compose.ui.graphics.Color?>(null) }
+    var showColorPicker by remember { mutableStateOf(false) }
+
+    val colorOptions = listOf(
+        null to "默认",
+        androidx.compose.ui.graphics.Color(0xFFE57373) to "红色",
+        androidx.compose.ui.graphics.Color(0xFFFFB74D) to "橙色",
+        androidx.compose.ui.graphics.Color(0xFFFFF176) to "黄色",
+        androidx.compose.ui.graphics.Color(0xFF81C784) to "绿色",
+        androidx.compose.ui.graphics.Color(0xFF64B5F6) to "蓝色",
+        androidx.compose.ui.graphics.Color(0xFFBA68C8) to "紫色"
+    )
+
+    if (showColorPicker) {
+        AlertDialog(
+            onDismissRequest = { showColorPicker = false },
+            title = { Text("选择颜色标签") },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    colorOptions.forEach { (color, name) ->
+                        Surface(
+                            onClick = {
+                                selectedColor = color
+                                showColorPicker = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Transparent
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                if (color != null) {
+                                    Surface(
+                                        modifier = Modifier.size(24.dp),
+                                        color = color,
+                                        shape = CircleShape
+                                    ) {}
+                                } else {
+                                    Surface(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant,
+                                        shape = CircleShape
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Block,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                Text(name)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showColorPicker = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
+
+    if (showReminderPicker) {
+        AlertDialog(
+            onDismissRequest = { showReminderPicker = false },
+            title = { Text("设置提醒") },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(5, 10, 15, 30, 60).forEach { minutes ->
+                        Surface(
+                            onClick = {
+                                reminderMinutes = minutes
+                                hasReminder = true
+                                showReminderPicker = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Transparent
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                RadioButton(
+                                    selected = reminderMinutes == minutes && hasReminder,
+                                    onClick = {
+                                        reminderMinutes = minutes
+                                        hasReminder = true
+                                        showReminderPicker = false
+                                    }
+                                )
+                                Text("${minutes}分钟前")
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showReminderPicker = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState()
@@ -540,6 +662,47 @@ fun AddTodoDialog(
                                 selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer
                             )
                         )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { showColorPicker = true },
+                        modifier = Modifier.weight(1f),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        if (selectedColor != null) {
+                            Surface(
+                                modifier = Modifier.size(18.dp),
+                                color = selectedColor!!,
+                                shape = CircleShape
+                            ) {}
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Palette,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("标签")
+                    }
+                    OutlinedButton(
+                        onClick = { showReminderPicker = true },
+                        modifier = Modifier.weight(1f),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Icon(
+                            imageVector = if (hasReminder) Icons.Default.NotificationsActive else Icons.Default.Notifications,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = if (hasReminder) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(if (hasReminder) "${reminderMinutes}分钟" else "提醒")
                     }
                 }
 

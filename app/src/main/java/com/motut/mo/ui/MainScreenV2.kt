@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle as ComposeTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,6 +36,7 @@ import com.motut.mo.data.Memo
 import com.motut.mo.data.Todo
 import com.motut.mo.ui.components.EmptyState
 import com.motut.mo.ui.components.RatingPromptDialog
+import com.motut.mo.util.AnimationUtils
 import com.motut.mo.viewmodel.AppViewModel
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -63,6 +66,7 @@ enum class SettingsScreen {
     HELP,
     ABOUT,
     PRIVACY_POLICY,
+    USER_AGREEMENT,
     OPEN_SOURCE_STATEMENT,
     LICENSE
 }
@@ -374,37 +378,93 @@ fun MainScreenV2(
         )
     }
 
-    showMemoDetail?.let { memo ->
-        MemoDetailScreen(
-            memo = memo,
-            onDismiss = { showMemoDetail = null },
-            onSave = { id, title, content, categoryId ->
-                viewModel.updateMemo(id, title, content, categoryId)
-                snackbarMessage = "备忘录已保存！"
-                showSnackbar = true
-            },
-            onTogglePin = { viewModel.toggleMemoPin(it) },
-            onDelete = { 
-                viewModel.deleteMemo(it)
-                showMemoDetail = null
-                snackbarMessage = "备忘录已删除！"
-                showSnackbar = true
-            }
+    AnimatedVisibility(
+        visible = showMemoDetail != null,
+        enter = fadeIn(
+            animationSpec = tween(
+                durationMillis = AnimationUtils.FAST_ANIMATION_DURATION,
+                easing = FastOutSlowInEasing
+            )
+        ) + scaleIn(
+            initialScale = 0.9f,
+            animationSpec = tween(
+                durationMillis = AnimationUtils.FAST_ANIMATION_DURATION,
+                easing = FastOutSlowInEasing
+            )
+        ),
+        exit = fadeOut(
+            animationSpec = tween(
+                durationMillis = AnimationUtils.FAST_ANIMATION_DURATION - 20,
+                easing = LinearEasing
+            )
+        ) + scaleOut(
+            targetScale = 0.9f,
+            animationSpec = tween(
+                durationMillis = AnimationUtils.FAST_ANIMATION_DURATION - 20,
+                easing = LinearEasing
+            )
         )
+    ) {
+        showMemoDetail?.let { memo ->
+            MemoDetailScreen(
+                memo = memo,
+                onDismiss = { showMemoDetail = null },
+                onSave = { id, title, content, categoryId ->
+                    viewModel.updateMemo(id, title, content, categoryId)
+                    snackbarMessage = "备忘录已保存！"
+                    showSnackbar = true
+                },
+                onTogglePin = { viewModel.toggleMemoPin(it) },
+                onDelete = { 
+                    viewModel.deleteMemo(it)
+                    showMemoDetail = null
+                    snackbarMessage = "备忘录已删除！"
+                    showSnackbar = true
+                }
+            )
+        }
     }
 
-    showTaskDetail?.let { todo ->
-        TaskDetailBottomSheet(
-            todo = todo,
-            onDismiss = { showTaskDetail = null },
-            onToggleComplete = { viewModel.toggleTodoCompletion(it) },
-            onDelete = { 
-                viewModel.deleteTodo(it)
-                showTaskDetail = null
-                snackbarMessage = "任务已删除！"
-                showSnackbar = true
-            }
+    AnimatedVisibility(
+        visible = showTaskDetail != null,
+        enter = fadeIn(
+            animationSpec = tween(
+                durationMillis = AnimationUtils.FAST_ANIMATION_DURATION,
+                easing = FastOutSlowInEasing
+            )
+        ) + slideInVertically(
+            initialOffsetY = { it / 2 },
+            animationSpec = tween(
+                durationMillis = AnimationUtils.FAST_ANIMATION_DURATION,
+                easing = FastOutSlowInEasing
+            )
+        ),
+        exit = fadeOut(
+            animationSpec = tween(
+                durationMillis = AnimationUtils.FAST_ANIMATION_DURATION - 20,
+                easing = LinearEasing
+            )
+        ) + slideOutVertically(
+            targetOffsetY = { it / 2 },
+            animationSpec = tween(
+                durationMillis = AnimationUtils.FAST_ANIMATION_DURATION - 20,
+                easing = LinearEasing
+            )
         )
+    ) {
+        showTaskDetail?.let { todo ->
+            TaskDetailBottomSheet(
+                todo = todo,
+                onDismiss = { showTaskDetail = null },
+                onToggleComplete = { viewModel.toggleTodoCompletion(it) },
+                onDelete = { 
+                    viewModel.deleteTodo(it)
+                    showTaskDetail = null
+                    snackbarMessage = "任务已删除！"
+                    showSnackbar = true
+                }
+            )
+        }
     }
 
     AnimatedContent(
@@ -416,22 +476,22 @@ fun MainScreenV2(
                 slideInHorizontally(
                     initialOffsetX = { it },
                     animationSpec = tween(
-                        durationMillis = 160,
+                        durationMillis = AnimationUtils.FAST_ANIMATION_DURATION,
                         easing = FastOutSlowInEasing
                     )
                 ) + fadeIn(animationSpec = tween(
-                    durationMillis = 130,
+                    durationMillis = AnimationUtils.FAST_ANIMATION_DURATION - 20,
                     easing = LinearEasing
                 ))
             } else {
                 slideInHorizontally(
                     initialOffsetX = { -it },
                     animationSpec = tween(
-                        durationMillis = 160,
+                        durationMillis = AnimationUtils.FAST_ANIMATION_DURATION,
                         easing = FastOutSlowInEasing
                     )
                 ) + fadeIn(animationSpec = tween(
-                    durationMillis = 130,
+                    durationMillis = AnimationUtils.FAST_ANIMATION_DURATION - 20,
                     easing = LinearEasing
                 ))
             }
@@ -439,22 +499,22 @@ fun MainScreenV2(
                 slideOutHorizontally(
                     targetOffsetX = { -it },
                     animationSpec = tween(
-                        durationMillis = 160,
+                        durationMillis = AnimationUtils.FAST_ANIMATION_DURATION,
                         easing = FastOutSlowInEasing
                     )
                 ) + fadeOut(animationSpec = tween(
-                    durationMillis = 130,
+                    durationMillis = AnimationUtils.FAST_ANIMATION_DURATION - 20,
                     easing = LinearEasing
                 ))
             } else {
                 slideOutHorizontally(
                     targetOffsetX = { it },
                     animationSpec = tween(
-                        durationMillis = 160,
+                        durationMillis = AnimationUtils.FAST_ANIMATION_DURATION,
                         easing = FastOutSlowInEasing
                     )
                 ) + fadeOut(animationSpec = tween(
-                    durationMillis = 130,
+                    durationMillis = AnimationUtils.FAST_ANIMATION_DURATION - 20,
                     easing = LinearEasing
                 ))
             }
@@ -472,7 +532,9 @@ fun MainScreenV2(
                 onDismiss = { currentSettingsScreen = SettingsScreen.NONE }
             )
             SettingsScreen.PRIVACY -> PrivacySettingsScreen(
-                onDismiss = { currentSettingsScreen = SettingsScreen.NONE }
+                onDismiss = { currentSettingsScreen = SettingsScreen.NONE },
+                onNavigateToPrivacyPolicy = { currentSettingsScreen = SettingsScreen.PRIVACY_POLICY },
+                onNavigateToUserAgreement = { currentSettingsScreen = SettingsScreen.USER_AGREEMENT }
             )
             SettingsScreen.BACKUP -> BackupSettingsScreen(
                 viewModel = viewModel,
@@ -492,7 +554,10 @@ fun MainScreenV2(
                 onNavigateToLicense = { currentSettingsScreen = SettingsScreen.LICENSE }
             )
             SettingsScreen.PRIVACY_POLICY -> PrivacyPolicyScreen(
-                onDismiss = { currentSettingsScreen = SettingsScreen.ABOUT }
+                onDismiss = { currentSettingsScreen = SettingsScreen.PRIVACY }
+            )
+            SettingsScreen.USER_AGREEMENT -> com.motut.mo.ui.UserAgreementScreen(
+                onDismiss = { currentSettingsScreen = SettingsScreen.PRIVACY }
             )
             SettingsScreen.OPEN_SOURCE_STATEMENT -> OpenSourceStatementScreen(
                 onDismiss = { currentSettingsScreen = SettingsScreen.ABOUT }
@@ -2192,136 +2257,242 @@ fun AddTaskBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            Text(
-                text = "新建任务",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-            
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("任务标题") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large
-            )
-            
-            OutlinedTextField(
-                value = content,
-                onValueChange = { content = it },
-                label = { Text("详细描述") },
-                minLines = 3,
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large
-            )
-            
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { showDatePicker = true },
-                    modifier = Modifier.weight(1f),
-                    shape = MaterialTheme.shapes.large
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        if (selectedDate != null) {
-                            selectedDate!!.format(DateTimeFormatter.ofPattern("MM月dd日"))
-                        } else {
-                            "选择日期"
-                        }
-                    )
-                }
-                OutlinedButton(
-                    onClick = { showTimePicker = true },
-                    modifier = Modifier.weight(1f),
-                    shape = MaterialTheme.shapes.large
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AccessTime,
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        if (selectedTime != null) {
-                            selectedTime!!.format(DateTimeFormatter.ofPattern("HH:mm"))
-                        } else {
-                            "选择时间"
-                        }
-                    )
-                }
-            }
-            
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "优先级",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterChip(
-                        selected = selectedPriority == com.motut.mo.data.Priority.LOW,
-                        onClick = { selectedPriority = com.motut.mo.data.Priority.LOW },
-                        label = { Text("低") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    FilterChip(
-                        selected = selectedPriority == com.motut.mo.data.Priority.MEDIUM,
-                        onClick = { selectedPriority = com.motut.mo.data.Priority.MEDIUM },
-                        label = { Text("中") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    FilterChip(
-                        selected = selectedPriority == com.motut.mo.data.Priority.HIGH,
-                        onClick = { selectedPriority = com.motut.mo.data.Priority.HIGH },
-                        label = { Text("高") },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = onDismiss) {
-                    Text("取消")
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(
-                    onClick = {
-                        if (title.isNotBlank()) {
-                            onConfirm(title, content, location, selectedDate, selectedTime, selectedPriority)
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { 
+                        Text(
+                            "新建待办",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "返回",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     },
-                    enabled = title.isNotBlank(),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
                     shape = MaterialTheme.shapes.large
                 ) {
-                    Text("创建任务")
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.RadioButtonUnchecked,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            OutlinedTextField(
+                                value = title,
+                                onValueChange = { title = it },
+                                label = { Text("任务标题") },
+                                modifier = Modifier.weight(1f),
+                                shape = MaterialTheme.shapes.medium,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent
+                                )
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    label = { Text("详细内容") },
+                    minLines = 3,
+                    maxLines = 6,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium
+                )
+
+                OutlinedTextField(
+                    value = location,
+                    onValueChange = { location = it },
+                    label = { Text("地点") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { showDatePicker = true },
+                        modifier = Modifier.weight(1f),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            if (selectedDate != null) {
+                                selectedDate!!.format(DateTimeFormatter.ofPattern("MM月dd日"))
+                            } else {
+                                "选择日期"
+                            }
+                        )
+                    }
+                    OutlinedButton(
+                        onClick = { showTimePicker = true },
+                        modifier = Modifier.weight(1f),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccessTime,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            if (selectedTime != null) {
+                                selectedTime!!.format(DateTimeFormatter.ofPattern("HH:mm"))
+                            } else {
+                                "选择时间"
+                            }
+                        )
+                    }
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        "重要程度",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        FilterChip(
+                            selected = selectedPriority == com.motut.mo.data.Priority.LOW,
+                            onClick = { selectedPriority = com.motut.mo.data.Priority.LOW },
+                            label = { Text("低") },
+                            modifier = Modifier.weight(1f),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        )
+                        FilterChip(
+                            selected = selectedPriority == com.motut.mo.data.Priority.MEDIUM,
+                            onClick = { selectedPriority = com.motut.mo.data.Priority.MEDIUM },
+                            label = { Text("中") },
+                            modifier = Modifier.weight(1f),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                        )
+                        FilterChip(
+                            selected = selectedPriority == com.motut.mo.data.Priority.HIGH,
+                            onClick = { selectedPriority = com.motut.mo.data.Priority.HIGH },
+                            label = { Text("高") },
+                            modifier = Modifier.weight(1f),
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        IconButton(onClick = { }) {
+                            Icon(
+                                imageVector = Icons.Default.Palette,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        IconButton(onClick = { }) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        TextButton(
+                            onClick = onDismiss
+                        ) {
+                            Text("取消", color = MaterialTheme.colorScheme.primary)
+                        }
+                        Button(
+                            onClick = {
+                                if (title.isNotBlank()) {
+                                    onConfirm(title, content, location, selectedDate, selectedTime, selectedPriority)
+                                }
+                            },
+                            enabled = title.isNotBlank(),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Text("完成")
+                        }
+                    }
                 }
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

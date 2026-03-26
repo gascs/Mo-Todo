@@ -65,6 +65,8 @@ app/
 │   │   ├── data/              # Data models
 │   │   ├── ui/                # UI components and screens
 │   │   ├── viewmodel/         # ViewModel layer
+│   │   ├── util/              # Utilities (performance optimization, animations, etc.)
+│   │   ├── notifications/     # Notification management
 │   │   └── MainActivity.kt    # Main Activity
 │   └── res/                   # Resource files
 ```

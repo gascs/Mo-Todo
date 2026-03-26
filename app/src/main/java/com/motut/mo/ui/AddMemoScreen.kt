@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.LabelOff
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -120,7 +122,7 @@ fun AddMemoScreen(
                         },
                         label = { Text("无分类") },
                         leadingIcon = {
-                            Icon(Icons.Default.LabelOff, contentDescription = null)
+                            Icon(Icons.AutoMirrored.Filled.LabelOff, contentDescription = null)
                         }
                     )
                     
@@ -151,214 +153,224 @@ fun AddMemoScreen(
         }
     }
 
-    ModalBottomSheet(
+    androidx.compose.ui.window.Dialog(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp
+        properties = androidx.compose.ui.window.DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .imePadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onDismiss) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "关闭",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                Text(
-                    "新建备忘录",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.size(48.dp))
-            }
-            
-            FilterChip(
-                selected = false,
-                onClick = { showCategoryPicker = true },
-                label = { 
-                    val catName = categories.find { it.id == selectedCategoryId }?.name ?: "无分类"
-                    Text(catName)
-                },
-                leadingIcon = {
-                    val catColor = categories.find { it.id == selectedCategoryId }?.color?.let { Color(it) } 
-                        ?: MaterialTheme.colorScheme.onSurfaceVariant
-                    Surface(
-                        modifier = Modifier.size(16.dp),
-                        color = catColor,
-                        shape = CircleShape
-                    ) {}
-                }
-            )
-            
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
-                shape = MaterialTheme.shapes.large
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Title,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        BasicTextField(
-                            value = title,
-                            onValueChange = { title = it },
-                            textStyle = TextStyle(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Medium
-                            ),
-                            modifier = Modifier.weight(1f),
-                            decorationBox = { innerTextField ->
-                                if (title.isEmpty()) {
-                                    Text(
-                                        "请输入标题",
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                        fontSize = 18.sp
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        )
-                    }
-                }
-            }
-
-            BasicTextField(
-                value = content,
-                onValueChange = { content = it },
-                textStyle = TextStyle(
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 17.sp,
-                    lineHeight = 28.sp
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 200.dp),
-                decorationBox = { innerTextField ->
-                    if (content.isEmpty()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { 
                         Text(
-                            "开始记录你的想法...",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                            fontSize = 17.sp
+                            "新建备忘录",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp
                         )
-                    }
-                    innerTextField()
-                }
-            )
-
-            if (attachments.isNotEmpty()) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        "附件",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                    attachments.forEach { attachment ->
-                        AttachmentItem(
-                            attachment = attachment,
-                            onRemove = {
-                                attachments = attachments - attachment
-                            }
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                IconButton(
-                    onClick = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
-                        }
-                        imagePickerLauncher.launch("image/*")
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Image,
-                        contentDescription = "添加图片",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-                IconButton(
-                    onClick = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
-                        }
-                        audioPickerLauncher.launch("audio/*")
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Mic,
-                        contentDescription = "添加语音",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-                IconButton(
-                    onClick = {
-                        filePickerLauncher.launch("*/*")
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AttachFile,
-                        contentDescription = "添加文件",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.padding(end = 8.dp)
-                ) {
-                    Text("取消", color = MaterialTheme.colorScheme.primary)
-                }
-                Button(
-                    onClick = {
-                        if (title.isNotBlank()) {
-                            onConfirm(title, content, selectedCategoryId, attachments)
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "返回",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     },
-                    enabled = title.isNotBlank(),
-                    shape = MaterialTheme.shapes.medium
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                FilterChip(
+                    selected = false,
+                    onClick = { showCategoryPicker = true },
+                    label = { 
+                        val catName = categories.find { it.id == selectedCategoryId }?.name ?: "无分类"
+                        Text(catName)
+                    },
+                    leadingIcon = {
+                        val catColor = categories.find { it.id == selectedCategoryId }?.color?.let { Color(it) } 
+                            ?: MaterialTheme.colorScheme.onSurfaceVariant
+                        Surface(
+                            modifier = Modifier.size(16.dp),
+                            color = catColor,
+                            shape = CircleShape
+                        ) {}
+                    }
+                )
+                
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f),
+                    shape = MaterialTheme.shapes.large
                 ) {
-                    Text("完成")
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Title,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            BasicTextField(
+                                value = title,
+                                onValueChange = { title = it },
+                                textStyle = TextStyle(
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                modifier = Modifier.weight(1f),
+                                decorationBox = { innerTextField ->
+                                    if (title.isEmpty()) {
+                                        Text(
+                                            "请输入标题",
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                            fontSize = 18.sp
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            )
+                        }
+                    }
+                }
+
+                BasicTextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    textStyle = TextStyle(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 17.sp,
+                        lineHeight = 28.sp
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 200.dp),
+                    decorationBox = { innerTextField ->
+                        if (content.isEmpty()) {
+                            Text(
+                                "开始记录你的想法...",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                fontSize = 17.sp
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+
+                if (attachments.isNotEmpty()) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            "附件",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        attachments.forEach { attachment ->
+                            AttachmentItem(
+                                attachment = attachment,
+                                onRemove = {
+                                    attachments = attachments - attachment
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    IconButton(
+                        onClick = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
+                            }
+                            imagePickerLauncher.launch("image/*")
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Image,
+                            contentDescription = "添加图片",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                requestPermissionLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
+                            }
+                            audioPickerLauncher.launch("audio/*")
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Mic,
+                            contentDescription = "添加语音",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            filePickerLauncher.launch("*/*")
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AttachFile,
+                            contentDescription = "添加文件",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Text("取消", color = MaterialTheme.colorScheme.primary)
+                    }
+                    Button(
+                        onClick = {
+                            if (title.isNotBlank()) {
+                                onConfirm(title, content, selectedCategoryId, attachments)
+                            }
+                        },
+                        enabled = title.isNotBlank(),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text("完成")
+                    }
                 }
             }
         }
