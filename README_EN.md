@@ -15,6 +15,36 @@ Mo is a task management tool focused on simplicity and practicality, helping you
 - 📅 Calendar view
 - 🎨 Material Design 3 interface
 - ⚡ Smooth user experience
+- 🔍 Smart search
+- 📁 Attachment management (images, audio, files)
+- 🏷️ Category and tag management
+- 🔔 Reminders and notifications
+  - Customizable reminder time
+  - Supports 5/10/15/30/60 minutes early reminders
+- 📊 Priority settings
+- 🔒 App lock
+  - Biometric authentication (fingerprint/face)
+  - Authentication on app launch
+- 🌓 Dark/Light theme
+  - Follow system theme
+  - Custom theme colors
+  - Support for background images
+- 📤 Data sync and backup
+  - Local data backup
+  - Data import/export
+  - Custom sync source support
+- 📢 Remote announcement feature
+  - Auto fetch announcements from server
+  - Announcement display toggle
+- 🎯 Performance optimization algorithms
+  - Debounce and throttle handling
+  - LRU cache strategy
+  - Lazy loading mechanism
+  - Batch update optimization
+  - Smooth animation transitions
+- 🚀 120Hz high refresh rate support
+  - Hardware accelerated rendering
+  - Minimal post-processing optimization
 
 ## Tech Stack
 

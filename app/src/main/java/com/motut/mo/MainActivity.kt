@@ -9,15 +9,14 @@ import androidx.fragment.app.FragmentActivity
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
@@ -33,7 +32,6 @@ import com.motut.mo.util.AnimationUtils
 import com.motut.mo.util.Announcement
 import com.motut.mo.util.AnnouncementFetcher
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MainActivity : FragmentActivity() {
@@ -220,23 +218,25 @@ class MainActivity : FragmentActivity() {
                         }
                     }
                     
-                    if (showAnnouncementDialog && announcement != null) {
-                        androidx.compose.material3.AlertDialog(
-                            onDismissRequest = { showAnnouncementDialog = false },
-                            title = {
-                                if (announcement?.title?.isNotEmpty() == true) {
-                                    Text(announcement!!.title)
+                    announcement?.let { safeAnnouncement ->
+                        if (showAnnouncementDialog) {
+                            androidx.compose.material3.AlertDialog(
+                                onDismissRequest = { showAnnouncementDialog = false },
+                                title = {
+                                    if (safeAnnouncement.title.isNotEmpty()) {
+                                        Text(safeAnnouncement.title)
+                                    }
+                                },
+                                text = {
+                                    Text(safeAnnouncement.content)
+                                },
+                                confirmButton = {
+                                    TextButton(onClick = { showAnnouncementDialog = false }) {
+                                        Text("确定")
+                                    }
                                 }
-                            },
-                            text = {
-                                Text(announcement!!.content)
-                            },
-                            confirmButton = {
-                                androidx.compose.material3.TextButton(onClick = { showAnnouncementDialog = false }) {
-                                    Text("确定")
-                                }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
