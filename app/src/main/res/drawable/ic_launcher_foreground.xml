@@ -6,7 +6,7 @@
     
     <path
         android:strokeColor="#B3E5FC"
-        android:strokeWidth="6"
+        android:strokeWidth="3"
         android:fillColor="#00000000"
         android:pathData="M27,34 
 C25,33 24,36 26,37 
@@ -30,7 +30,7 @@ Z" />
     
     <path
         android:strokeColor="#B3E5FC"
-        android:strokeWidth="6"
+        android:strokeWidth="3"
         android:fillColor="#00000000"
         android:pathData="M28,35 
 C26,34 25,36 27,38 
@@ -54,7 +54,7 @@ Z" />
     
     <path
         android:strokeColor="#B3E5FC"
-        android:strokeWidth="6"
+        android:strokeWidth="3"
         android:fillColor="#00000000"
         android:pathData="M29,36 
 C27,35 26,37 28,39 
@@ -78,7 +78,7 @@ Z" />
     
     <path
         android:strokeColor="#B3E5FC"
-        android:strokeWidth="6"
+        android:strokeWidth="3"
         android:fillColor="#00000000"
         android:pathData="M61,41 
 C58,37 64,35 69,37 
@@ -97,7 +97,7 @@ Z" />
     
     <path
         android:strokeColor="#B3E5FC"
-        android:strokeWidth="6"
+        android:strokeWidth="3"
         android:fillColor="#00000000"
         android:pathData="M62,42 
 C59,38 65,36 70,38 
@@ -116,7 +116,7 @@ Z" />
     
     <path
         android:strokeColor="#B3E5FC"
-        android:strokeWidth="6"
+        android:strokeWidth="3"
         android:fillColor="#00000000"
         android:pathData="M63,43 
 C60,39 66,37 71,39 

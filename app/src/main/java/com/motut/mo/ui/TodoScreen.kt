@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,14 +24,21 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+private val dateFormatter by lazy { DateTimeFormatter.ofPattern("yyyy-MM-dd") }
+private val timeFormatter by lazy { DateTimeFormatter.ofPattern("HH:mm") }
+
 @Composable
 fun TodoScreen(
     viewModel: AppViewModel = viewModel()
 ) {
     val todos by viewModel.todos.collectAsState()
 
-    val pendingTodos = todos.filter { !it.isCompleted }
-    val completedTodos = todos.filter { it.isCompleted }
+    val pendingTodos by remember(todos) {
+        derivedStateOf { todos.filter { !it.isCompleted } }
+    }
+    val completedTodos by remember(todos) {
+        derivedStateOf { todos.filter { it.isCompleted } }
+    }
 
     if (todos.isEmpty()) {
         Box(
@@ -111,9 +119,6 @@ fun TodoItem(
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val dateFormatter = remember { DateTimeFormatter.ofPattern("yyyy-MM-dd") }
-    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
-
     val priorityColor = when (todo.priority) {
         Priority.HIGH -> MaterialTheme.colorScheme.error
         Priority.MEDIUM -> MaterialTheme.colorScheme.tertiary
