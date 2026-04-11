@@ -145,4 +145,124 @@ class DataBackupManager(private val context: Context) {
             updatedAt = LocalDateTime.parse(backup.updatedAt)
         )
     }
+
+    /**
+     * 导出备忘录为CSV格式
+     */
+    fun exportMemosToCsv(memos: List<Memo>, uri: Uri): Result<Unit> {
+        return try {
+            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                BufferedWriter(OutputStreamWriter(outputStream, Charsets.UTF_8)).use { writer ->
+                    // CSV表头
+                    writer.write("ID,标题,内容,分类ID,是否置顶,创建时间,更新时间")
+                    writer.newLine()
+                    
+                    // 写入数据
+                    memos.forEach { memo ->
+                        writer.write(buildCsvLine(
+                            memo.id.toString(),
+                            memo.title,
+                            memo.content,
+                            memo.categoryId?.toString() ?: "",
+                            if (memo.isPinned) "是" else "否",
+                            memo.createdAt.toString(),
+                            memo.updatedAt.toString()
+                        ))
+                        writer.newLine()
+                    }
+                }
+            } ?: throw Exception("无法打开输出流")
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 导出任其为CSV格式
+     */
+    fun exportTodosToCsv(todos: List<Todo>, uri: Uri): Result<Unit> {
+        return try {
+            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                BufferedWriter(OutputStreamWriter(outputStream, Charsets.UTF_8)).use { writer ->
+                    // CSV表头
+                    writer.write("ID,标题,内容,地点,日期,时间,优先级,是否完成,创建时间,更新时间")
+                    writer.newLine()
+                    
+                    // 写入数据
+                    todos.forEach { todo ->
+                        writer.write(buildCsvLine(
+                            todo.id.toString(),
+                            todo.title,
+                            todo.content,
+                            todo.location,
+                            todo.date?.toString() ?: "",
+                            todo.time?.toString() ?: "",
+                            getPriorityText(todo.priority),
+                            if (todo.isCompleted) "是" else "否",
+                            todo.createdAt.toString(),
+                            todo.updatedAt.toString()
+                        ))
+                        writer.newLine()
+                    }
+                }
+            } ?: throw Exception("无法打开输出流")
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 获取统计数据摘要
+     */
+    fun getStatistics(memos: List<Memo>, todos: List<Todo>): String {
+        val completedTodos = todos.count { it.isCompleted }
+        val highPriorityTodos = todos.count { it.priority == Priority.HIGH && !it.isCompleted }
+        val todayTodos = todos.count { it.date == LocalDate.now() && !it.isCompleted }
+        val overdueTodos = todos.count { 
+            it.date?.isBefore(LocalDate.now()) == true && !it.isCompleted 
+        }
+        val pinnedMemos = memos.count { it.isPinned }
+        
+        return buildString {
+            appendLine("📊 Mo数据统计")
+            appendLine("================")
+            appendLine()
+            appendLine("📝 备忘录:")
+            appendLine("  - 总数: ${memos.size}")
+            appendLine("  - 置顶: $pinnedMemos")
+            appendLine()
+            appendLine("✅ 待办事项:")
+            appendLine("  - 总数: ${todos.size}")
+            appendLine("  - 已完成: $completedTodos")
+            appendLine("  - 未完成: ${todos.size - completedTodos}")
+            appendLine("  - 今日待办: $todayTodos")
+            appendLine("  - 已过期: $overdueTodos")
+            appendLine("  - 高优先级: $highPriorityTodos")
+            appendLine()
+            appendLine("📅 导出时间: ${LocalDateTime.now()}")
+        }
+    }
+
+    private fun getPriorityText(priority: Priority): String {
+        return when (priority) {
+            Priority.HIGH -> "高"
+            Priority.MEDIUM -> "中"
+            Priority.LOW -> "低"
+        }
+    }
+
+    private fun buildCsvLine(vararg fields: String): String {
+        return fields.joinToString(",") { field ->
+            // 如果包含逗号、引号或换行符，需要用引号包裹并转义内部引号
+            if (field.contains(",") || field.contains("\"") || field.contains("\n")) {
+                "\"${field.replace("\"", "\"\"")}\""
+            } else {
+                field
+            }
+        }
+    }
 }

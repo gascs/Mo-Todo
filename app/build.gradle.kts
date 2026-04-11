@@ -16,16 +16,23 @@ android {
         applicationId = "com.motut.mo"
         minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // 支持向量图形
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            // 启用代码签名（发布前需要配置签名密钥）
+            // isSigningFallbackDebuggable = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -33,14 +40,31 @@ android {
         }
         debug {
             isMinifyEnabled = false
+            isDebuggable = true
         }
     }
+    
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    
     buildFeatures {
         compose = true
+        // 启用BuildConfig生成
+        buildConfig = true
+    }
+    
+    // Compose编译器配置
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+    
+    // 打包选项
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 

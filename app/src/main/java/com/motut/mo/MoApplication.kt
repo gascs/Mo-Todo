@@ -19,7 +19,7 @@ class MoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        databaseHelper = AppDatabaseHelper(this)
+        databaseHelper = AppDatabaseHelper.getInstance(this)
         userPreferences = UserPreferences(this)
         dataBackupManager = DataBackupManager(this)
     }

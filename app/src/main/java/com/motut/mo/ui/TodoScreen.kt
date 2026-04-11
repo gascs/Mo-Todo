@@ -1,20 +1,28 @@
 package com.motut.mo.ui
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.motut.mo.data.Priority
@@ -24,89 +32,588 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-private val dateFormatter by lazy { DateTimeFormatter.ofPattern("yyyy-MM-dd") }
+private val dateFormatter by lazy { DateTimeFormatter.ofPattern("MM-dd") }
 private val timeFormatter by lazy { DateTimeFormatter.ofPattern("HH:mm") }
 
+// 排序选项枚举
+enum class TodoSortOption(val title: String) {
+    DEFAULT("默认"),
+    PRIORITY_HIGH("优先级高优先"),
+    PRIORITY_LOW("优先级低优先"),
+    DATE_NEAR("日期近优先"),
+    DATE_FAR("日期远优先")
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoScreen(
     viewModel: AppViewModel = viewModel()
 ) {
     val todos by viewModel.todos.collectAsState()
 
-    val pendingTodos by remember(todos) {
-        derivedStateOf { todos.filter { !it.isCompleted } }
-    }
-    val completedTodos by remember(todos) {
-        derivedStateOf { todos.filter { it.isCompleted } }
+    // 批量选择状态
+    var isSelectionMode by remember { mutableStateOf(false) }
+    var selectedTodoIds by remember { mutableStateOf(setOf<Long>()) }
+
+    // 排序状态
+    var sortOption by remember { mutableStateOf(TodoSortOption.DEFAULT) }
+    var showSortMenu by remember { mutableStateOf(false) }
+
+    // 下拉刷新状态
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    // 排序后的任务列表
+    val sortedTodos by remember(todos, sortOption) {
+        derivedStateOf {
+            when (sortOption) {
+                TodoSortOption.DEFAULT -> todos.sortedByDescending { it.createdAt }
+                TodoSortOption.PRIORITY_HIGH -> todos.sortedBy { it.priority.ordinal }
+                TodoSortOption.PRIORITY_LOW -> todos.sortedByDescending { it.priority.ordinal }
+                TodoSortOption.DATE_NEAR -> todos.sortedBy { it.date ?: LocalDate.MAX }
+                TodoSortOption.DATE_FAR -> todos.sortedByDescending { it.date ?: LocalDate.MIN }
+            }
+        }
     }
 
-    if (todos.isEmpty()) {
+    val pendingTodos by remember(sortedTodos) {
+        derivedStateOf { sortedTodos.filter { !it.isCompleted } }
+    }
+    val completedTodos by remember(sortedTodos) {
+        derivedStateOf { sortedTodos.filter { it.isCompleted } }
+    }
+
+    // 刷新模拟
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            kotlinx.coroutines.delay(800)
+            isRefreshing = false
+        }
+    }
+
+    // 批量删除选中任务
+    val deleteSelectedTodos = {
+        selectedTodoIds.forEach { id ->
+            viewModel.deleteTodo(id)
+        }
+        selectedTodoIds = emptySet()
+        isSelectionMode = false
+    }
+
+    // 批量标记完成
+    val completeSelectedTodos = {
+        selectedTodoIds.forEach { id ->
+            viewModel.toggleTodoCompletion(id)
+        }
+        selectedTodoIds = emptySet()
+        isSelectionMode = false
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // 批量操作栏
+        if (isSelectionMode) {
+            Surface(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        IconButton(onClick = {
+                            isSelectionMode = false
+                            selectedTodoIds = emptySet()
+                        }) {
+                            Icon(Icons.Default.Close, "取消")
+                        }
+                        Text(
+                            "已选择 ${selectedTodoIds.size} 项",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        IconButton(onClick = completeSelectedTodos) {
+                            Icon(Icons.Default.CheckCircle, "完成")
+                        }
+                        IconButton(onClick = deleteSelectedTodos) {
+                            Icon(Icons.Default.Delete, "删除", tint = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+            }
+        }
+
+        // 排序选项栏
+        if (!isSelectionMode && todos.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "共 ${todos.size} 个任务",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Box {
+                    TextButton(onClick = { showSortMenu = true }) {
+                        Icon(Icons.Default.Sort, null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text(sortOption.title)
+                    }
+                    DropdownMenu(
+                        expanded = showSortMenu,
+                        onDismissRequest = { showSortMenu = false }
+                    ) {
+                        TodoSortOption.entries.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option.title) },
+                                onClick = {
+                                    sortOption = option
+                                    showSortMenu = false
+                                },
+                                leadingIcon = {
+                                    if (sortOption == option) {
+                                        Icon(Icons.Default.Check, null, tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        if (sortedTodos.isEmpty()) {
+            EmptyTodoState()
+        } else {
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { isRefreshing = true },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (pendingTodos.isNotEmpty()) {
+                        item {
+                            SectionHeader(
+                                title = "待完成",
+                                count = pendingTodos.size,
+                                accentColor = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        items(pendingTodos, key = { it.id }) { todo ->
+                            SwipeableTodoItem(
+                                todo = todo,
+                                isSelected = selectedTodoIds.contains(todo.id),
+                                isSelectionMode = isSelectionMode,
+                                onToggle = { viewModel.toggleTodoCompletion(todo.id) },
+                                onDelete = { viewModel.deleteTodo(todo.id) },
+                                onToggleSelect = {
+                                    selectedTodoIds = if (selectedTodoIds.contains(todo.id)) {
+                                        selectedTodoIds - todo.id
+                                    } else {
+                                        selectedTodoIds + todo.id
+                                    }
+                                    if (selectedTodoIds.isEmpty()) {
+                                        isSelectionMode = false
+                                    }
+                                },
+                                onLongPress = {
+                                    if (!isSelectionMode) {
+                                        isSelectionMode = true
+                                        selectedTodoIds = setOf(todo.id)
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    if (completedTodos.isNotEmpty()) {
+                        item {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            SectionHeader(
+                                title = "已完成",
+                                count = completedTodos.size,
+                                accentColor = MaterialTheme.colorScheme.outline
+                            )
+                        }
+                        items(
+                            completedTodos.take(5),
+                            key = { it.id }
+                        ) { todo ->
+                            SwipeableTodoItem(
+                                todo = todo,
+                                isSelected = selectedTodoIds.contains(todo.id),
+                                isSelectionMode = isSelectionMode,
+                                onToggle = { viewModel.toggleTodoCompletion(todo.id) },
+                                onDelete = { viewModel.deleteTodo(todo.id) },
+                                onToggleSelect = {
+                                    selectedTodoIds = if (selectedTodoIds.contains(todo.id)) {
+                                        selectedTodoIds - todo.id
+                                    } else {
+                                        selectedTodoIds + todo.id
+                                    }
+                                    if (selectedTodoIds.isEmpty()) {
+                                        isSelectionMode = false
+                                    }
+                                },
+                                onLongPress = {
+                                    if (!isSelectionMode) {
+                                        isSelectionMode = true
+                                        selectedTodoIds = setOf(todo.id)
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeableTodoItem(
+    todo: Todo,
+    isSelected: Boolean,
+    isSelectionMode: Boolean,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit,
+    onToggleSelect: () -> Unit,
+    onLongPress: () -> Unit
+) {
+    var isSwipeOpen by remember { mutableStateOf(false) }
+
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { dismissValue ->
+            when (dismissValue) {
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onDelete()
+                    true
+                }
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    onToggle()
+                    true
+                }
+                else -> false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            val direction = dismissState.dismissDirection
+            val color by animateColorAsState(
+                when (direction) {
+                    SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.errorContainer
+                    SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primaryContainer
+                    else -> Color.Transparent
+                },
+                label = "swipeColor"
+            )
+            val alignment = when (direction) {
+                SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                else -> Alignment.Center
+            }
+            val icon = when (direction) {
+                SwipeToDismissBoxValue.EndToStart -> Icons.Default.Delete
+                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Check
+                else -> null
+            }
+
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(color, MaterialTheme.shapes.medium)
+                    .padding(horizontal = 20.dp),
+                contentAlignment = alignment
+            ) {
+                icon?.let {
+                    Icon(
+                        it,
+                        contentDescription = null,
+                        tint = when (direction) {
+                            SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.onErrorContainer
+                            else -> MaterialTheme.colorScheme.onPrimaryContainer
+                        }
+                    )
+                }
+            }
+        },
+        content = {
+            TodoItem(
+                todo = todo,
+                isSelected = isSelected,
+                isSelectionMode = isSelectionMode,
+                onToggle = onToggle,
+                onDelete = onDelete,
+                onToggleSelect = onToggleSelect,
+                onLongPress = onLongPress
+            )
+        },
+        enableDismissFromStartToEnd = !todo.isCompleted,
+        enableDismissFromEndToStart = true
+    )
+}
+
+@Composable
+private fun SectionHeader(
+    title: String,
+    count: Int,
+    accentColor: Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier
+                .size(4.dp, 16.dp)
+                .background(accentColor, CircleShape)
+        )
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Surface(
+            color = accentColor.copy(alpha = 0.15f),
+            shape = CircleShape
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Text(
+                text = count.toString(),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = accentColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyTodoState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Surface(
+                modifier = Modifier.size(80.dp),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                shape = CircleShape
             ) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .size(40.dp),
+                    tint = MaterialTheme.colorScheme.primary
                 )
+            }
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     "暂无待办事项",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     "点击右下角按钮添加新待办",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
-    } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TodoItem(
+    todo: Todo,
+    isSelected: Boolean,
+    isSelectionMode: Boolean,
+    onToggle: () -> Unit,
+    onDelete: () -> Unit,
+    onToggleSelect: () -> Unit,
+    onLongPress: () -> Unit
+) {
+    val priorityColor = when (todo.priority) {
+        Priority.HIGH -> MaterialTheme.colorScheme.error
+        Priority.MEDIUM -> Color(0xFFF59E0B)
+        Priority.LOW -> Color(0xFF10B981)
+    }
+
+    val backgroundColor by animateColorAsState(
+        targetValue = when {
+            isSelected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            todo.isCompleted -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            todo.priority == Priority.HIGH -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.15f)
+            else -> MaterialTheme.colorScheme.surface
+        },
+        label = "bgColor"
+    )
+
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 0.98f else 1f,
+        label = "scale"
+    )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scale)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = { onLongPress() },
+                    onTap = {
+                        if (isSelectionMode) {
+                            onToggleSelect()
+                        }
+                    }
+                )
+            },
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (pendingTodos.isNotEmpty()) {
-                item {
+            if (isSelectionMode) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onToggleSelect() }
+                )
+            } else {
+                Checkbox(
+                    checked = todo.isCompleted,
+                    onCheckedChange = { onToggle() },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = todo.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                    color = if (todo.isCompleted)
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    else
+                        MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                if (todo.content.isNotBlank() && !todo.isCompleted) {
                     Text(
-                        text = "待完成 (${pendingTodos.size})",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = todo.content,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-                items(pendingTodos, key = { it.id }) { todo ->
-                    TodoItem(
-                        todo = todo,
-                        onToggle = { viewModel.toggleTodoCompletion(todo.id) },
-                        onDelete = { viewModel.deleteTodo(todo.id) }
-                    )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (todo.date != null) {
+                        MetaTag(
+                            icon = Icons.Default.CalendarToday,
+                            text = todo.date.format(dateFormatter),
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    if (todo.time != null) {
+                        MetaTag(
+                            icon = Icons.Default.AccessTime,
+                            text = todo.time.format(timeFormatter),
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    if (todo.location.isNotBlank()) {
+                        MetaTag(
+                            icon = Icons.Default.LocationOn,
+                            text = todo.location,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 
-            if (completedTodos.isNotEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Surface(
+                    color = priorityColor.copy(alpha = 0.15f),
+                    shape = MaterialTheme.shapes.small
+                ) {
                     Text(
-                        text = "已完成 (${completedTodos.size})",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = when (todo.priority) {
+                            Priority.HIGH -> "高"
+                            Priority.MEDIUM -> "中"
+                            Priority.LOW -> "低"
+                        },
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = priorityColor
                     )
                 }
-                items(completedTodos, key = { it.id }) { todo ->
-                    TodoItem(
-                        todo = todo,
-                        onToggle = { viewModel.toggleTodoCompletion(todo.id) },
-                        onDelete = { viewModel.deleteTodo(todo.id) }
-                    )
+
+                if (!isSelectionMode) {
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.DeleteOutline,
+                            contentDescription = "删除",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         }
@@ -114,191 +621,26 @@ fun TodoScreen(
 }
 
 @Composable
-fun TodoItem(
-    todo: Todo,
-    onToggle: () -> Unit,
-    onDelete: () -> Unit
+private fun MetaTag(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+    color: Color
 ) {
-    val priorityColor = when (todo.priority) {
-        Priority.HIGH -> MaterialTheme.colorScheme.error
-        Priority.MEDIUM -> MaterialTheme.colorScheme.tertiary
-        Priority.LOW -> MaterialTheme.colorScheme.secondary
-    }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (todo.priority == Priority.HIGH && !todo.isCompleted)
-                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
-            else
-                MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Checkbox(
-                        checked = todo.isCompleted,
-                        onCheckedChange = { onToggle() },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Text(
-                            text = todo.title,
-                            style = MaterialTheme.typography.bodyLarge,
-                            textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                            color = if (todo.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
-                        )
-                        if (todo.content.isNotBlank()) {
-                            Text(
-                                text = todo.content,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 2
-                            )
-                        }
-                    }
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "删除",
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (todo.date != null) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            shape = MaterialTheme.shapes.small
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.CalendarToday,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp),
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                                Text(
-                                    text = todo.date.format(dateFormatter),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-                        }
-                    }
-                    if (todo.time != null) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
-                            shape = MaterialTheme.shapes.small
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AccessTime,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp),
-                                    tint = MaterialTheme.colorScheme.onTertiaryContainer
-                                )
-                                Text(
-                                    text = todo.time.format(timeFormatter),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                                )
-                            }
-                        }
-                    }
-                    if (todo.location.isNotBlank()) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = MaterialTheme.shapes.small
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.LocationOn,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp),
-                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                                Text(
-                                    text = todo.location,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Surface(
-                    color = priorityColor.copy(alpha = if (todo.priority == Priority.HIGH) 1f else 0.2f),
-                    shape = MaterialTheme.shapes.small
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = if (todo.priority == Priority.HIGH) Icons.Default.Warning
-                            else if (todo.priority == Priority.MEDIUM) Icons.Default.Star
-                            else Icons.Default.StarOutline,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = if (todo.priority == Priority.HIGH) MaterialTheme.colorScheme.onError else priorityColor
-                        )
-                        Text(
-                            text = when (todo.priority) {
-                                Priority.HIGH -> "高"
-                                Priority.MEDIUM -> "中"
-                                Priority.LOW -> "低"
-                            },
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                            color = if (todo.priority == Priority.HIGH) MaterialTheme.colorScheme.onError else priorityColor
-                        )
-                    }
-                }
-            }
-        }
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(12.dp),
+            tint = color
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = color
+        )
     }
 }
 
