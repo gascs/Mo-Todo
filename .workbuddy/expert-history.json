@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "sessions": {
+    "b35c14eac88b43d988f0f5af77e6f0b8": [
+      {
+        "expertId": "MobileApplicationDeveloper",
+        "name": "Tina",
+        "profession": "移动应用开发工程师",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/02-Engineering/MobileApplicationDeveloper/MobileApplicationDeveloper.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/02-Engineering/MobileApplicationDeveloper/MobileApplicationDeveloper_zh.md",
+        "usedAt": 1775899339715,
+        "industryId": "02-Engineering"
+      }
+    ]
+  },
+  "lastUpdated": 1775900910748
+}
