@@ -22,13 +22,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -44,20 +43,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mo.todo.data.model.Memo
+import com.mo.todo.ui.theme.MemoChipColors
 import com.mo.todo.ui.viewmodel.MemoViewModel
-
-val memoColorOptions = listOf(
-    Color(0xFFA5D6A7),
-    Color(0xFFFFCC80),
-    Color(0xFF90CAF9),
-    Color(0xFFF48FB1),
-    Color(0xFFCE93D8),
-    Color(0xFFFFF9C4),
-    Color(0xFFD7CCC8)
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +61,7 @@ fun AddEditMemoScreen(
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
     var selectedTag by remember { mutableStateOf("note") }
-    var selectedColor by remember { mutableStateOf(memoColorOptions.first().toArgb()) }
+    var selectedColor by remember { mutableStateOf(MemoChipColors.first().toArgb()) }
 
     val isEditing = memoId != null
 
@@ -92,7 +83,8 @@ fun AddEditMemoScreen(
                 title = {
                     Text(
                         text = if (isEditing) "编辑备忘录" else "新建备忘录",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
@@ -104,146 +96,158 @@ fun AddEditMemoScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = "标题",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("输入备忘录标题...") },
-                singleLine = true
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = MaterialTheme.shapes.small
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
                 text = "内容",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             OutlinedTextField(
                 value = content,
                 onValueChange = { content = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
+                    .height(180.dp),
                 placeholder = { Text("开始记录...") },
-                maxLines = 10
+                maxLines = 10,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = MaterialTheme.shapes.small
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Format toolbar placeholder
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                repeat(4) { i ->
-                    val icons = listOf("B", "I", "U", "≡")
+                listOf("B", "I", "U", "≡").forEach { label ->
                     Box(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .clickable { },
                         contentAlignment = androidx.compose.ui.Alignment.Center
                     ) {
                         Text(
-                            text = icons[i],
+                            text = label,
                             style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
                 text = "颜色标签",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                memoColorOptions.forEach { color ->
+                MemoChipColors.forEach { color ->
+                    val isSelected = selectedColor == color.toArgb()
                     Box(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
                             .background(color)
-                            .clickable { selectedColor = color.toArgb() }
-                            .then(
-                                if (selectedColor == color.toArgb()) {
-                                    Modifier.padding(0.dp)
-                                } else {
-                                    Modifier
-                                }
-                            ),
+                            .clickable { selectedColor = color.toArgb() },
                         contentAlignment = androidx.compose.ui.Alignment.Center
                     ) {
-                        if (selectedColor == color.toArgb()) {
+                        if (isSelected) {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(10.dp)
                                     .clip(CircleShape)
-                                    .background(Color.Transparent)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(10.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.White)
-                                        .align(androidx.compose.ui.Alignment.Center)
-                                )
-                            }
+                                    .background(Color.White)
+                            )
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
                 text = "分类",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                memoTags.filter { it.first != "all" }.forEach { (key, label) ->
-                    FilterChip(
-                        selected = selectedTag == key,
-                        onClick = { selectedTag = key },
-                        label = { Text(label) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
+                memoTags.filter { it.key != "all" }.forEach { tag ->
+                    val isSelected = selectedTag == tag.key
+                    Box(
+                        modifier = Modifier
+                            .clip(MaterialTheme.shapes.small)
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .then(Modifier.clickable { selectedTag = tag.key })
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = tag.label,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.onPrimary
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                         )
-                    )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -251,7 +255,8 @@ fun AddEditMemoScreen(
             ) {
                 OutlinedButton(
                     onClick = onNavigateBack,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.small
                 ) {
                     Text("取消")
                 }
@@ -279,11 +284,14 @@ fun AddEditMemoScreen(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
-                    )
+                    ),
+                    shape = MaterialTheme.shapes.small
                 ) {
                     Text("保存")
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

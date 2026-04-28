@@ -1,47 +1,39 @@
 package com.mo.todo.ui.screen.memo
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ViewList
-import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.outlined.NoteAdd
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,22 +47,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.mo.todo.data.model.Memo
+import com.mo.todo.ui.component.EmptyPlaceholder
+import com.mo.todo.ui.component.MemoGridCard
+import com.mo.todo.ui.component.MemoListItem
+import com.mo.todo.ui.component.TagChipRow
 import com.mo.todo.ui.viewmodel.MemoViewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
+data class MemoTagItem(val key: String, val label: String)
 
 val memoTags = listOf(
-    "all" to "全部",
-    "note" to "便签",
-    "reading" to "阅读笔记",
-    "project" to "项目"
+    MemoTagItem("all", "全部"),
+    MemoTagItem("note", "便签"),
+    MemoTagItem("reading", "阅读笔记"),
+    MemoTagItem("project", "项目")
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,16 +83,14 @@ fun MemoScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Mo \u00b7 备忘",
-                        style = MaterialTheme.typography.titleLarge
+                        text = "Mo · 备忘",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 actions = {
                     IconButton(onClick = { viewModel.setSearchActive(!isSearchActive) }) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "搜索"
-                        )
+                        Icon(imageVector = Icons.Filled.Search, contentDescription = "搜索")
                     }
                     IconButton(onClick = { viewModel.toggleViewMode() }) {
                         Icon(
@@ -110,10 +100,7 @@ fun MemoScreen(
                     }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = "更多"
-                            )
+                            Icon(imageVector = Icons.Filled.MoreVert, contentDescription = "更多")
                         }
                         DropdownMenu(
                             expanded = showMenu,
@@ -131,29 +118,36 @@ fun MemoScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onNavigateToAddEdit(null) },
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "新建备忘录"
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = MaterialTheme.shapes.extraLarge,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 4.dp,
+                    pressedElevation = 8.dp
                 )
+            ) {
+                Icon(imageVector = Icons.Filled.Add, contentDescription = "新建备忘录")
             }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (isSearchActive) {
+            AnimatedVisibility(
+                visible = isSearchActive,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.setSearchQuery(it) },
@@ -166,43 +160,29 @@ fun MemoScreen(
                         TextButton(onClick = { viewModel.setSearchActive(false) }) {
                             Text("取消")
                         }
-                    }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                    ),
+                    shape = MaterialTheme.shapes.small
                 )
             }
 
-            // Tag chips
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(memoTags) { (key, label) ->
-                    FilterChip(
-                        selected = selectedTag == key,
-                        onClick = { viewModel.setSelectedTag(key) },
-                        label = { Text(label) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    )
-                }
-            }
+            TagChipRow(
+                items = memoTags,
+                selectedKey = selectedTag,
+                keySelector = { it.key },
+                labelSelector = { it.label },
+                onItemClick = { viewModel.setSelectedTag(it) }
+            )
 
             if (memos.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "还没有备忘录，快来记录吧",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                EmptyPlaceholder(
+                    icon = Icons.Outlined.NoteAdd,
+                    title = "还没有备忘录",
+                    subtitle = "点击下方 + 记录灵感吧"
+                )
             } else if (isGridView) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -236,174 +216,6 @@ fun MemoScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun MemoGridCard(
-    memo: Memo,
-    onClick: () -> Unit,
-    onToggleStar: () -> Unit
-) {
-    val tagLabel = memoTags.find { it.first == memo.tag }?.second ?: memo.tag
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
-        ) {
-            // Image placeholder
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        memo.color?.let { Color(it) }
-                            ?: MaterialTheme.colorScheme.primaryContainer
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "📝",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = memo.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                Icon(
-                    imageVector = if (memo.isStarred) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                    contentDescription = "星标",
-                    modifier = Modifier
-                        .size(18.dp)
-                        .clickable { onToggleStar() },
-                    tint = if (memo.isStarred) Color(0xFFF0C040) else MaterialTheme.colorScheme.outline
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            if (memo.content.isNotBlank()) {
-                Text(
-                    text = memo.content,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val dateFormat = remember { SimpleDateFormat("M月d日", Locale.getDefault()) }
-                Text(
-                    text = dateFormat.format(Date(memo.createdAt)),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline
-                )
-                Text(
-                    text = tagLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun MemoListItem(
-    memo: Memo,
-    onClick: () -> Unit,
-    onToggleStar: () -> Unit
-) {
-    val tagLabel = memoTags.find { it.first == memo.tag }?.second ?: memo.tag
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(
-                        memo.color?.let { Color(it) }
-                            ?: MaterialTheme.colorScheme.primaryContainer
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "📝",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = memo.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = memo.content.ifBlank { "空内容" },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Icon(
-                imageVector = if (memo.isStarred) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                contentDescription = "星标",
-                modifier = Modifier
-                    .size(20.dp)
-                    .clickable { onToggleStar() },
-                tint = if (memo.isStarred) Color(0xFFF0C040) else MaterialTheme.colorScheme.outline
-            )
         }
     }
 }

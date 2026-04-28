@@ -18,38 +18,34 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.BrightnessHigh
-import androidx.compose.material.icons.filled.BrightnessLow
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Label
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.SaveAlt
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mo.todo.ui.theme.MoPrimary
 import com.mo.todo.ui.viewmodel.SettingsViewModel
 import com.mo.todo.ui.viewmodel.ThemeMode
 import kotlinx.coroutines.launch
@@ -61,7 +57,6 @@ fun ProfileScreen(
 ) {
     val themeMode by viewModel.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
     val scope = rememberCoroutineScope()
-    var showThemeDialog by remember { mutableStateOf(false) }
 
     val themeLabel = when (themeMode) {
         ThemeMode.SYSTEM -> "跟随系统"
@@ -69,20 +64,28 @@ fun ProfileScreen(
         ThemeMode.DARK -> "深色"
     }
 
+    val themeIcon = when (themeMode) {
+        ThemeMode.SYSTEM -> Icons.Filled.SettingsBrightness
+        ThemeMode.LIGHT -> Icons.Filled.LightMode
+        ThemeMode.DARK -> Icons.Filled.DarkMode
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Mo \u00b7 我的",
-                        style = MaterialTheme.typography.titleLarge
+                        text = "Mo · 我的",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -90,37 +93,34 @@ fun ProfileScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Profile header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
+                    .padding(24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(60.dp)
+                        .size(64.dp)
                         .clip(CircleShape)
-                        .background(
-                            Color(0xFF7CA88B)
-                        ),
+                        .background(MoPrimary),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "M",
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 }
-
                 Spacer(modifier = Modifier.width(16.dp))
-
                 Column {
                     Text(
                         text = "Mo 用户",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "让生活井井有条",
                         style = MaterialTheme.typography.bodySmall,
@@ -129,37 +129,35 @@ fun ProfileScreen(
                 }
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant,
+                thickness = 0.5.dp
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Settings items
-        SettingsItem(
-            icon = Icons.Filled.Label,
-                iconBackground = Color(0xFFE8F5E9),
-                iconTint = Color(0xFF388E3C),
+            ProfileMenuItem(
+                icon = Icons.Filled.Label,
+                iconTint = Color(0xFF5B7F6A),
                 label = "标签管理",
-                subtitle = "4个标签",
+                subtitle = "管理待办和备忘标签",
                 onClick = { }
             )
 
-        SettingsItem(
-            icon = Icons.Filled.Notifications,
-                iconBackground = Color(0xFFFFF3E0),
-                iconTint = Color(0xFFF57C00),
+            ProfileMenuItem(
+                icon = Icons.Filled.Notifications,
+                iconTint = Color(0xFFE8A840),
                 label = "提醒默认设置",
-                subtitle = "提前10分钟",
+                subtitle = "设置默认提醒时间",
                 onClick = { }
             )
 
-            SettingsItem(
-                icon = if (themeMode == ThemeMode.DARK) Icons.Filled.DarkMode else Icons.Filled.BrightnessHigh,
-                iconBackground = Color(0xFFE3F2FD),
-                iconTint = Color(0xFF1976D2),
+            ProfileMenuItem(
+                icon = themeIcon,
+                iconTint = Color(0xFF5B8DEF),
                 label = "主题",
                 subtitle = themeLabel,
                 onClick = {
-                    // Cycle through themes
                     scope.launch {
                         when (themeMode) {
                             ThemeMode.SYSTEM -> viewModel.setThemeMode(ThemeMode.LIGHT)
@@ -170,19 +168,17 @@ fun ProfileScreen(
                 }
             )
 
-            SettingsItem(
+            ProfileMenuItem(
                 icon = Icons.Filled.SaveAlt,
-                iconBackground = Color(0xFFFCE4EC),
-                iconTint = Color(0xFFC62828),
+                iconTint = Color(0xFFD9534F),
                 label = "数据备份与导出",
-                subtitle = "未备份",
+                subtitle = "备份或导出您的数据",
                 onClick = { }
             )
 
-            SettingsItem(
+            ProfileMenuItem(
                 icon = Icons.Filled.Info,
-                iconBackground = Color(0xFFF3E5F5),
-                iconTint = Color(0xFF7B1FA2),
+                iconTint = Color(0xFF8B7EC8),
                 label = "关于 Mo",
                 subtitle = "v1.0.0",
                 onClick = { }
@@ -194,51 +190,48 @@ fun ProfileScreen(
 }
 
 @Composable
-fun SettingsItem(
+private fun ProfileMenuItem(
     icon: ImageVector,
-    iconBackground: Color,
     iconTint: Color,
     label: String,
-    subtitle: String? = null,
+    subtitle: String,
     onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
+                .size(44.dp)
                 .clip(CircleShape)
-                .background(iconBackground),
+                .background(iconTint.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(22.dp)
             )
         }
 
         Spacer(modifier = Modifier.width(14.dp))
 
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-
-        if (subtitle != null) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(end = 4.dp)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 

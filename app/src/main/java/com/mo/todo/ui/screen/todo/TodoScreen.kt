@@ -1,10 +1,9 @@
 package com.mo.todo.ui.screen.todo
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,33 +13,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.RadioButtonUnchecked
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,24 +43,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mo.todo.data.model.Todo
-import com.mo.todo.ui.theme.PriorityHigh
-import com.mo.todo.ui.theme.PriorityLow
-import com.mo.todo.ui.theme.PriorityMedium
-import com.mo.todo.ui.theme.TagPersonal
-import com.mo.todo.ui.theme.TagShopping
-import com.mo.todo.ui.theme.TagWork
+import com.mo.todo.ui.component.EmptyPlaceholder
+import com.mo.todo.ui.component.SectionHeader
+import com.mo.todo.ui.component.TagChipRow
+import com.mo.todo.ui.component.TodoItemRow
 import com.mo.todo.ui.viewmodel.TodoViewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 data class TagItem(val key: String, val label: String)
 
@@ -95,15 +75,17 @@ fun TodoScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     var showCompleted by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
-    var showFilterMenu by remember { mutableStateOf(false) }
+
+    val isEmpty = activeTodos.isEmpty() && completedTodos.isEmpty()
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Mo \u00b7 待办",
-                        style = MaterialTheme.typography.titleLarge
+                        text = "Mo · 待办",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 actions = {
@@ -136,30 +118,40 @@ fun TodoScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onNavigateToAddEdit(null) },
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = MaterialTheme.shapes.extraLarge,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 4.dp,
+                    pressedElevation = 8.dp
+                )
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
                     contentDescription = "新建待办"
                 )
             }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (isSearchActive) {
-                androidx.compose.material3.OutlinedTextField(
+            AnimatedVisibility(
+                visible = isSearchActive,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.setSearchQuery(it) },
                     modifier = Modifier
@@ -168,208 +160,88 @@ fun TodoScreen(
                     placeholder = { Text("搜索待办...") },
                     singleLine = true,
                     trailingIcon = {
-                        IconButton(onClick = { viewModel.setSearchActive(false) }) {
+                        TextButton(onClick = { viewModel.setSearchActive(false) }) {
                             Text("取消")
                         }
-                    }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                    ),
+                    shape = MaterialTheme.shapes.small
                 )
             }
 
-            // Tag chips
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(todoTags) { tag ->
-                    FilterChip(
-                        selected = selectedTag == tag.key,
-                        onClick = { viewModel.setSelectedTag(tag.key) },
-                        label = { Text(tag.label) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    )
-                }
-            }
+            TagChipRow(
+                items = todoTags,
+                selectedKey = selectedTag,
+                keySelector = { it.key },
+                labelSelector = { it.label },
+                onItemClick = { viewModel.setSelectedTag(it) }
+            )
 
-            // Active todos
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                item {
-                    Text(
-                        text = "待完成",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                }
-
-                if (activeTodos.isEmpty()) {
+            if (isEmpty) {
+                EmptyPlaceholder(
+                    icon = Icons.Outlined.Checklist,
+                    title = "轻轻松松，没有待办",
+                    subtitle = "点击下方 + 开始添加吧"
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
                     item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "轻轻松松，没有待办",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        SectionHeader(title = "待完成")
                     }
-                }
 
-                items(activeTodos, key = { it.id }) { todo ->
-                    TodoItem(
-                        todo = todo,
-                        onToggleCompletion = {
-                            viewModel.toggleCompletion(todo.id, !todo.isCompleted)
-                        },
-                        onClick = { onNavigateToAddEdit(todo.id) }
-                    )
-                }
-
-                // Completed section
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextButton(
-                        onClick = { showCompleted = !showCompleted },
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    ) {
-                        Text(
-                            text = if (showCompleted) "收起已完成 (${completedTodos.size})" else "已完成 (${completedTodos.size})",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                if (showCompleted) {
-                    items(completedTodos, key = { it.id }) { todo ->
-                        TodoItem(
+                    items(activeTodos, key = { it.id }) { todo ->
+                        TodoItemRow(
                             todo = todo,
                             onToggleCompletion = {
                                 viewModel.toggleCompletion(todo.id, !todo.isCompleted)
                             },
-                            onClick = { onNavigateToAddEdit(todo.id) }
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun TodoItem(
-    todo: Todo,
-    onToggleCompletion: () -> Unit,
-    onClick: () -> Unit
-) {
-    val tagColor = when (todo.tag) {
-        "work" -> TagWork
-        "personal" -> TagPersonal
-        "shopping" -> TagShopping
-        else -> MaterialTheme.colorScheme.secondary
-    }
-
-    val priorityColor = when (todo.priority) {
-        2 -> PriorityHigh
-        1 -> PriorityMedium
-        0 -> PriorityLow
-        else -> PriorityMedium
-    }
-
-    val priorityLabel = when (todo.priority) {
-        2 -> "高"
-        1 -> "中"
-        0 -> "低"
-        else -> "中"
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 3.dp)
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = todo.isCompleted,
-                onCheckedChange = { onToggleCompletion() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.outline
-                )
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(priorityColor)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = todo.title,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                        color = if (todo.isCompleted)
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                        else
-                            MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (todo.reminderTime != null) {
-                        val dateFormat = remember { SimpleDateFormat("MM/dd HH:mm", Locale.getDefault()) }
-                        Text(
-                            text = dateFormat.format(Date(todo.reminderTime)),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            onClick = { onNavigateToAddEdit(todo.id) },
+                            onSwipeDelete = { viewModel.deleteTodo(todo) }
                         )
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(tagColor)
-                    )
+                    item {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        TextButton(
+                            onClick = { showCompleted = !showCompleted },
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = if (showCompleted)
+                                    "收起已完成 (${completedTodos.size})"
+                                else
+                                    "已完成 (${completedTodos.size})",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
 
-                    Text(
-                        text = priorityLabel,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    item {
+                        AnimatedVisibility(
+                            visible = showCompleted,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Column(modifier = Modifier.animateContentSize()) {
+                                completedTodos.forEach { todo ->
+                                    TodoItemRow(
+                                        todo = todo,
+                                        onToggleCompletion = {
+                                            viewModel.toggleCompletion(todo.id, !todo.isCompleted)
+                                        },
+                                        onClick = { onNavigateToAddEdit(todo.id) },
+                                        onSwipeDelete = { viewModel.deleteTodo(todo) }
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
