@@ -1,14 +1,13 @@
 package com.mo.todo.ui.component
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,8 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material.icons.outlined.Inbox
-import androidx.compose.material.icons.outlined.NoteAdd
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -65,20 +62,26 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
 
-// ── TodoItemRow ──
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TodoItemRow(
     todo: Todo,
     onToggleCompletion: () -> Unit,
     onClick: () -> Unit,
     onSwipeDelete: () -> Unit,
+    onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val animatedScale by animateFloatAsState(
         targetValue = if (todo.isCompleted) 0.97f else 1f,
         animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
         label = "todoScale"
+    )
+
+    val textAlpha by animateFloatAsState(
+        targetValue = if (todo.isCompleted) 0.5f else 1f,
+        animationSpec = tween(250),
+        label = "textAlpha"
     )
 
     val priorityColor = when (todo.priority) {
@@ -100,43 +103,28 @@ fun TodoItemRow(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 3.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 4.dp)
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.error.copy(alpha = 0.12f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "✕",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
-            )
-        }
-
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .offset { IntOffset(offsetX.roundToInt(), 0) }
+                .scale(animatedScale)
                 .pointerInput(Unit) {
                     detectHorizontalDragGestures(
                         onDragEnd = {
-                            if (offsetX < -120f) {
-                                onSwipeDelete()
-                            }
+                            if (offsetX < -120f) onSwipeDelete()
                             offsetX = 0f
                         }
                     ) { _, dragAmount ->
                         offsetX = (offsetX + dragAmount).coerceIn(-160f, 0f)
                     }
                 }
-                .scale(animatedScale)
-                .clickable { onClick() },
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = onLongClick
+                ),
             colors = CardDefaults.cardColors(
                 containerColor = if (todo.isCompleted)
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    MaterialTheme.colorScheme.surface
                 else
                     MaterialTheme.colorScheme.surface
             ),
@@ -146,7 +134,7 @@ fun TodoItemRow(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                    .padding(horizontal = 4.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
@@ -159,27 +147,24 @@ fun TodoItemRow(
                     )
                 )
 
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(Modifier.width(4.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.weight(1f).alpha(textAlpha)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(priorityColor)
+                                .background(if (todo.isCompleted) Color.Gray.copy(alpha = 0.4f) else priorityColor)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(Modifier.width(6.dp))
                         Text(
                             text = todo.title,
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Medium,
-                            textDecoration = if (todo.isCompleted)
-                                TextDecoration.LineThrough
-                            else
-                                TextDecoration.None,
+                            textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                             color = if (todo.isCompleted)
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             else
                                 MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
@@ -189,7 +174,7 @@ fun TodoItemRow(
                     }
 
                     if (todo.description != null && todo.description.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(Modifier.height(2.dp))
                         Text(
                             text = todo.description,
                             style = MaterialTheme.typography.bodySmall,
@@ -199,16 +184,11 @@ fun TodoItemRow(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(Modifier.height(4.dp))
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (todo.reminderTime != null) {
-                            val dateFormat = remember {
-                                SimpleDateFormat("M/d HH:mm", Locale.getDefault())
-                            }
+                            val dateFormat = remember { SimpleDateFormat("M/d HH:mm", Locale.getDefault()) }
                             Text(
                                 text = dateFormat.format(Date(todo.reminderTime)),
                                 style = MaterialTheme.typography.labelSmall,
@@ -232,7 +212,7 @@ fun TodoItemRow(
                         Text(
                             text = priorityLabel,
                             style = MaterialTheme.typography.labelSmall,
-                            color = priorityColor,
+                            color = if (todo.isCompleted) Color.Gray.copy(alpha = 0.4f) else priorityColor,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
@@ -241,8 +221,6 @@ fun TodoItemRow(
         }
     }
 }
-
-// ── EmptyPlaceholder ──
 
 @Composable
 fun EmptyPlaceholder(
@@ -272,13 +250,13 @@ fun EmptyPlaceholder(
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
             )
         }
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(Modifier.height(20.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(Modifier.height(6.dp))
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodyMedium,
@@ -287,13 +265,13 @@ fun EmptyPlaceholder(
     }
 }
 
-// ── MemoGridCard ──
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MemoGridCard(
     memo: Memo,
     onClick: () -> Unit,
     onToggleStar: () -> Unit,
+    onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val cardColor = memo.color?.let { Color(it) }
@@ -309,12 +287,10 @@ fun MemoGridCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(18.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Box(
@@ -325,10 +301,10 @@ fun MemoGridCard(
                     .background(cardColor.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "📝", style = MaterialTheme.typography.headlineSmall)
+                Text("\uD83D\uDCDD", style = MaterialTheme.typography.headlineMedium)
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(Modifier.height(10.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -337,7 +313,8 @@ fun MemoGridCard(
             ) {
                 Text(
                     text = memo.title,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -346,33 +323,26 @@ fun MemoGridCard(
                 Icon(
                     imageVector = if (memo.isStarred) Icons.Outlined.Star else Icons.Outlined.StarBorder,
                     contentDescription = "星标",
-                    modifier = Modifier
-                        .size(18.dp)
-                        .clickable { onToggleStar() },
+                    modifier = Modifier.size(18.dp).clickable { onToggleStar() },
                     tint = if (memo.isStarred) StarColor else MaterialTheme.colorScheme.outline
                 )
             }
 
             if (memo.content.isNotBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
                     text = memo.content,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                val dateFormat = remember {
-                    SimpleDateFormat("M月d日", Locale.getDefault())
-                }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                val dateFormat = remember { SimpleDateFormat("M\u6708d\u65e5", Locale.getDefault()) }
                 Text(
                     text = dateFormat.format(Date(memo.updatedAt)),
                     style = MaterialTheme.typography.labelSmall,
@@ -388,13 +358,13 @@ fun MemoGridCard(
     }
 }
 
-// ── MemoListItem ──
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MemoListItem(
     memo: Memo,
     onClick: () -> Unit,
     onToggleStar: () -> Unit,
+    onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val cardColor = memo.color?.let { Color(it) }
@@ -410,17 +380,13 @@ fun MemoListItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -430,15 +396,16 @@ fun MemoListItem(
                     .background(cardColor.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = "📝", style = MaterialTheme.typography.titleMedium)
+                Text("\uD83D\uDCDD", style = MaterialTheme.typography.titleMedium)
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = memo.title,
                     style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -452,7 +419,7 @@ fun MemoListItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(Modifier.height(2.dp))
                 Text(
                     text = tagLabel,
                     style = MaterialTheme.typography.labelSmall,
@@ -460,21 +427,17 @@ fun MemoListItem(
                 )
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(Modifier.width(8.dp))
 
             Icon(
                 imageVector = if (memo.isStarred) Icons.Outlined.Star else Icons.Outlined.StarBorder,
                 contentDescription = "星标",
-                modifier = Modifier
-                    .size(20.dp)
-                    .clickable { onToggleStar() },
+                modifier = Modifier.size(20.dp).clickable { onToggleStar() },
                 tint = if (memo.isStarred) StarColor else MaterialTheme.colorScheme.outline
             )
         }
     }
 }
-
-// ── SectionHeader ──
 
 @Composable
 fun SectionHeader(
@@ -488,8 +451,6 @@ fun SectionHeader(
         modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp)
     )
 }
-
-// ── TagChipRow ──
 
 @Composable
 fun <T> TagChipRow(
@@ -510,18 +471,12 @@ fun <T> TagChipRow(
             val key = keySelector(item)
             val isSelected = selectedKey == key
             val bgColor by animateColorAsState(
-                targetValue = if (isSelected)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.surfaceVariant,
+                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                 animationSpec = tween(200),
                 label = "chipBg"
             )
             val textColor by animateColorAsState(
-                targetValue = if (isSelected)
-                    MaterialTheme.colorScheme.onPrimary
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant,
+                targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 animationSpec = tween(200),
                 label = "chipText"
             )

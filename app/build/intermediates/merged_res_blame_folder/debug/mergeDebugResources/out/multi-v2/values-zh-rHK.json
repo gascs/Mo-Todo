@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.mo.todo.app-mergeDebugResources-67:/values-zh-rHK/values-zh-rHK.xml",
+            "outputFile": "com.mo.todo.app-mergeDebugResources-69:/values-zh-rHK/values-zh-rHK.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Administrator\\.gradle\\caches\\9.3.1\\transforms\\bbfd5208dfbc63843fd81321fd307888\\workspace\\transformed\\foundation-release\\res\\values-zh-rHK\\values-zh-rHK.xml",

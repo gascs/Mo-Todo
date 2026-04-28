@@ -1,8 +1,11 @@
 package com.mo.todo.ui.screen.profile
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,228 +21,152 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Label
-import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.SaveAlt
-import androidx.compose.material.icons.filled.SettingsBrightness
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.mo.todo.ui.theme.MoPrimary
 import com.mo.todo.ui.viewmodel.SettingsViewModel
-import com.mo.todo.ui.viewmodel.ThemeMode
 import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    onNavigateToLabelManagement: () -> Unit = {},
+    onNavigateToReminderSettings: () -> Unit = {},
+    onNavigateToAbout: () -> Unit = {},
+    onNavigateToPersonalization: () -> Unit = {},
+    onNavigateToDataManagement: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val themeMode by viewModel.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
+    val nickname by viewModel.nickname.collectAsState()
+    val avatarPath by viewModel.avatarPath.collectAsState()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    val themeLabel = when (themeMode) {
-        ThemeMode.SYSTEM -> "跟随系统"
-        ThemeMode.LIGHT -> "浅色"
-        ThemeMode.DARK -> "深色"
+    var showNickDialog by remember { mutableStateOf(false) }
+    var editNick by remember { mutableStateOf(nickname) }
+
+    val avatarLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            try {
+                val inputStream = context.contentResolver.openInputStream(it)
+                val file = File(context.filesDir, "avatar_${System.currentTimeMillis()}.jpg")
+                inputStream?.use { inStream -> file.outputStream().use { outStream -> inStream.copyTo(outStream) } }
+                scope.launch { viewModel.setAvatarPath(file.absolutePath) }
+            } catch (e: Exception) {
+                Toast.makeText(context, "头像保存失败", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
-    val themeIcon = when (themeMode) {
-        ThemeMode.SYSTEM -> Icons.Filled.SettingsBrightness
-        ThemeMode.LIGHT -> Icons.Filled.LightMode
-        ThemeMode.DARK -> Icons.Filled.DarkMode
+    if (showNickDialog) {
+        AlertDialog(
+            onDismissRequest = { showNickDialog = false },
+            title = { Text("修改昵称") },
+            text = {
+                OutlinedTextField(
+                    value = editNick, onValueChange = { editNick = it },
+                    modifier = Modifier.fillMaxWidth(), singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant),
+                    shape = MaterialTheme.shapes.small
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    scope.launch { viewModel.setNickname(editNick.ifBlank { "Mo 用户" }) }
+                    showNickDialog = false
+                }) { Text("确定") }
+            },
+            dismissButton = { TextButton(onClick = { showNickDialog = false }) { Text("取消") } }
+        )
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Mo · 我的",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
+            TopAppBar(title = { Text("Mo · 我的", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .background(MoPrimary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "M",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+        Column(Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState())) {
+            Row(Modifier.fillMaxWidth().padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(64.dp).clip(CircleShape).background(MoPrimary).clickable { avatarLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center) {
+                    if (avatarPath.isNotBlank()) {
+                        AsyncImage(model = File(avatarPath), contentDescription = "头像", modifier = Modifier.fillMaxSize().clip(CircleShape), contentScale = ContentScale.Crop)
+                    } else {
+                        Text("M", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color.White)
+                    }
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = "Mo 用户",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "让生活井井有条",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Spacer(Modifier.width(16.dp))
+                Column(Modifier.clickable { editNick = nickname; showNickDialog = true }) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(nickname, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+                        Spacer(Modifier.width(6.dp))
+                        Icon(Icons.Filled.Edit, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.outline)
+                    }
+                    Spacer(Modifier.height(2.dp))
+                    Text("让生活井井有条", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant,
-                thickness = 0.5.dp
-            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+            Spacer(Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
+            ProfileMenuItem(Icons.Filled.Tag, Color(0xFF5B7F6A), "标签管理", "管理待办和备忘标签", onClick = onNavigateToLabelManagement)
+            ProfileMenuItem(Icons.Filled.Notifications, Color(0xFFE8A840), "提醒默认设置", "设置默认提醒时间", onClick = onNavigateToReminderSettings)
+            ProfileMenuItem(Icons.Filled.Palette, Color(0xFF8B7EC8), "个性化", "配色方案 / 字体 / 圆角 / 主题", onClick = onNavigateToPersonalization)
+            ProfileMenuItem(Icons.Filled.SaveAlt, Color(0xFFD9534F), "数据管理", "本地导出导入 / WebDAV 备份恢复", onClick = onNavigateToDataManagement)
+            ProfileMenuItem(Icons.Filled.Info, Color(0xFF5B8DEF), "关于 Mo", "v1.0.0", onClick = onNavigateToAbout)
 
-            ProfileMenuItem(
-                icon = Icons.Filled.Label,
-                iconTint = Color(0xFF5B7F6A),
-                label = "标签管理",
-                subtitle = "管理待办和备忘标签",
-                onClick = { }
-            )
-
-            ProfileMenuItem(
-                icon = Icons.Filled.Notifications,
-                iconTint = Color(0xFFE8A840),
-                label = "提醒默认设置",
-                subtitle = "设置默认提醒时间",
-                onClick = { }
-            )
-
-            ProfileMenuItem(
-                icon = themeIcon,
-                iconTint = Color(0xFF5B8DEF),
-                label = "主题",
-                subtitle = themeLabel,
-                onClick = {
-                    scope.launch {
-                        when (themeMode) {
-                            ThemeMode.SYSTEM -> viewModel.setThemeMode(ThemeMode.LIGHT)
-                            ThemeMode.LIGHT -> viewModel.setThemeMode(ThemeMode.DARK)
-                            ThemeMode.DARK -> viewModel.setThemeMode(ThemeMode.SYSTEM)
-                        }
-                    }
-                }
-            )
-
-            ProfileMenuItem(
-                icon = Icons.Filled.SaveAlt,
-                iconTint = Color(0xFFD9534F),
-                label = "数据备份与导出",
-                subtitle = "备份或导出您的数据",
-                onClick = { }
-            )
-
-            ProfileMenuItem(
-                icon = Icons.Filled.Info,
-                iconTint = Color(0xFF8B7EC8),
-                label = "关于 Mo",
-                subtitle = "v1.0.0",
-                onClick = { }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
         }
     }
 }
 
 @Composable
-private fun ProfileMenuItem(
-    icon: ImageVector,
-    iconTint: Color,
-    label: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(iconTint.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(22.dp)
-            )
+private fun ProfileMenuItem(icon: ImageVector, iconTint: Color, label: String, subtitle: String, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clickable { onClick() }.padding(horizontal = 20.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(44.dp).clip(CircleShape).background(iconTint.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp)) }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-
-        Spacer(modifier = Modifier.width(14.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.outline,
-            modifier = Modifier.size(20.dp)
-        )
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
     }
 }

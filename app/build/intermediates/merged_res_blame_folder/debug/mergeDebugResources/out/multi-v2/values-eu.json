@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.mo.todo.app-mergeDebugResources-67:/values-eu/values-eu.xml",
+            "outputFile": "com.mo.todo.app-mergeDebugResources-69:/values-eu/values-eu.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Administrator\\.gradle\\caches\\9.3.1\\transforms\\bbfd5208dfbc63843fd81321fd307888\\workspace\\transformed\\foundation-release\\res\\values-eu\\values-eu.xml",

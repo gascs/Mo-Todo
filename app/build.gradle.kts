@@ -98,6 +98,15 @@ dependencies {
     // Core KTX
     implementation("androidx.core:core-ktx:1.12.0")
 
+    // OkHttp for WebDAV
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // JSON serialization
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

@@ -84,9 +84,7 @@ fun MainScreen() {
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            MoNavHost(
-                navController = navController
-            )
+            MoNavHost(navController = navController)
         }
     }
 }
