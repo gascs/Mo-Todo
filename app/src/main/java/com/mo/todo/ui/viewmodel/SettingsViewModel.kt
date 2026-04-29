@@ -59,7 +59,7 @@ class SettingsViewModel @Inject constructor(
         when (mode) { ThemeMode.SYSTEM -> isSystemInDarkTheme(); ThemeMode.LIGHT -> false; ThemeMode.DARK -> true }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, isSystemInDarkTheme())
 
-    val colorTheme: StateFlow<String> = context.dataStore.data.map { it[K.COLOR_THEME] ?: "forest" }.stateIn(viewModelScope, SharingStarted.Eagerly, "forest")
+    val colorTheme: StateFlow<String> = context.dataStore.data.map { it[K.COLOR_THEME] ?: "skyline" }.stateIn(viewModelScope, SharingStarted.Eagerly, "skyline")
     val fontSize: StateFlow<String> = context.dataStore.data.map { it[K.FONT_SIZE] ?: "medium" }.stateIn(viewModelScope, SharingStarted.Eagerly, "medium")
     val cornerStyle: StateFlow<String> = context.dataStore.data.map { it[K.CORNER_STYLE] ?: "rounded" }.stateIn(viewModelScope, SharingStarted.Eagerly, "rounded")
     val defaultReminderMinutesState: StateFlow<Int> = context.dataStore.data.map { it[K.DEFAULT_REMINDER_MINUTES] ?: 10 }.stateIn(viewModelScope, SharingStarted.Eagerly, 10)

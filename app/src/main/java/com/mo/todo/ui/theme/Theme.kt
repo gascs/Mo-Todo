@@ -18,11 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 fun buildMoShapes(cornerMultiplier: Float = 1f): Shapes = Shapes(
-    extraSmall = RoundedCornerShape((8 * cornerMultiplier).dp),
-    small = RoundedCornerShape((12 * cornerMultiplier).dp),
-    medium = RoundedCornerShape((16 * cornerMultiplier).dp),
-    large = RoundedCornerShape((20 * cornerMultiplier).dp),
-    extraLarge = RoundedCornerShape((28 * cornerMultiplier).dp),
+    extraSmall = RoundedCornerShape((6 * cornerMultiplier).dp),
+    small = RoundedCornerShape((10 * cornerMultiplier).dp),
+    medium = RoundedCornerShape((14 * cornerMultiplier).dp),
+    large = RoundedCornerShape((18 * cornerMultiplier).dp),
+    extraLarge = RoundedCornerShape((24 * cornerMultiplier).dp),
 )
 
 val MoShapes = buildMoShapes()
@@ -51,7 +51,7 @@ fun buildDarkScheme(primary: androidx.compose.ui.graphics.Color, onPrimary: andr
 fun MoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
-    colorTheme: ColorTheme = ColorTheme.FOREST,
+    colorTheme: ColorTheme = ColorTheme.SKYLINE,
     fontScale: Float = 1.0f,
     cornerMultiplier: Float = 1.0f,
     content: @Composable () -> Unit

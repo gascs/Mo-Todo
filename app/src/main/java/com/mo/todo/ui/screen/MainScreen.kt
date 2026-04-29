@@ -42,7 +42,7 @@ fun MainScreen() {
                 exit = fadeOut()
             ) {
                 NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ) {
                     bottomNavItems.forEach { item ->
