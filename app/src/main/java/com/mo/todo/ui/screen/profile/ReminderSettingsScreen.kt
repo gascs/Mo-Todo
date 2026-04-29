@@ -1,5 +1,9 @@
 package com.mo.todo.ui.screen.profile
 
+import android.content.Intent
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +22,7 @@ import compose.icons.octicons.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,6 +62,12 @@ fun ReminderSettingsScreen(
 ) {
     val currentMinutes by viewModel.defaultReminderMinutesState.collectAsState()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val isBatteryOptimized = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val pm = context.getSystemService(PowerManager::class.java)
+        !pm.isIgnoringBatteryOptimizations(context.packageName)
+    } else false
 
     Scaffold(
         topBar = {
@@ -148,6 +160,68 @@ fun ReminderSettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 20.dp))
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = "后台保活",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+            )
+            Spacer(Modifier.height(4.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp)
+                    .clickable {
+                        try {
+                            context.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                                data = android.net.Uri.parse("package:${context.packageName}")
+                            })
+                        } catch (_: Exception) {}
+                    },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("电池优化", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                        Spacer(Modifier.height(2.dp))
+                        Text(if (isBatteryOptimized) "🔴 受电池限制，可能无法后台提醒" else "🟢 不受限制", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Icon(Octicons.ChevronRight24, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
+                }
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp)
+                    .clickable {
+                        try {
+                            val intent = Intent().apply {
+                                action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                                data = android.net.Uri.parse("package:${context.packageName}")
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(intent)
+                        } catch (_: Exception) {}
+                    },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("自启动管理", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                        Spacer(Modifier.height(2.dp))
+                        Text("跳转至应用设置 → 开启自启动", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Icon(Octicons.ChevronRight24, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
+                }
+            }
+
+            Spacer(Modifier.height(32.dp))
         }
     }
 }

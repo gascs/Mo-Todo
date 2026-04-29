@@ -54,6 +54,7 @@ class ReminderWorker @AssistedInject constructor(
                     setShowBadge(true)
                     enableLights(true)
                     lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+                    setBypassDnd(true)
                 }
                 context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
                 Log.d(TAG, "Notification channel created: $CHANNEL_ID")
