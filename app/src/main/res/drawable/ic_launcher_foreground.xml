@@ -5,20 +5,87 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Circular badge -->
+    <!-- Hair (back) -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M28,28 C28,10 80,10 80,28 L84,62 C84,78 72,84 54,84 C36,84 24,78 24,62 Z" />
+
+    <!-- Face -->
+    <path
+        android:fillColor="#FFF0E6"
+        android:pathData="M32,34 C32,18 76,18 76,34 L76,62 C76,74 66,80 54,80 C42,80 32,74 32,62 Z" />
+
+    <!-- Bangs -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M28,32 C28,18 38,20 38,20 L34,46 C32,42 28,38 28,32 ZM44,18 C50,14 58,14 64,18 C62,14 56,10 54,10 C52,10 46,14 44,18 ZM80,32 C80,18 70,20 70,20 L74,46 C76,42 80,38 80,32 Z" />
+
+    <!-- Side ponytails -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M24,40 Q12,52 16,70 Q18,78 24,72 Q18,60 18,50 Z" />
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M84,40 Q96,52 92,70 Q90,78 84,72 Q90,60 90,50 Z" />
+
+    <!-- Sailor collar -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,54m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
+        android:pathData="M30,42 L54,56 L38,80 L30,80 C26,70 24,56 30,42 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M78,42 L54,56 L70,80 L78,80 C82,70 84,56 78,42 Z" />
 
-    <!-- Checkmark -->
+    <!-- Collar stripes -->
     <path
         android:fillColor="#5B7F6A"
-        android:fillType="nonZero"
-        android:pathData="M44,55.4l5.7,5.2l14.3,-14.3l4.2,4.2l-18.5,18.5l-9.9,-9.4z" />
+        android:strokeColor="#5B7F6A"
+        android:strokeWidth="1.2"
+        android:pathData="M33,46 L50,58 M75,46 L58,58 M33,46 L37,56 M75,46 L71,56" />
 
-    <!-- Horizontal lines (todo list motif) -->
+    <!-- Ribbon -->
+    <path
+        android:fillColor="#E88A6E"
+        android:pathData="M48,54 L54,62 L60,54 L54,58 Z" />
+    <path
+        android:fillColor="#E88A6E"
+        android:pathData="M52,58 Q48,66 44,62 Q48,60 52,58 ZM56,58 Q60,66 64,62 Q60,60 56,58 Z" />
+
+    <!-- Eyes -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M42,52 C42,48 48,48 48,52 C48,56 42,56 42,52 Z" />
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M60,52 C60,48 66,48 66,52 C66,56 60,56 60,52 Z" />
+
+    <!-- Eye highlights -->
     <path
         android:fillColor="#FFFFFF"
-        android:fillAlpha="0.3"
-        android:pathData="M20,82h68v2h-68zM20,88h48v2h-48zM20,94h56v2h-56z" />
+        android:pathData="M44,50 C44,48 46,48 46,50 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M62,50 C62,48 64,48 64,50 Z" />
+
+    <!-- Blush -->
+    <path
+        android:fillColor="#FFB5A0"
+        android:fillAlpha="0.5"
+        android:pathData="M38,58 C38,56 42,56 42,58 C42,60 38,60 38,58 Z" />
+    <path
+        android:fillColor="#FFB5A0"
+        android:fillAlpha="0.5"
+        android:pathData="M66,58 C66,56 70,56 70,58 C70,60 66,60 66,58 Z" />
+
+    <!-- Mouth (smile) -->
+    <path
+        android:fillColor="#E88A6E"
+        android:pathData="M50,60 Q54,66 58,60 Q54,64 50,60 Z" />
+
+    <!-- Eyebrows -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1A1A2E"
+        android:strokeWidth="1.2"
+        android:pathData="M40,46 Q44,44 48,46 M60,46 Q64,44 68,46" />
 </vector>
