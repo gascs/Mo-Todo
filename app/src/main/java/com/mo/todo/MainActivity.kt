@@ -52,6 +52,7 @@ class MainActivity : ComponentActivity() {
             val colorThemeKey by settingsViewModel.colorTheme.collectAsState()
             val fontSizeKey by settingsViewModel.fontSize.collectAsState()
             val cornerStyleKey by settingsViewModel.cornerStyle.collectAsState()
+            val isDynamicColor by settingsViewModel.isDynamicColor.collectAsState()
 
             val colorTheme = ColorTheme.fromKey(colorThemeKey)
             val fontScale = FontSize.fromKey(fontSizeKey).scale
@@ -59,7 +60,7 @@ class MainActivity : ComponentActivity() {
 
             MoTheme(
                 darkTheme = isDarkTheme,
-                dynamicColor = false,
+                dynamicColor = isDynamicColor,
                 colorTheme = colorTheme,
                 fontScale = fontScale,
                 cornerMultiplier = cornerMult

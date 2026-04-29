@@ -6,6 +6,7 @@ import com.mo.todo.di.RepositoryModule;
 import com.mo.todo.ui.viewmodel.MemoViewModel_HiltModules;
 import com.mo.todo.ui.viewmodel.SettingsViewModel_HiltModules;
 import com.mo.todo.ui.viewmodel.TodoViewModel_HiltModules;
+import com.mo.todo.worker.BootReceiver_GeneratedInjector;
 import com.mo.todo.worker.ReminderWorker_HiltModule;
 import dagger.Binds;
 import dagger.Component;
@@ -143,6 +144,7 @@ public final class MoApplication_HiltComponents {
   )
   @Singleton
   public abstract static class SingletonC implements MoApplication_GeneratedInjector,
+      BootReceiver_GeneratedInjector,
       FragmentGetContextFix.FragmentGetContextFixEntryPoint,
       HiltWrapper_ActivityRetainedComponentManager_ActivityRetainedComponentBuilderEntryPoint,
       ServiceComponentManager.ServiceComponentBuilderEntryPoint,

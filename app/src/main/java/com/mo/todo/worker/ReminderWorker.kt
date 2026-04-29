@@ -14,11 +14,15 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.mo.todo.MainActivity
 import com.mo.todo.data.database.AppDatabase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.util.concurrent.TimeUnit
 
 @HiltWorker
 class ReminderWorker @AssistedInject constructor(
@@ -31,22 +35,29 @@ class ReminderWorker @AssistedInject constructor(
         const val CHANNEL_ID = "mo_reminder"
         const val CHANNEL_NAME = "Mo 提醒"
         private const val TAG = "ReminderWorker"
+        private const val BOOT_RESCHEDULE_TAG = "mo_boot_reschedule"
 
         fun createChannel(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val channel = NotificationChannel(
-                    CHANNEL_ID,
-                    CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_HIGH
-                ).apply {
+                val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH).apply {
                     description = "待办事项与备忘录提醒通知"
                     enableVibration(true)
                     vibrationPattern = longArrayOf(0, 300, 200, 300)
                 }
-                val notificationManager = context.getSystemService(NotificationManager::class.java)
-                notificationManager.createNotificationChannel(channel)
+                context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
                 Log.d(TAG, "Notification channel created: $CHANNEL_ID")
             }
+        }
+
+        fun rescheduleAllAfterBoot(context: Context, database: AppDatabase) {
+            val now = System.currentTimeMillis()
+            val workManager = WorkManager.getInstance(context)
+            val workRequest = OneTimeWorkRequestBuilder<ReminderWorker>()
+                .setInputData(androidx.work.Data.Builder().putLong("todo_id", 0L).putString("todo_title", "boot_reschedule").build())
+                .addTag(BOOT_RESCHEDULE_TAG)
+                .build()
+            workManager.enqueueUniqueWork(BOOT_RESCHEDULE_TAG, ExistingWorkPolicy.REPLACE, workRequest)
+            Log.d(TAG, "Boot reschedule worker enqueued")
         }
     }
 
@@ -54,34 +65,22 @@ class ReminderWorker @AssistedInject constructor(
         val todoId = inputData.getLong("todo_id", -1L)
         val todoTitle = inputData.getString("todo_title")
         val now = System.currentTimeMillis()
+        Log.d(TAG, "doWork() at $now, todoId=$todoId, title=$todoTitle")
 
-        Log.d(TAG, "doWork() triggered at $now, todoId=$todoId, todoTitle=$todoTitle")
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    applicationContext,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.w(TAG, "POST_NOTIFICATIONS permission not granted, skipping")
-                return Result.success()
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            Log.w(TAG, "No notification permission")
+            return Result.success()
         }
 
         if (todoId > 0 && todoTitle != null) {
-            Log.d(TAG, "Sending notification for id=$todoId, title=$todoTitle")
             sendNotification(todoId, todoTitle)
             return Result.success()
         }
 
         val overdueTodos = database.todoDao().getUpcomingReminders(0, now)
-        Log.d(TAG, "Overdue todos count: ${overdueTodos.size}")
-
-        overdueTodos.forEach { todo ->
-            Log.d(TAG, "Sending notification for overdue todo: id=${todo.id}, title=${todo.title}, reminderTime=${todo.reminderTime}, diff=${now - (todo.reminderTime ?: 0)}ms")
-            sendNotification(todo.id, todo.title)
-        }
-
+        Log.d(TAG, "Overdue: ${overdueTodos.size}")
+        overdueTodos.forEach { sendNotification(it.id, it.title) }
         return Result.success()
     }
 
@@ -90,12 +89,8 @@ class ReminderWorker @AssistedInject constructor(
             val intent = Intent(applicationContext, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
-            val pendingIntent = PendingIntent.getActivity(
-                applicationContext,
-                todoId.toInt(),
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
+            val pendingIntent = PendingIntent.getActivity(applicationContext, todoId.toInt(), intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
             val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -105,10 +100,11 @@ class ReminderWorker @AssistedInject constructor(
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
                 .setVibrate(longArrayOf(0, 300, 200, 300))
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .build()
 
             NotificationManagerCompat.from(applicationContext).notify(todoId.toInt(), notification)
-            Log.i(TAG, "Notification sent successfully: id=$todoId, title=$title")
+            Log.i(TAG, "Notification sent: id=$todoId")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to send notification: ${e.message}", e)
         }

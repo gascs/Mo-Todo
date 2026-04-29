@@ -25,7 +25,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -55,19 +55,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mo.todo.data.model.Memo
+import com.mo.todo.data.model.TagConfig
 import com.mo.todo.ui.component.MemoGridCard
 import com.mo.todo.ui.component.MemoListItem
 import com.mo.todo.ui.component.TagChipRow
 import com.mo.todo.ui.viewmodel.MemoViewModel
-
-data class MemoTagItem(val key: String, val label: String)
-
-val memoTags = listOf(
-    MemoTagItem("all", "全部"),
-    MemoTagItem("note", "便签"),
-    MemoTagItem("reading", "阅读笔记"),
-    MemoTagItem("project", "项目")
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +85,7 @@ fun MemoScreen(
                     }
                     IconButton(onClick = { viewModel.toggleViewMode() }) {
                         Icon(
-                            if (isGridView) Icons.Filled.ViewList else Icons.Filled.GridView,
+                            if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.GridView,
                             contentDescription = if (isGridView) "列表视图" else "网格视图"
                         )
                     }
@@ -140,7 +132,7 @@ fun MemoScreen(
                 )
             }
 
-            TagChipRow(items = memoTags, selectedKey = selectedTag, keySelector = { it.key }, labelSelector = { it.label }, onItemClick = { viewModel.setSelectedTag(it) })
+            TagChipRow(items = TagConfig.memoTags, selectedKey = selectedTag, keySelector = { it.key }, labelSelector = { it.label }, onItemClick = { viewModel.setSelectedTag(it) })
 
             if (memos.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

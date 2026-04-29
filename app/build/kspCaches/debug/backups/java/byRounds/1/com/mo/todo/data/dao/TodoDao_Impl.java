@@ -16,6 +16,7 @@ import androidx.sqlite.db.SupportSQLiteStatement;
 import com.mo.todo.data.model.Todo;
 import java.lang.Class;
 import java.lang.Exception;
+import java.lang.Integer;
 import java.lang.Long;
 import java.lang.Object;
 import java.lang.Override;
@@ -44,6 +45,8 @@ public final class TodoDao_Impl implements TodoDao {
   private final SharedSQLiteStatement __preparedStmtOfDeleteTodoById;
 
   private final SharedSQLiteStatement __preparedStmtOfUpdateCompletion;
+
+  private final SharedSQLiteStatement __preparedStmtOfUpdateTagByTag;
 
   public TodoDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
@@ -132,6 +135,14 @@ public final class TodoDao_Impl implements TodoDao {
       @NonNull
       public String createQuery() {
         final String _query = "UPDATE todos SET isCompleted = ? WHERE id = ?";
+        return _query;
+      }
+    };
+    this.__preparedStmtOfUpdateTagByTag = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "UPDATE todos SET tag = ? WHERE tag = ?";
         return _query;
       }
     };
@@ -246,6 +257,34 @@ public final class TodoDao_Impl implements TodoDao {
   }
 
   @Override
+  public Object updateTagByTag(final String oldTag, final String newTag,
+      final Continuation<? super Integer> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Integer>() {
+      @Override
+      @NonNull
+      public Integer call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfUpdateTagByTag.acquire();
+        int _argIndex = 1;
+        _stmt.bindString(_argIndex, newTag);
+        _argIndex = 2;
+        _stmt.bindString(_argIndex, oldTag);
+        try {
+          __db.beginTransaction();
+          try {
+            final Integer _result = _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return _result;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfUpdateTagByTag.release(_stmt);
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
   public Flow<List<Todo>> getAllTodos() {
     final String _sql = "SELECT * FROM todos ORDER BY createdAt DESC";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
@@ -306,6 +345,66 @@ public final class TodoDao_Impl implements TodoDao {
         _statement.release();
       }
     });
+  }
+
+  @Override
+  public Object getAllTodosSuspend(final Continuation<? super List<Todo>> $completion) {
+    final String _sql = "SELECT * FROM todos ORDER BY createdAt DESC";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<List<Todo>>() {
+      @Override
+      @NonNull
+      public List<Todo> call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfTitle = CursorUtil.getColumnIndexOrThrow(_cursor, "title");
+          final int _cursorIndexOfDescription = CursorUtil.getColumnIndexOrThrow(_cursor, "description");
+          final int _cursorIndexOfTag = CursorUtil.getColumnIndexOrThrow(_cursor, "tag");
+          final int _cursorIndexOfPriority = CursorUtil.getColumnIndexOrThrow(_cursor, "priority");
+          final int _cursorIndexOfReminderTime = CursorUtil.getColumnIndexOrThrow(_cursor, "reminderTime");
+          final int _cursorIndexOfIsCompleted = CursorUtil.getColumnIndexOrThrow(_cursor, "isCompleted");
+          final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
+          final List<Todo> _result = new ArrayList<Todo>(_cursor.getCount());
+          while (_cursor.moveToNext()) {
+            final Todo _item;
+            final long _tmpId;
+            _tmpId = _cursor.getLong(_cursorIndexOfId);
+            final String _tmpTitle;
+            _tmpTitle = _cursor.getString(_cursorIndexOfTitle);
+            final String _tmpDescription;
+            if (_cursor.isNull(_cursorIndexOfDescription)) {
+              _tmpDescription = null;
+            } else {
+              _tmpDescription = _cursor.getString(_cursorIndexOfDescription);
+            }
+            final String _tmpTag;
+            _tmpTag = _cursor.getString(_cursorIndexOfTag);
+            final int _tmpPriority;
+            _tmpPriority = _cursor.getInt(_cursorIndexOfPriority);
+            final Long _tmpReminderTime;
+            if (_cursor.isNull(_cursorIndexOfReminderTime)) {
+              _tmpReminderTime = null;
+            } else {
+              _tmpReminderTime = _cursor.getLong(_cursorIndexOfReminderTime);
+            }
+            final boolean _tmpIsCompleted;
+            final int _tmp;
+            _tmp = _cursor.getInt(_cursorIndexOfIsCompleted);
+            _tmpIsCompleted = _tmp != 0;
+            final long _tmpCreatedAt;
+            _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
+            _item = new Todo(_tmpId,_tmpTitle,_tmpDescription,_tmpTag,_tmpPriority,_tmpReminderTime,_tmpIsCompleted,_tmpCreatedAt);
+            _result.add(_item);
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
   }
 
   @Override
@@ -381,72 +480,6 @@ public final class TodoDao_Impl implements TodoDao {
     int _argIndex = 1;
     _statement.bindString(_argIndex, tag);
     _argIndex = 2;
-    final int _tmp = completed ? 1 : 0;
-    _statement.bindLong(_argIndex, _tmp);
-    return CoroutinesRoom.createFlow(__db, false, new String[] {"todos"}, new Callable<List<Todo>>() {
-      @Override
-      @NonNull
-      public List<Todo> call() throws Exception {
-        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
-        try {
-          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
-          final int _cursorIndexOfTitle = CursorUtil.getColumnIndexOrThrow(_cursor, "title");
-          final int _cursorIndexOfDescription = CursorUtil.getColumnIndexOrThrow(_cursor, "description");
-          final int _cursorIndexOfTag = CursorUtil.getColumnIndexOrThrow(_cursor, "tag");
-          final int _cursorIndexOfPriority = CursorUtil.getColumnIndexOrThrow(_cursor, "priority");
-          final int _cursorIndexOfReminderTime = CursorUtil.getColumnIndexOrThrow(_cursor, "reminderTime");
-          final int _cursorIndexOfIsCompleted = CursorUtil.getColumnIndexOrThrow(_cursor, "isCompleted");
-          final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
-          final List<Todo> _result = new ArrayList<Todo>(_cursor.getCount());
-          while (_cursor.moveToNext()) {
-            final Todo _item;
-            final long _tmpId;
-            _tmpId = _cursor.getLong(_cursorIndexOfId);
-            final String _tmpTitle;
-            _tmpTitle = _cursor.getString(_cursorIndexOfTitle);
-            final String _tmpDescription;
-            if (_cursor.isNull(_cursorIndexOfDescription)) {
-              _tmpDescription = null;
-            } else {
-              _tmpDescription = _cursor.getString(_cursorIndexOfDescription);
-            }
-            final String _tmpTag;
-            _tmpTag = _cursor.getString(_cursorIndexOfTag);
-            final int _tmpPriority;
-            _tmpPriority = _cursor.getInt(_cursorIndexOfPriority);
-            final Long _tmpReminderTime;
-            if (_cursor.isNull(_cursorIndexOfReminderTime)) {
-              _tmpReminderTime = null;
-            } else {
-              _tmpReminderTime = _cursor.getLong(_cursorIndexOfReminderTime);
-            }
-            final boolean _tmpIsCompleted;
-            final int _tmp_1;
-            _tmp_1 = _cursor.getInt(_cursorIndexOfIsCompleted);
-            _tmpIsCompleted = _tmp_1 != 0;
-            final long _tmpCreatedAt;
-            _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
-            _item = new Todo(_tmpId,_tmpTitle,_tmpDescription,_tmpTag,_tmpPriority,_tmpReminderTime,_tmpIsCompleted,_tmpCreatedAt);
-            _result.add(_item);
-          }
-          return _result;
-        } finally {
-          _cursor.close();
-        }
-      }
-
-      @Override
-      protected void finalize() {
-        _statement.release();
-      }
-    });
-  }
-
-  @Override
-  public Flow<List<Todo>> getActiveTodos(final boolean completed) {
-    final String _sql = "SELECT * FROM todos WHERE isCompleted = ? ORDER BY createdAt DESC";
-    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
-    int _argIndex = 1;
     final int _tmp = completed ? 1 : 0;
     _statement.bindLong(_argIndex, _tmp);
     return CoroutinesRoom.createFlow(__db, false, new String[] {"todos"}, new Callable<List<Todo>>() {

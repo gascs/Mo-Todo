@@ -50,21 +50,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mo.todo.data.model.TagConfig
 import com.mo.todo.data.model.Todo
 import com.mo.todo.ui.component.SectionHeader
 import com.mo.todo.ui.component.TagChipRow
 import com.mo.todo.ui.component.TodoItemRow
 import com.mo.todo.ui.viewmodel.TodoViewModel
 import kotlinx.coroutines.launch
-
-data class TagItem(val key: String, val label: String)
-
-val todoTags = listOf(
-    TagItem("all", "全部"),
-    TagItem("work", "工作"),
-    TagItem("personal", "个人"),
-    TagItem("shopping", "购物")
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,7 +134,7 @@ fun TodoScreen(
             }
 
             TagChipRow(
-                items = todoTags,
+                items = TagConfig.todoTags,
                 selectedKey = selectedTag,
                 keySelector = { it.key },
                 labelSelector = { it.label },

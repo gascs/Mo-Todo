@@ -46,6 +46,8 @@ public final class MemoDao_Impl implements MemoDao {
 
   private final SharedSQLiteStatement __preparedStmtOfUpdateStarred;
 
+  private final SharedSQLiteStatement __preparedStmtOfUpdateTagByTag;
+
   public MemoDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
     this.__insertionAdapterOfMemo = new EntityInsertionAdapter<Memo>(__db) {
@@ -125,6 +127,14 @@ public final class MemoDao_Impl implements MemoDao {
       @NonNull
       public String createQuery() {
         final String _query = "UPDATE memos SET isStarred = ? WHERE id = ?";
+        return _query;
+      }
+    };
+    this.__preparedStmtOfUpdateTagByTag = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "UPDATE memos SET tag = ? WHERE tag = ?";
         return _query;
       }
     };
@@ -239,6 +249,34 @@ public final class MemoDao_Impl implements MemoDao {
   }
 
   @Override
+  public Object updateTagByTag(final String oldTag, final String newTag,
+      final Continuation<? super Integer> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Integer>() {
+      @Override
+      @NonNull
+      public Integer call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfUpdateTagByTag.acquire();
+        int _argIndex = 1;
+        _stmt.bindString(_argIndex, newTag);
+        _argIndex = 2;
+        _stmt.bindString(_argIndex, oldTag);
+        try {
+          __db.beginTransaction();
+          try {
+            final Integer _result = _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return _result;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfUpdateTagByTag.release(_stmt);
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
   public Flow<List<Memo>> getAllMemos() {
     final String _sql = "SELECT * FROM memos ORDER BY updatedAt DESC";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
@@ -295,6 +333,62 @@ public final class MemoDao_Impl implements MemoDao {
         _statement.release();
       }
     });
+  }
+
+  @Override
+  public Object getAllMemosSuspend(final Continuation<? super List<Memo>> $completion) {
+    final String _sql = "SELECT * FROM memos ORDER BY updatedAt DESC";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
+    final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
+    return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<List<Memo>>() {
+      @Override
+      @NonNull
+      public List<Memo> call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
+          final int _cursorIndexOfTitle = CursorUtil.getColumnIndexOrThrow(_cursor, "title");
+          final int _cursorIndexOfContent = CursorUtil.getColumnIndexOrThrow(_cursor, "content");
+          final int _cursorIndexOfTag = CursorUtil.getColumnIndexOrThrow(_cursor, "tag");
+          final int _cursorIndexOfColor = CursorUtil.getColumnIndexOrThrow(_cursor, "color");
+          final int _cursorIndexOfIsStarred = CursorUtil.getColumnIndexOrThrow(_cursor, "isStarred");
+          final int _cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "createdAt");
+          final int _cursorIndexOfUpdatedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "updatedAt");
+          final List<Memo> _result = new ArrayList<Memo>(_cursor.getCount());
+          while (_cursor.moveToNext()) {
+            final Memo _item;
+            final long _tmpId;
+            _tmpId = _cursor.getLong(_cursorIndexOfId);
+            final String _tmpTitle;
+            _tmpTitle = _cursor.getString(_cursorIndexOfTitle);
+            final String _tmpContent;
+            _tmpContent = _cursor.getString(_cursorIndexOfContent);
+            final String _tmpTag;
+            _tmpTag = _cursor.getString(_cursorIndexOfTag);
+            final Integer _tmpColor;
+            if (_cursor.isNull(_cursorIndexOfColor)) {
+              _tmpColor = null;
+            } else {
+              _tmpColor = _cursor.getInt(_cursorIndexOfColor);
+            }
+            final boolean _tmpIsStarred;
+            final int _tmp;
+            _tmp = _cursor.getInt(_cursorIndexOfIsStarred);
+            _tmpIsStarred = _tmp != 0;
+            final long _tmpCreatedAt;
+            _tmpCreatedAt = _cursor.getLong(_cursorIndexOfCreatedAt);
+            final long _tmpUpdatedAt;
+            _tmpUpdatedAt = _cursor.getLong(_cursorIndexOfUpdatedAt);
+            _item = new Memo(_tmpId,_tmpTitle,_tmpContent,_tmpTag,_tmpColor,_tmpIsStarred,_tmpCreatedAt,_tmpUpdatedAt);
+            _result.add(_item);
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+          _statement.release();
+        }
+      }
+    }, $completion);
   }
 
   @Override

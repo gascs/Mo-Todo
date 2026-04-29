@@ -56,6 +56,7 @@ fun PersonalizationScreen(
     val fontSizeKey by viewModel.fontSize.collectAsState()
     val cornerStyleKey by viewModel.cornerStyle.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
+    val isDynamic by viewModel.isDynamicColor.collectAsState()
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -124,6 +125,24 @@ fun PersonalizationScreen(
                     val selected = themeMode == mode
                     Card(
                         Modifier.weight(1f).clickable { scope.launch { viewModel.setThemeMode(mode) } },
+                        shape = MaterialTheme.shapes.small,
+                        colors = CardDefaults.cardColors(containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = if (selected) 2.dp else 0.dp)
+                    ) {
+                        Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                            Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+            Text("动态取色", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                listOf(false to "自定义配色", true to "取色自壁纸").forEach { (enabled, label) ->
+                    val selected = isDynamic == enabled
+                    Card(Modifier.weight(1f).clickable { scope.launch { viewModel.setDynamicColor(enabled) } },
                         shape = MaterialTheme.shapes.small,
                         colors = CardDefaults.cardColors(containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = if (selected) 2.dp else 0.dp)

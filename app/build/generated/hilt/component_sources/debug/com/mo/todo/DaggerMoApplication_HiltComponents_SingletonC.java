@@ -34,6 +34,8 @@ import com.mo.todo.ui.viewmodel.TodoViewModel;
 import com.mo.todo.ui.viewmodel.TodoViewModel_HiltModules;
 import com.mo.todo.ui.viewmodel.TodoViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
 import com.mo.todo.ui.viewmodel.TodoViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
+import com.mo.todo.worker.BootReceiver;
+import com.mo.todo.worker.BootReceiver_MembersInjector;
 import com.mo.todo.worker.ReminderWorker;
 import com.mo.todo.worker.ReminderWorker_AssistedFactory;
 import dagger.hilt.android.ActivityRetainedLifecycle;
@@ -613,6 +615,11 @@ public final class DaggerMoApplication_HiltComponents_SingletonC {
     }
 
     @Override
+    public void injectBootReceiver(BootReceiver bootReceiver) {
+      injectBootReceiver2(bootReceiver);
+    }
+
+    @Override
     public Set<Boolean> getDisableFragmentGetContextFix() {
       return Collections.<Boolean>emptySet();
     }
@@ -630,6 +637,11 @@ public final class DaggerMoApplication_HiltComponents_SingletonC {
     private MoApplication injectMoApplication2(MoApplication instance) {
       MoApplication_MembersInjector.injectWorkerFactory(instance, hiltWorkerFactory());
       return instance;
+    }
+
+    private BootReceiver injectBootReceiver2(BootReceiver instance2) {
+      BootReceiver_MembersInjector.injectDatabase(instance2, provideDatabaseProvider.get());
+      return instance2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {

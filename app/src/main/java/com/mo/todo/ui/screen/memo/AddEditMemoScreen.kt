@@ -57,6 +57,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mo.todo.data.model.Memo
+import com.mo.todo.data.model.TagConfig
 import com.mo.todo.ui.theme.MemoChipColors
 import com.mo.todo.ui.viewmodel.MemoViewModel
 
@@ -149,7 +150,7 @@ fun AddEditMemoScreen(
             Text("分类", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                memoTags.filter { it.key != "all" }.forEach { tag ->
+                TagConfig.memoTags.filter { it.key != "all" }.forEach { tag ->
                     val s = selectedTag == tag.key
                     Box(Modifier.clip(MaterialTheme.shapes.small).background(if (s) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant).clickable { selectedTag = tag.key }.padding(horizontal = 16.dp, vertical = 8.dp)) {
                         Text(tag.label, style = MaterialTheme.typography.labelLarge, color = if (s) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = if (s) FontWeight.SemiBold else FontWeight.Normal)

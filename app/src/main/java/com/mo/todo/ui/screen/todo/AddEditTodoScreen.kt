@@ -54,6 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mo.todo.data.model.TagConfig
 import com.mo.todo.data.model.Todo
 import com.mo.todo.ui.theme.PriorityHigh
 import com.mo.todo.ui.theme.PriorityLow
@@ -223,7 +224,7 @@ fun AddEditTodoScreen(
             Text("标签", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                todoTags.filter { it.key != "all" }.forEach { tag ->
+                TagConfig.todoTags.filter { it.key != "all" }.forEach { tag ->
                     val isSelected = selectedTag == tag.key
                     Box(
                         Modifier.clip(MaterialTheme.shapes.small)

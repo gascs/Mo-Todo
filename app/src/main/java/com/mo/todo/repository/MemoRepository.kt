@@ -11,23 +11,15 @@ class MemoRepository @Inject constructor(
     private val memoDao: MemoDao
 ) {
     fun getAllMemos(): Flow<List<Memo>> = memoDao.getAllMemos()
-
+    suspend fun getAllMemosSuspend(): List<Memo> = memoDao.getAllMemosSuspend()
     fun getMemosByTag(tag: String): Flow<List<Memo>> = memoDao.getMemosByTag(tag)
-
     fun searchMemos(query: String): Flow<List<Memo>> = memoDao.searchMemos(query)
-
     fun getStarredMemos(): Flow<List<Memo>> = memoDao.getStarredMemos()
-
-    suspend fun insertMemo(memo: Memo): Long = memoDao.insertMemo(memo)
-
-    suspend fun updateMemo(memo: Memo) = memoDao.updateMemo(memo)
-
-    suspend fun deleteMemo(memo: Memo) = memoDao.deleteMemo(memo)
-
-    suspend fun deleteMemoById(id: Long) = memoDao.deleteMemoById(id)
-
-    suspend fun updateStarred(id: Long, isStarred: Boolean) =
-        memoDao.updateStarred(id, isStarred)
-
-    suspend fun getMemoById(id: Long): Memo? = memoDao.getMemoById(id)
+    suspend fun insertMemo(memo: Memo): Result<Long> = runCatching { memoDao.insertMemo(memo) }
+    suspend fun updateMemo(memo: Memo): Result<Unit> = runCatching { memoDao.updateMemo(memo) }
+    suspend fun deleteMemo(memo: Memo): Result<Unit> = runCatching { memoDao.deleteMemo(memo) }
+    suspend fun deleteMemoById(id: Long): Result<Unit> = runCatching { memoDao.deleteMemoById(id) }
+    suspend fun updateStarred(id: Long, isStarred: Boolean): Result<Unit> = runCatching { memoDao.updateStarred(id, isStarred) }
+    suspend fun getMemoById(id: Long): Result<Memo?> = runCatching { memoDao.getMemoById(id) }
+    suspend fun updateTagByTag(oldTag: String, newTag: String): Result<Int> = runCatching { memoDao.updateTagByTag(oldTag, newTag) }
 }

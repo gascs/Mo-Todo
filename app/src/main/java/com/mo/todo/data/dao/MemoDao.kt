@@ -15,6 +15,9 @@ interface MemoDao {
     @Query("SELECT * FROM memos ORDER BY updatedAt DESC")
     fun getAllMemos(): Flow<List<Memo>>
 
+    @Query("SELECT * FROM memos ORDER BY updatedAt DESC")
+    suspend fun getAllMemosSuspend(): List<Memo>
+
     @Query("SELECT * FROM memos WHERE tag = :tag ORDER BY updatedAt DESC")
     fun getMemosByTag(tag: String): Flow<List<Memo>>
 
@@ -41,4 +44,7 @@ interface MemoDao {
 
     @Query("SELECT * FROM memos WHERE id = :id")
     suspend fun getMemoById(id: Long): Memo?
+
+    @Query("UPDATE memos SET tag = :newTag WHERE tag = :oldTag")
+    suspend fun updateTagByTag(oldTag: String, newTag: String): Int
 }

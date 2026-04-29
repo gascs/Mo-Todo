@@ -28,6 +28,7 @@ import hilt_aggregated_deps._com_mo_todo_ui_viewmodel_SettingsViewModel_HiltModu
 import hilt_aggregated_deps._com_mo_todo_ui_viewmodel_SettingsViewModel_HiltModules_KeyModule;
 import hilt_aggregated_deps._com_mo_todo_ui_viewmodel_TodoViewModel_HiltModules_BindsModule;
 import hilt_aggregated_deps._com_mo_todo_ui_viewmodel_TodoViewModel_HiltModules_KeyModule;
+import hilt_aggregated_deps._com_mo_todo_worker_BootReceiver_GeneratedInjector;
 import hilt_aggregated_deps._com_mo_todo_worker_ReminderWorker_HiltModule;
 import hilt_aggregated_deps._dagger_hilt_android_flags_FragmentGetContextFix_FragmentGetContextFixEntryPoint;
 import hilt_aggregated_deps._dagger_hilt_android_flags_HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule;
@@ -80,6 +81,7 @@ import hilt_aggregated_deps._dagger_hilt_android_internal_modules_HiltWrapper_Ac
         _com_mo_todo_ui_viewmodel_SettingsViewModel_HiltModules_KeyModule.class,
         _com_mo_todo_ui_viewmodel_TodoViewModel_HiltModules_BindsModule.class,
         _com_mo_todo_ui_viewmodel_TodoViewModel_HiltModules_KeyModule.class,
+        _com_mo_todo_worker_BootReceiver_GeneratedInjector.class,
         _com_mo_todo_worker_ReminderWorker_HiltModule.class,
         _dagger_hilt_android_flags_FragmentGetContextFix_FragmentGetContextFixEntryPoint.class,
         _dagger_hilt_android_flags_HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule.class,
