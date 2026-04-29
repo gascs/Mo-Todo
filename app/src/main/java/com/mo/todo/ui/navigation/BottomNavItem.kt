@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿package com.mo.todo.ui.navigation
+package com.mo.todo.ui.navigation
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import compose.icons.Octicons

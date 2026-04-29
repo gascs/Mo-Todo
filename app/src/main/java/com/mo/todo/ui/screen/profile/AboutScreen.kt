@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿package com.mo.todo.ui.screen.profile
+package com.mo.todo.ui.screen.profile
 
 import android.content.Intent
 import android.net.Uri

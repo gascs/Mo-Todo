@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿package com.mo.todo.ui.screen.profile
+package com.mo.todo.ui.screen.profile
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
