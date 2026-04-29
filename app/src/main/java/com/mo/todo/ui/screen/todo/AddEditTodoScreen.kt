@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿package com.mo.todo.ui.screen.todo
+package com.mo.todo.ui.screen.todo
 
 import android.widget.Toast
 import android.app.TimePickerDialog

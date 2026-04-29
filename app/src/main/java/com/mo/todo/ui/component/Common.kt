@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿package com.mo.todo.ui.component
+package com.mo.todo.ui.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -56,6 +57,7 @@ import com.mo.todo.ui.theme.PriorityHigh
 import com.mo.todo.ui.theme.PriorityLow
 import com.mo.todo.ui.theme.PriorityMedium
 import com.mo.todo.ui.theme.StarColor
+import com.mo.todo.ui.theme.MemoChipColors
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -81,6 +83,12 @@ fun TodoItemRow(
         targetValue = if (todo.isCompleted) 0.5f else 1f,
         animationSpec = tween(250),
         label = "textAlpha"
+    )
+
+    val checkboxAlpha by animateFloatAsState(
+        targetValue = if (todo.isCompleted) 0.6f else 1f,
+        animationSpec = tween(300),
+        label = "checkboxAlpha"
     )
 
     val priorityColor = when (todo.priority) {
@@ -122,29 +130,45 @@ fun TodoItemRow(
                     onLongClick = onLongClick
                 ),
             colors = CardDefaults.cardColors(
-                containerColor = if (todo.isCompleted)
-                    MaterialTheme.colorScheme.surface
-                else
-                    MaterialTheme.colorScheme.surface
+                containerColor = MaterialTheme.colorScheme.surface
             ),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = if (todo.isCompleted) 0.dp else 1.dp)
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 10.dp),
+                    .height(IntrinsicSize.Min),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Checkbox(
-                    checked = todo.isCompleted,
-                    onCheckedChange = { onToggleCompletion() },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = MaterialTheme.colorScheme.primary,
-                        uncheckedColor = MaterialTheme.colorScheme.outline,
-                        checkmarkColor = MaterialTheme.colorScheme.onPrimary
-                    )
+                // Priority color bar on left edge
+                Box(
+                    modifier = Modifier
+                        .width(4.dp)
+                        .height(IntrinsicSize.Max)
+                        .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(
+                            if (todo.isCompleted) Color.Gray.copy(alpha = 0.3f) else priorityColor
+                        )
                 )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = todo.isCompleted,
+                        onCheckedChange = { onToggleCompletion() },
+                        modifier = Modifier.alpha(checkboxAlpha),
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.primary,
+                            uncheckedColor = MaterialTheme.colorScheme.outline,
+                            checkmarkColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    )
 
                 Spacer(Modifier.width(4.dp))
 
@@ -220,6 +244,7 @@ fun TodoItemRow(
         }
     }
 }
+}
 
 @Composable
 fun EmptyPlaceholder(
@@ -276,6 +301,9 @@ fun MemoGridCard(
     val cardColor = memo.color?.let { Color(it) }
         ?: MaterialTheme.colorScheme.primaryContainer
 
+    val accentColor = memo.color?.let { Color(it) }
+        ?: (MemoChipColors.getOrElse(memo.id.toInt() % MemoChipColors.size) { MaterialTheme.colorScheme.primaryContainer })
+
     val tagLabel = when (memo.tag) {
         "note" -> "便签"
         "reading" -> "阅读笔记"
@@ -291,17 +319,26 @@ fun MemoGridCard(
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
+        Column {
+            // Color accent bar on top
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(72.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(cardColor.copy(alpha = 0.3f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("\uD83D\uDCDD", style = MaterialTheme.typography.headlineMedium)
-            }
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
+                    .background(accentColor)
+            )
+            Column(modifier = Modifier.padding(14.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(cardColor.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("\uD83D\uDCDD", style = MaterialTheme.typography.headlineMedium)
+                }
 
             Spacer(Modifier.height(10.dp))
 
@@ -355,6 +392,7 @@ fun MemoGridCard(
             }
         }
     }
+}
 }
 
 @OptIn(ExperimentalFoundationApi::class)

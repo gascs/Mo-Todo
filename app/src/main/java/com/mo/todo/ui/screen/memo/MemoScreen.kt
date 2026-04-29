@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿package com.mo.todo.ui.screen.memo
+package com.mo.todo.ui.screen.memo
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -144,8 +145,14 @@ fun MemoScreen(
             } else {
                 Crossfade(targetState = isGridView, label = "viewTransition") { grid ->
                     if (grid) {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
+                        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                            val columns = when {
+                                maxWidth < 600.dp -> 2
+                                maxWidth < 900.dp -> 3
+                                else -> 4
+                            }
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(columns),
                             contentPadding = PaddingValues(12.dp),
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -159,6 +166,7 @@ fun MemoScreen(
                                 )
                             }
                         }
+                    }
                     } else {
                         LazyColumn(
                             contentPadding = PaddingValues(12.dp),

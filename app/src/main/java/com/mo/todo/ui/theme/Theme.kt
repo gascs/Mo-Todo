@@ -30,6 +30,7 @@ val MoShapes = buildMoShapes()
 fun buildLightScheme(primary: androidx.compose.ui.graphics.Color, onPrimary: androidx.compose.ui.graphics.Color, primaryContainer: androidx.compose.ui.graphics.Color, onPrimaryContainer: androidx.compose.ui.graphics.Color) = lightColorScheme(
     primary = primary, onPrimary = onPrimary, primaryContainer = primaryContainer, onPrimaryContainer = onPrimaryContainer,
     secondary = MoSecondary, onSecondary = MoOnSecondary, secondaryContainer = MoSecondaryContainer, onSecondaryContainer = MoOnSecondaryContainer,
+    tertiary = MoTertiary, onTertiary = MoOnTertiary, tertiaryContainer = MoTertiaryContainer, onTertiaryContainer = MoOnTertiaryContainer,
     error = MoError, onError = MoOnError, errorContainer = MoErrorContainer, onErrorContainer = MoOnErrorContainer,
     background = MoLightBackground, onBackground = MoLightOnSurface,
     surface = MoLightSurface, onSurface = MoLightOnSurface,
@@ -40,6 +41,7 @@ fun buildLightScheme(primary: androidx.compose.ui.graphics.Color, onPrimary: and
 fun buildDarkScheme(primary: androidx.compose.ui.graphics.Color, onPrimary: androidx.compose.ui.graphics.Color, primaryContainer: androidx.compose.ui.graphics.Color, onPrimaryContainer: androidx.compose.ui.graphics.Color) = darkColorScheme(
     primary = primary, onPrimary = onPrimary, primaryContainer = primaryContainer, onPrimaryContainer = onPrimaryContainer,
     secondary = MoSecondaryDark, onSecondary = MoOnSecondaryDark, secondaryContainer = MoSecondaryContainerDark, onSecondaryContainer = MoOnSecondaryContainerDark,
+    tertiary = MoTertiaryDark, onTertiary = MoOnTertiaryDark, tertiaryContainer = MoTertiaryContainerDark, onTertiaryContainer = MoOnTertiaryContainerDark,
     error = MoErrorDark, onError = MoOnErrorDark, errorContainer = MoErrorContainerDark, onErrorContainer = MoOnErrorContainerDark,
     background = MoDarkBackground, onBackground = MoDarkOnSurface,
     surface = MoDarkSurface, onSurface = MoDarkOnSurface,
@@ -51,7 +53,7 @@ fun buildDarkScheme(primary: androidx.compose.ui.graphics.Color, onPrimary: andr
 fun MoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
-    colorTheme: ColorTheme = ColorTheme.SKYLINE,
+    colorTheme: ColorTheme = ColorTheme.FOREST,
     fontScale: Float = 1.0f,
     cornerMultiplier: Float = 1.0f,
     content: @Composable () -> Unit
