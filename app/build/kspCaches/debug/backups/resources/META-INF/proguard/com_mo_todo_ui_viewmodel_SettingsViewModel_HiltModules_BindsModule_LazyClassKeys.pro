@@ -1,1 +1,0 @@
--keep,allowobfuscation,allowshrinking class com.mo.todo.ui.viewmodel.SettingsViewModel
