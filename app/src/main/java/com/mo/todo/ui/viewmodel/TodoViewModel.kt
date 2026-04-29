@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import com.mo.todo.data.model.Todo
 import com.mo.todo.repository.TodoRepository
@@ -106,6 +107,7 @@ class TodoViewModel @Inject constructor(
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setInputData(inputData)
             .addTag("todo_reminder_$todoId")
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .build()
         WorkManager.getInstance(application)
             .enqueueUniqueWork("reminder_$todoId", ExistingWorkPolicy.REPLACE, workRequest)
