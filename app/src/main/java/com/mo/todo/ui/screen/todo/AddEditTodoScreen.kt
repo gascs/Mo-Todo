@@ -85,6 +85,13 @@ fun AddEditTodoScreen(
     var showTimePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
 
+    val settingsViewModel: com.mo.todo.ui.viewmodel.SettingsViewModel = hiltViewModel()
+    LaunchedEffect(Unit) {
+        if (!isEditing) {
+            priority = settingsViewModel.defaultPriority.value
+        }
+    }
+
     LaunchedEffect(todoId) {
         if (todoId != null && todoId > 0) {
             val existing = viewModel.getTodoById(todoId)

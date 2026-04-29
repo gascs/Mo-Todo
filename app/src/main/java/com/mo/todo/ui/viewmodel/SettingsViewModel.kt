@@ -31,6 +31,16 @@ enum class ThemeMode(val value: Int) { SYSTEM(0), LIGHT(1), DARK(2);
     companion object { fun fromValue(v: Int) = entries.firstOrNull { it.value == v } ?: SYSTEM }
 }
 
+enum class ListDensity(val key: String, val label: String, val verticalPadding: Float) {
+    COMPACT("compact", "紧凑", 2f),
+    NORMAL("normal", "标准", 6f),
+    RELAXED("relaxed", "放松", 10f);
+
+    companion object {
+        fun fromKey(key: String) = entries.firstOrNull { it.key == key } ?: NORMAL
+    }
+}
+
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context
@@ -48,6 +58,9 @@ class SettingsViewModel @Inject constructor(
         val WEBDAC_URL = stringPreferencesKey("webdav_url")
         val WEBDAC_USER = stringPreferencesKey("webdav_user")
         val IS_DYNAMIC_COLOR = booleanPreferencesKey("is_dynamic_color")
+        val LIST_DENSITY = stringPreferencesKey("list_density")
+        val NOTIFICATION_VIBRATE = booleanPreferencesKey("notification_vibrate")
+        val DEFAULT_PRIORITY = intPreferencesKey("default_priority")
     }
 
     private fun isSystemInDarkTheme(): Boolean =
@@ -66,6 +79,9 @@ class SettingsViewModel @Inject constructor(
     val nickname: StateFlow<String> = context.dataStore.data.map { it[K.NICKNAME] ?: "Mo 用户" }.stateIn(viewModelScope, SharingStarted.Eagerly, "Mo 用户")
     val avatarPath: StateFlow<String> = context.dataStore.data.map { it[K.AVATAR_PATH] ?: "" }.stateIn(viewModelScope, SharingStarted.Eagerly, "")
     val isDynamicColor: StateFlow<Boolean> = context.dataStore.data.map { it[K.IS_DYNAMIC_COLOR] ?: false }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    val listDensity: StateFlow<ListDensity> = context.dataStore.data.map { ListDensity.fromKey(it[K.LIST_DENSITY] ?: "normal") }.stateIn(viewModelScope, SharingStarted.Eagerly, ListDensity.NORMAL)
+    val notificationVibrate: StateFlow<Boolean> = context.dataStore.data.map { it[K.NOTIFICATION_VIBRATE] ?: true }.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+    val defaultPriority: StateFlow<Int> = context.dataStore.data.map { it[K.DEFAULT_PRIORITY] ?: 1 }.stateIn(viewModelScope, SharingStarted.Eagerly, 1)
 
     val customLabels: Flow<Set<String>> = context.dataStore.data.map { it[K.CUSTOM_LABELS] ?: emptySet() }
     private val _customLabelsState = MutableStateFlow<Set<String>>(emptySet())
@@ -80,6 +96,15 @@ class SettingsViewModel @Inject constructor(
     suspend fun setNickname(name: String) { context.dataStore.edit { it[K.NICKNAME] = name } }
     suspend fun setAvatarPath(path: String) { context.dataStore.edit { it[K.AVATAR_PATH] = path } }
     suspend fun setDynamicColor(enabled: Boolean) { context.dataStore.edit { it[K.IS_DYNAMIC_COLOR] = enabled } }
+    suspend fun setListDensity(key: String) {
+        context.dataStore.edit { it[K.LIST_DENSITY] = key }
+        context.getSharedPreferences("mo_prefs", Context.MODE_PRIVATE).edit().putString("list_density", key).apply()
+    }
+    suspend fun setNotificationVibrate(enabled: Boolean) {
+        context.dataStore.edit { it[K.NOTIFICATION_VIBRATE] = enabled }
+        context.getSharedPreferences("mo_prefs", Context.MODE_PRIVATE).edit().putBoolean("notification_vibrate", enabled).apply()
+    }
+    suspend fun setDefaultPriority(priority: Int) { context.dataStore.edit { it[K.DEFAULT_PRIORITY] = priority } }
 
     suspend fun addCustomLabel(label: String) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur + label } }
     suspend fun removeCustomLabel(label: String) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur - label } }

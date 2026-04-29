@@ -53,6 +53,8 @@ import com.mo.todo.data.model.Todo
 import com.mo.todo.ui.component.SectionHeader
 import com.mo.todo.ui.component.TagChipRow
 import com.mo.todo.ui.component.TodoItemRow
+import com.mo.todo.ui.viewmodel.ListDensity
+import com.mo.todo.ui.viewmodel.SettingsViewModel
 import com.mo.todo.ui.viewmodel.TodoViewModel
 import kotlinx.coroutines.launch
 
@@ -72,6 +74,8 @@ fun TodoScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var showMenuForTodo by remember { mutableStateOf<Todo?>(null) }
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+    val density by settingsViewModel.listDensity.collectAsState()
 
     val isEmpty = activeTodos.isEmpty() && completedTodos.isEmpty()
 
@@ -174,6 +178,7 @@ fun TodoScreen(
                                 }
                             },
                             onLongClick = { showMenuForTodo = todo },
+                            verticalPadding = density.verticalPadding.dp,
                         )
                     }
 
@@ -212,7 +217,8 @@ fun TodoScreen(
                                                 }
                                             }
                                         },
-                                        onLongClick = { showMenuForTodo = todo }
+                                        onLongClick = { showMenuForTodo = todo },
+                                        verticalPadding = density.verticalPadding.dp,
                                     )
                                 }
                             }

@@ -97,6 +97,9 @@ class ReminderWorker @AssistedInject constructor(
 
     private fun sendNotification(todoId: Long, title: String) {
         try {
+            val vibrate = applicationContext.getSharedPreferences("mo_prefs", Context.MODE_PRIVATE)
+                .getBoolean("notification_vibrate", true)
+
             val intent = Intent(applicationContext, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
@@ -106,7 +109,7 @@ class ReminderWorker @AssistedInject constructor(
             )
 
             val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+            val builder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle(title)
                 .setContentText("待办事项提醒")
@@ -116,11 +119,13 @@ class ReminderWorker @AssistedInject constructor(
                 .setAutoCancel(true)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setSound(soundUri)
-                .setVibrate(longArrayOf(0, 300, 200, 300))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .build()
 
-            NotificationManagerCompat.from(applicationContext).notify(todoId.toInt(), notification)
+            if (vibrate) {
+                builder.setVibrate(longArrayOf(0, 300, 200, 300))
+            }
+
+            NotificationManagerCompat.from(applicationContext).notify(todoId.toInt(), builder.build())
             Log.i(TAG, "Notification sent: id=$todoId")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to send notification: ${e.message}", e)

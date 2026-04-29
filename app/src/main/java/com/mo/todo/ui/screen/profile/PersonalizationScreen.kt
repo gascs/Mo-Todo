@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -24,6 +23,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -40,7 +41,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mo.todo.ui.theme.ColorTheme
 import com.mo.todo.ui.theme.CornerStyle
 import com.mo.todo.ui.theme.FontSize
+import com.mo.todo.ui.theme.PriorityHigh
+import com.mo.todo.ui.theme.PriorityLow
+import com.mo.todo.ui.theme.PriorityMedium
 import com.mo.todo.ui.theme.getThemeColors
+import com.mo.todo.ui.viewmodel.ListDensity
 import com.mo.todo.ui.viewmodel.SettingsViewModel
 import com.mo.todo.ui.viewmodel.ThemeMode
 import kotlinx.coroutines.launch
@@ -56,6 +61,9 @@ fun PersonalizationScreen(
     val cornerStyleKey by viewModel.cornerStyle.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
     val isDynamic by viewModel.isDynamicColor.collectAsState()
+    val listDensity by viewModel.listDensity.collectAsState(initial = ListDensity.NORMAL)
+    val notificationVibrate by viewModel.notificationVibrate.collectAsState()
+    val defaultPriority by viewModel.defaultPriority.collectAsState()
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -152,6 +160,54 @@ fun PersonalizationScreen(
                         }
                     }
                 }
+            }
+
+            Spacer(Modifier.height(24.dp))
+            Text("列表密度", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                ListDensity.entries.forEach { density ->
+                    val selected = listDensity == density
+                    Card(
+                        Modifier.weight(1f).clickable { scope.launch { viewModel.setListDensity(density.key) } },
+                        shape = MaterialTheme.shapes.small,
+                        colors = CardDefaults.cardColors(containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = if (selected) 2.dp else 0.dp)
+                    ) {
+                        Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                            Text(density.label, style = MaterialTheme.typography.bodyLarge, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+            Text("新建待办默认优先级", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                listOf(Triple(2, "高", PriorityHigh), Triple(1, "中", PriorityMedium), Triple(0, "低", PriorityLow)).forEach { (p, label, color) ->
+                    val selected = defaultPriority == p
+                    Card(
+                        Modifier.weight(1f).clickable { scope.launch { viewModel.setDefaultPriority(p) } },
+                        shape = MaterialTheme.shapes.small,
+                        colors = CardDefaults.cardColors(containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = if (selected) 2.dp else 0.dp)
+                    ) {
+                        Column(Modifier.fillMaxWidth().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Box(Modifier.size(12.dp).clip(CircleShape).background(color))
+                            Spacer(Modifier.height(6.dp))
+                            Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+            Text("通知振动", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(if (notificationVibrate) "提醒时将振动" else "提醒时仅通知音", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                Switch(checked = notificationVibrate, onCheckedChange = { scope.launch { viewModel.setNotificationVibrate(it) } },
+                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary, checkedTrackColor = MaterialTheme.colorScheme.primaryContainer))
             }
 
             Spacer(Modifier.height(32.dp))

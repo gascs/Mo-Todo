@@ -71,7 +71,8 @@ fun TodoItemRow(
     onClick: () -> Unit,
     onSwipeDelete: () -> Unit,
     onLongClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    verticalPadding: androidx.compose.ui.unit.Dp = 6.dp
 ) {
     val animatedScale by animateFloatAsState(
         targetValue = if (todo.isCompleted) 0.97f else 1f,
@@ -108,7 +109,7 @@ fun TodoItemRow(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 3.dp)
+            .padding(horizontal = 16.dp, vertical = verticalPadding)
     ) {
         Card(
             modifier = Modifier
