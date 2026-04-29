@@ -84,6 +84,7 @@ class SettingsViewModel @Inject constructor(
     suspend fun addCustomLabel(label: String) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur + label } }
     suspend fun removeCustomLabel(label: String) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur - label } }
     suspend fun removeCustomLabels(labels: Set<String>) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur - labels } }
+    suspend fun renameCustomLabel(oldName: String, newName: String) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur - oldName + newName } }
 
     suspend fun saveWebDavConfig(url: String, user: String, pass: String) {
         context.dataStore.edit { it[K.WEBDAC_URL] = url; it[K.WEBDAC_USER] = user }

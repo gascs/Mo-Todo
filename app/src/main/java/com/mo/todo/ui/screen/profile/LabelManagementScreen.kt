@@ -1,10 +1,8 @@
 package com.mo.todo.ui.screen.profile
 
 import android.widget.Toast
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -64,6 +62,8 @@ fun LabelManagementScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var newLabelText by remember { mutableStateOf("") }
     var deleteTarget by remember { mutableStateOf<String?>(null) }
+    var renameTarget by remember { mutableStateOf<String?>(null) }
+    var renameText by remember { mutableStateOf("") }
     var isBatchMode by remember { mutableStateOf(false) }
     var selectedLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
 
@@ -95,11 +95,33 @@ fun LabelManagementScreen(
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
             title = { Text("删除标签") },
-            text = { Text("确定删除标签「${label}」？使用该标签的待办和备忘将标记为「未分类」。") },
+            text = { Text("确定删除标签「${label}」？") },
             confirmButton = {
                 TextButton(onClick = { scope.launch { viewModel.removeCustomLabel(label); deleteTarget = null; Toast.makeText(context, "已删除", Toast.LENGTH_SHORT).show() } }) { Text("删除", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton(onClick = { deleteTarget = null }) { Text("取消") } }
+        )
+    }
+
+    renameTarget?.let { oldName ->
+        AlertDialog(
+            onDismissRequest = { renameTarget = null; renameText = "" },
+            title = { Text("重命名标签") },
+            text = {
+                OutlinedTextField(value = renameText, onValueChange = { renameText = it }, modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(oldName) }, singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant),
+                    shape = MaterialTheme.shapes.small)
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val trimmed = renameText.trim()
+                    if (trimmed.isBlank()) { Toast.makeText(context, "标签名不能为空", Toast.LENGTH_SHORT).show(); return@TextButton }
+                    if (trimmed in allLabels && trimmed != oldName) { Toast.makeText(context, "标签已存在", Toast.LENGTH_SHORT).show(); return@TextButton }
+                    scope.launch { viewModel.renameCustomLabel(oldName, trimmed); renameTarget = null; renameText = ""; Toast.makeText(context, "已重命名", Toast.LENGTH_SHORT).show() }
+                }) { Text("确定") }
+            },
+            dismissButton = { TextButton(onClick = { renameTarget = null; renameText = "" }) { Text("取消") } }
         )
     }
 
@@ -112,8 +134,8 @@ fun LabelManagementScreen(
                     if (isBatchMode) {
                         IconButton(onClick = {
                             if (selectedLabels.isNotEmpty()) {
-                                scope.launch { viewModel.removeCustomLabels(selectedLabels); selectedLabels = emptySet(); isBatchMode = false }
-                                Toast.makeText(context, "已删除 ${selectedLabels.size} 个标签", Toast.LENGTH_SHORT).show()
+                                val count = selectedLabels.size
+                                scope.launch { viewModel.removeCustomLabels(selectedLabels); selectedLabels = emptySet(); isBatchMode = false; Toast.makeText(context, "已删除 $count 个标签", Toast.LENGTH_SHORT).show() }
                             }
                         }) { Icon(Octicons.Trash24, "批量删除", tint = MaterialTheme.colorScheme.error) }
                     } else {
@@ -146,7 +168,8 @@ fun LabelManagementScreen(
                         Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
                         Text(if (isCustom) "自定义" else "默认", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (!isBatchMode && isCustom) {
-                            Spacer(Modifier.width(10.dp))
+                            Spacer(Modifier.width(6.dp))
+                            IconButton(onClick = { renameTarget = label; renameText = "" }, modifier = Modifier.size(32.dp)) { Icon(Octicons.Pencil24, "重命名", tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), modifier = Modifier.size(16.dp)) }
                             IconButton(onClick = { deleteTarget = label }, modifier = Modifier.size(32.dp)) { Icon(Octicons.X24, "删除", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(18.dp)) }
                         }
                     }
