@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.profile
+﻿﻿package com.mo.todo.ui.screen.profile
 
 import android.net.Uri
 import android.widget.Toast
@@ -19,14 +19,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Tag
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -137,7 +133,7 @@ fun ProfileScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(nickname, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(Modifier.width(6.dp))
-                        Icon(Icons.Filled.Edit, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.outline)
+                        Icon(Octicons.Pencil24, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.outline)
                     }
                     Spacer(Modifier.height(2.dp))
                     Text("让生活井井有条", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -147,11 +143,11 @@ fun ProfileScreen(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
             Spacer(Modifier.height(8.dp))
 
-            ProfileMenuItem(Icons.Filled.Tag, Color(0xFF5B7F6A), "标签管理", "管理待办和备忘标签", onClick = onNavigateToLabelManagement)
-            ProfileMenuItem(Icons.Filled.Notifications, Color(0xFFE8A840), "提醒默认设置", "设置默认提醒时间", onClick = onNavigateToReminderSettings)
-            ProfileMenuItem(Icons.Filled.Palette, Color(0xFF8B7EC8), "个性化", "配色方案 / 字体 / 圆角 / 主题", onClick = onNavigateToPersonalization)
-            ProfileMenuItem(Icons.Filled.SaveAlt, Color(0xFFD9534F), "数据管理", "本地导出导入 / WebDAV 备份恢复", onClick = onNavigateToDataManagement)
-            ProfileMenuItem(Icons.Filled.Info, Color(0xFF5B8DEF), "关于 Mo", "v1.0.0", onClick = onNavigateToAbout)
+            ProfileMenuItem(Octicons.Tag24, Color(0xFF0969DA), "标签管理", "管理待办和备忘标签", onClick = onNavigateToLabelManagement)
+            ProfileMenuItem(Octicons.Bell24, Color(0xFFBF8700), "提醒默认设置", "设置默认提醒时间", onClick = onNavigateToReminderSettings)
+            ProfileMenuItem(Icons.Filled.Palette, Color(0xFF8250DF), "个性化", "配色方案 / 字体 / 圆角 / 主题", onClick = onNavigateToPersonalization)
+            ProfileMenuItem(Octicons.Database24, Color(0xFFCF222E), "数据管理", "本地导出导入 / WebDAV 备份恢复", onClick = onNavigateToDataManagement)
+            ProfileMenuItem(Octicons.Info24, Color(0xFF0969DA), "关于 Mo", "v1.0.0", onClick = onNavigateToAbout)
 
             Spacer(Modifier.height(32.dp))
         }
@@ -167,6 +163,6 @@ private fun ProfileMenuItem(icon: ImageVector, iconTint: Color, label: String, s
             Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
+        Icon(Octicons.ChevronRight24, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
     }
 }

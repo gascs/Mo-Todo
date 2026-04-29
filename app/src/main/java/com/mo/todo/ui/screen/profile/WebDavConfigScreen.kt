@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.profile
+﻿﻿package com.mo.todo.ui.screen.profile
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
@@ -11,11 +11,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -68,7 +65,7 @@ fun WebDavConfigScreen(
             TopAppBar(
                 title = { Text("WebDAV 配置", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") }
+                    IconButton(onClick = onNavigateBack) { Icon(Octicons.ArrowLeft24, "返回") }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
@@ -113,7 +110,7 @@ fun WebDavConfigScreen(
                 visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
-                        Icon(if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff, contentDescription = null)
+                        Icon(if (showPassword) Octicons.Eye24 else Octicons.EyeClosed24, contentDescription = null)
                     }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),

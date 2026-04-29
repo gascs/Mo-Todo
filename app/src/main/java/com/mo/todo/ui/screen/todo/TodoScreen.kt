@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.todo
+﻿﻿package com.mo.todo.ui.screen.todo
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -83,11 +81,11 @@ fun TodoScreen(
                 title = { Text("Mo \u00b7 待办", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { viewModel.setSearchActive(!isSearchActive) }) {
-                        Icon(Icons.Filled.Search, contentDescription = "搜索")
+                        Icon(Octicons.Search24, contentDescription = "搜索")
                     }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Filled.MoreVert, contentDescription = "更多")
+                            Icon(Octicons.KebabHorizontal24, contentDescription = "更多")
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             DropdownMenuItem(text = { Text("按优先级排序") }, onClick = { showMenu = false })
@@ -106,7 +104,7 @@ fun TodoScreen(
                 shape = MaterialTheme.shapes.extraLarge,
                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp, pressedElevation = 8.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "新建待办")
+                Icon(Octicons.Plus24, contentDescription = "新建待办")
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

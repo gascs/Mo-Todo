@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.profile
+﻿﻿package com.mo.todo.ui.screen.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,9 +15,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Done
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -62,7 +61,7 @@ fun PersonalizationScreen(
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("个性化", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } },
+                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Octicons.ArrowLeft24, "返回") } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
         },
         containerColor = MaterialTheme.colorScheme.background

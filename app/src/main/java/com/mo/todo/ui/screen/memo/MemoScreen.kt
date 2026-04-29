@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.memo
+﻿﻿package com.mo.todo.ui.screen.memo
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -18,13 +18,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -81,7 +78,7 @@ fun MemoScreen(
                 title = { Text("Mo \u00b7 备忘", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = { viewModel.setSearchActive(!isSearchActive) }) {
-                        Icon(Icons.Filled.Search, contentDescription = "搜索")
+                        Icon(Octicons.Search24, contentDescription = "搜索")
                     }
                     IconButton(onClick = { viewModel.toggleViewMode() }) {
                         Icon(
@@ -91,7 +88,7 @@ fun MemoScreen(
                     }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Filled.MoreVert, contentDescription = "更多")
+                            Icon(Octicons.KebabHorizontal24, contentDescription = "更多")
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             DropdownMenuItem(text = { Text("按更新时间排序") }, onClick = { showMenu = false })
@@ -110,7 +107,7 @@ fun MemoScreen(
                 shape = MaterialTheme.shapes.extraLarge,
                 elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp, pressedElevation = 8.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "新建备忘录")
+                Icon(Octicons.Plus24, contentDescription = "新建备忘录")
             }
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -189,13 +186,13 @@ fun MemoScreen(
             text = {
                 Column {
                     TextButton(onClick = { contextMemo = null; onNavigateToAddEdit(memo.id) }, modifier = Modifier.fillMaxWidth()) {
-                        Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                        Icon(Octicons.Pencil24, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                         Text("编辑", modifier = Modifier.weight(1f))
                     }
                     TextButton(onClick = {
                         contextMemo = null
                     }, modifier = Modifier.fillMaxWidth()) {
-                        Icon(Icons.Filled.ContentCopy, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                        Icon(Octicons.Copy24, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                         Text("复制文本", modifier = Modifier.weight(1f))
                     }
                 }

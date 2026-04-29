@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.profile
+﻿﻿package com.mo.todo.ui.screen.profile
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -13,9 +13,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -71,7 +70,7 @@ fun ReminderSettingsScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Octicons.ArrowLeft24,
                             contentDescription = "返回"
                         )
                     }
@@ -138,7 +137,7 @@ fun ReminderSettingsScreen(
                         )
                         if (isSelected) {
                             Icon(
-                                imageVector = Icons.Filled.Check,
+                                imageVector = Octicons.Check24,
                                 contentDescription = "已选择",
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(start = 8.dp)

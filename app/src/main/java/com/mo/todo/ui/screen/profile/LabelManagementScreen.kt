@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.profile
+﻿﻿package com.mo.todo.ui.screen.profile
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -17,11 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -110,7 +107,7 @@ fun LabelManagementScreen(
         topBar = {
             TopAppBar(
                 title = { Text(if (isBatchMode) "已选 ${selectedLabels.size} 项" else "标签管理", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = { if (isBatchMode) { isBatchMode = false; selectedLabels = emptySet() } else onNavigateBack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } },
+                navigationIcon = { IconButton(onClick = { if (isBatchMode) { isBatchMode = false; selectedLabels = emptySet() } else onNavigateBack() }) { Icon(Octicons.ArrowLeft24, "返回") } },
                 actions = {
                     if (isBatchMode) {
                         IconButton(onClick = {
@@ -118,9 +115,9 @@ fun LabelManagementScreen(
                                 scope.launch { viewModel.removeCustomLabels(selectedLabels); selectedLabels = emptySet(); isBatchMode = false }
                                 Toast.makeText(context, "已删除 ${selectedLabels.size} 个标签", Toast.LENGTH_SHORT).show()
                             }
-                        }) { Icon(Icons.Filled.Delete, "批量删除", tint = MaterialTheme.colorScheme.error) }
+                        }) { Icon(Octicons.Trash24, "批量删除", tint = MaterialTheme.colorScheme.error) }
                     } else {
-                        IconButton(onClick = { showAddDialog = true }) { Icon(Icons.Filled.Add, "添加") }
+                        IconButton(onClick = { showAddDialog = true }) { Icon(Octicons.Plus24, "添加") }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
@@ -150,7 +147,7 @@ fun LabelManagementScreen(
                         Text(if (isCustom) "自定义" else "默认", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (!isBatchMode && isCustom) {
                             Spacer(Modifier.width(10.dp))
-                            IconButton(onClick = { deleteTarget = label }, modifier = Modifier.size(32.dp)) { Icon(Icons.Filled.Close, "删除", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(18.dp)) }
+                            IconButton(onClick = { deleteTarget = label }, modifier = Modifier.size(32.dp)) { Icon(Octicons.X24, "删除", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(18.dp)) }
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.profile
+﻿﻿package com.mo.todo.ui.screen.profile
 
 import android.content.Context
 import android.net.Uri
@@ -17,13 +17,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -107,7 +106,7 @@ fun DataManagementScreen(
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("数据管理", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } },
+                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Octicons.ArrowLeft24, "返回") } },
                 actions = { IconButton(onClick = onNavigateToWebDavConfig) { Icon(Icons.Filled.Settings, "WebDAV 配置") } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
         },
@@ -123,10 +122,10 @@ fun DataManagementScreen(
                     Spacer(Modifier.height(12.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedButton(onClick = { exportLauncher.launch("Mo_backup_${System.currentTimeMillis()}.json") }, modifier = Modifier.weight(1f), shape = MaterialTheme.shapes.small) {
-                            Icon(Icons.Filled.Upload, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("导出 JSON")
+                            Icon(Octicons.Upload24, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("导出 JSON")
                         }
                         OutlinedButton(onClick = { importLauncher.launch(arrayOf("application/json")) }, modifier = Modifier.weight(1f), shape = MaterialTheme.shapes.small) {
-                            Icon(Icons.Filled.Download, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("导入 JSON")
+                            Icon(Octicons.Download24, null, Modifier.size(16.dp)); Spacer(Modifier.width(6.dp)); Text("导入 JSON")
                         }
                     }
                 }

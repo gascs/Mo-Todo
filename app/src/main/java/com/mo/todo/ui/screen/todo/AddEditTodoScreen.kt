@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.todo
+﻿﻿package com.mo.todo.ui.screen.todo
 
 import android.widget.Toast
 import android.app.TimePickerDialog
@@ -19,10 +19,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Close
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
@@ -147,7 +145,7 @@ fun AddEditTodoScreen(
         topBar = {
             TopAppBar(
                 title = { Text(if (isEditing) "编辑待办" else "新建待办", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } },
+                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Octicons.ArrowLeft24, "返回") } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
@@ -189,13 +187,13 @@ fun AddEditTodoScreen(
                     modifier = Modifier.weight(1f),
                     shape = MaterialTheme.shapes.small
                 ) {
-                    Icon(Icons.Filled.CalendarMonth, null, Modifier.size(18.dp))
+                    Icon(Octicons.Calendar24, null, Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(reminderText, maxLines = 1)
                 }
                 if (reminderTime > 0) {
                     IconButton(onClick = { reminderTime = 0L; reminderText = "设置提醒" }, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Filled.Close, "清除提醒", tint = MaterialTheme.colorScheme.error)
+                        Icon(Octicons.X24, "清除提醒", tint = MaterialTheme.colorScheme.error)
                     }
                 }
             }

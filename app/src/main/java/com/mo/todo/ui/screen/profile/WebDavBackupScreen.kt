@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.profile
+﻿﻿package com.mo.todo.ui.screen.profile
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
@@ -13,8 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Settings
@@ -73,7 +74,7 @@ fun WebDavBackupScreen(
             TopAppBar(
                 title = { Text("WebDAV 备份", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") }
+                    IconButton(onClick = onNavigateBack) { Icon(Octicons.ArrowLeft24, "返回") }
                 },
                 actions = {
                     IconButton(onClick = onNavigateToConfig) {

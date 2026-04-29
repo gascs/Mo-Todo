@@ -1,4 +1,4 @@
-package com.mo.todo.ui.component
+﻿﻿package com.mo.todo.ui.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -23,9 +23,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.StarBorder
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -321,7 +320,7 @@ fun MemoGridCard(
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
-                    imageVector = if (memo.isStarred) Icons.Outlined.Star else Icons.Outlined.StarBorder,
+                    imageVector = if (memo.isStarred) Octicons.StarFill24 else Octicons.Star24,
                     contentDescription = "星标",
                     modifier = Modifier.size(18.dp).clickable { onToggleStar() },
                     tint = if (memo.isStarred) StarColor else MaterialTheme.colorScheme.outline
@@ -430,7 +429,7 @@ fun MemoListItem(
             Spacer(Modifier.width(8.dp))
 
             Icon(
-                imageVector = if (memo.isStarred) Icons.Outlined.Star else Icons.Outlined.StarBorder,
+                imageVector = if (memo.isStarred) Octicons.StarFill24 else Octicons.Star24,
                 contentDescription = "星标",
                 modifier = Modifier.size(20.dp).clickable { onToggleStar() },
                 tint = if (memo.isStarred) StarColor else MaterialTheme.colorScheme.outline

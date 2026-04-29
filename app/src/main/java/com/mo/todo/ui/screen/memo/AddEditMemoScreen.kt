@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.memo
+﻿﻿package com.mo.todo.ui.screen.memo
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -16,12 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import compose.icons.Octicons
+import compose.icons.octicons.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FormatBold
-import androidx.compose.material.icons.filled.FormatItalic
-import androidx.compose.material.icons.filled.FormatListBulleted
-import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.StrikethroughS
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -96,7 +93,7 @@ fun AddEditMemoScreen(
         topBar = {
             TopAppBar(
                 title = { Text(if (isEditing) "编辑备忘录" else "新建备忘录", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } },
+                navigationIcon = { IconButton(onClick = onNavigateBack) { Icon(Octicons.ArrowLeft24, "返回") } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -122,11 +119,11 @@ fun AddEditMemoScreen(
             Spacer(Modifier.height(16.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(
-                    Triple(Icons.Filled.FormatBold, "加粗") { isBold = !isBold; content = if (isBold) "**${content}**" else content },
-                    Triple(Icons.Filled.FormatItalic, "斜体") { isItalic = !isItalic; content = if (isItalic) "*${content}*" else content },
+                    Triple(Octicons.Bold24, "加粗") { isBold = !isBold; content = if (isBold) "**${content}**" else content },
+                    Triple(Octicons.Italic24, "斜体") { isItalic = !isItalic; content = if (isItalic) "*${content}*" else content },
                     Triple(Icons.Filled.StrikethroughS, "删除线") { isStrikethrough = !isStrikethrough; content = if (isStrikethrough) "~~${content}~~" else content },
-                    Triple(Icons.Filled.FormatListBulleted, "无序列表") { content += "\n- " },
-                    Triple(Icons.Filled.FormatListNumbered, "有序列表") { content += "\n1. " }
+                    Triple(Octicons.ListUnordered24, "无序列表") { content += "\n- " },
+                    Triple(Octicons.ListOrdered24, "有序列表") { content += "\n1. " }
                 ).forEach { (icon, desc, action) ->
                     Box(Modifier.size(36.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant).clickable { action() }, contentAlignment = Alignment.Center) {
                         Icon(icon, desc, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)

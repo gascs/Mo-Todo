@@ -1,10 +1,8 @@
-package com.mo.todo.ui.navigation
+﻿﻿package com.mo.todo.ui.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.NoteAlt
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.ui.graphics.vector.ImageVector
+import compose.icons.Octicons
+import compose.icons.octicons.*
 
 sealed class BottomNavItem(
     val route: String,
@@ -14,19 +12,19 @@ sealed class BottomNavItem(
     data object Todo : BottomNavItem(
         route = "todo",
         label = "待办",
-        icon = Icons.Outlined.CheckCircle
+        icon = Octicons.CheckCircle24
     )
 
     data object Memo : BottomNavItem(
         route = "memo",
         label = "备忘",
-        icon = Icons.Outlined.NoteAlt
+        icon = Octicons.Note24
     )
 
     data object Profile : BottomNavItem(
         route = "profile",
         label = "我的",
-        icon = Icons.Outlined.Person
+        icon = Octicons.Person24
     )
 
     companion object {

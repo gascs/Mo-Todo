@@ -66,6 +66,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.foundation:foundation")
 
+    // Octicons — GitHub icon set (MIT)
+    implementation("br.com.devsrsouza.compose.icons:octicons:1.1.1")
+
     // Activity & Lifecycle
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
