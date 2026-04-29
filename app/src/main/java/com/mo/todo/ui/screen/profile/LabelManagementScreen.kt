@@ -3,6 +3,7 @@ package com.mo.todo.ui.screen.profile
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -173,30 +174,33 @@ fun LabelManagementScreen(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 3.dp)
                 ) {
                     Row(
-                        Modifier.fillMaxWidth()
-                            .then(
-                                if (isCustom) Modifier.combinedClickable(
-                                    onClick = {
-                                        if (isBatchMode) {
-                                            selectedLabels = if (checked) selectedLabels - label else selectedLabels + label
-                                        }
-                                    },
-                                    onLongClick = {
-                                        if (!isBatchMode) {
-                                            isBatchMode = true
-                                            selectedLabels = setOf(label)
-                                        }
-                                    }
-                                ) else Modifier
-                            )
-                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (isBatchMode && isCustom) {
                             Checkbox(checked = checked, onCheckedChange = { selectedLabels = if (it) selectedLabels + label else selectedLabels - label })
                             Spacer(Modifier.width(4.dp))
                         }
-                        Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                        Box(
+                            Modifier.weight(1f)
+                                .then(
+                                    if (isCustom) Modifier.combinedClickable(
+                                        onClick = {
+                                            if (isBatchMode) {
+                                                selectedLabels = if (checked) selectedLabels - label else selectedLabels + label
+                                            }
+                                        },
+                                        onLongClick = {
+                                            if (!isBatchMode) {
+                                                isBatchMode = true
+                                                selectedLabels = setOf(label)
+                                            }
+                                        }
+                                    ) else Modifier
+                                )
+                        ) {
+                            Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                        }
                         Text(if (isCustom) "自定义" else "默认", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (!isBatchMode && isCustom) {
                             Spacer(Modifier.width(6.dp))
