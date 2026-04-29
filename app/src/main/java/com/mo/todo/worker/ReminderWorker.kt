@@ -41,6 +41,9 @@ class ReminderWorker @AssistedInject constructor(
 
         fun createChannel(context: Context) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val nm = context.getSystemService(NotificationManager::class.java)
+                nm.deleteNotificationChannel(CHANNEL_ID)
+
                 val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
                 val audioAttrs = AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION)
@@ -56,7 +59,7 @@ class ReminderWorker @AssistedInject constructor(
                     lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
                     setBypassDnd(true)
                 }
-                context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+                nm.createNotificationChannel(channel)
                 Log.d(TAG, "Notification channel created: $CHANNEL_ID")
             }
         }
@@ -101,11 +104,11 @@ class ReminderWorker @AssistedInject constructor(
             val vibrate = applicationContext.getSharedPreferences("mo_prefs", Context.MODE_PRIVATE)
                 .getBoolean("notification_vibrate", true)
 
-            val intent = Intent(applicationContext, MainActivity::class.java).apply {
+            val fullScreenIntent = Intent(applicationContext, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
-            val pendingIntent = PendingIntent.getActivity(
-                applicationContext, todoId.toInt(), intent,
+            val fullScreenPendingIntent = PendingIntent.getActivity(
+                applicationContext, todoId.toInt(), fullScreenIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
@@ -116,7 +119,8 @@ class ReminderWorker @AssistedInject constructor(
                 .setContentText("待办事项提醒")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
-                .setContentIntent(pendingIntent)
+                .setContentIntent(fullScreenPendingIntent)
+                .setFullScreenIntent(fullScreenPendingIntent, true)
                 .setAutoCancel(true)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setSound(soundUri)
