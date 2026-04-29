@@ -5,11 +5,11 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Centered checkmark within safe zone (21-87) -->
+    <!-- Cute hand-drawn checkmark, safe zone 21-87 -->
     <path
-        android:pathData="M36,57 L50,70 L72,43"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="5"
+        android:pathData="M36,58 C38,62 44,72 50,74 C54,66 64,50 72,44"
+        android:strokeColor="#4A90D9"
+        android:strokeWidth="4.5"
         android:fillColor="@android:color/transparent"
         android:strokeLineCap="round"
         android:strokeLineJoin="round" />
