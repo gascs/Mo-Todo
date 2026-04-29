@@ -1,8 +1,8 @@
 package com.mo.todo.ui.screen.profile
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
 
 val defaultLabels = listOf("工作", "个人", "购物", "便签", "阅读笔记", "项目")
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun LabelManagementScreen(
     onNavigateBack: () -> Unit,
@@ -74,9 +74,13 @@ fun LabelManagementScreen(
             onDismissRequest = { showAddDialog = false; newLabelText = "" },
             title = { Text("添加标签") },
             text = {
-                OutlinedTextField(value = newLabelText, onValueChange = { newLabelText = it }, modifier = Modifier.fillMaxWidth(),
+                OutlinedTextField(
+                    value = newLabelText, onValueChange = { newLabelText = it },
+                    modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("输入标签名称") }, singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant),
                     shape = MaterialTheme.shapes.small)
             },
             confirmButton = {
@@ -97,7 +101,10 @@ fun LabelManagementScreen(
             title = { Text("删除标签") },
             text = { Text("确定删除标签「${label}」？") },
             confirmButton = {
-                TextButton(onClick = { scope.launch { viewModel.removeCustomLabel(label); deleteTarget = null; Toast.makeText(context, "已删除", Toast.LENGTH_SHORT).show() } }) { Text("删除", color = MaterialTheme.colorScheme.error) }
+                TextButton(onClick = {
+                    scope.launch { viewModel.removeCustomLabel(label); deleteTarget = null }
+                    Toast.makeText(context, "已删除", Toast.LENGTH_SHORT).show()
+                }) { Text("删除", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton(onClick = { deleteTarget = null }) { Text("取消") } }
         )
@@ -108,9 +115,13 @@ fun LabelManagementScreen(
             onDismissRequest = { renameTarget = null; renameText = "" },
             title = { Text("重命名标签") },
             text = {
-                OutlinedTextField(value = renameText, onValueChange = { renameText = it }, modifier = Modifier.fillMaxWidth(),
+                OutlinedTextField(
+                    value = renameText, onValueChange = { renameText = it },
+                    modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text(oldName) }, singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant),
                     shape = MaterialTheme.shapes.small)
             },
             confirmButton = {
@@ -118,7 +129,8 @@ fun LabelManagementScreen(
                     val trimmed = renameText.trim()
                     if (trimmed.isBlank()) { Toast.makeText(context, "标签名不能为空", Toast.LENGTH_SHORT).show(); return@TextButton }
                     if (trimmed in allLabels && trimmed != oldName) { Toast.makeText(context, "标签已存在", Toast.LENGTH_SHORT).show(); return@TextButton }
-                    scope.launch { viewModel.renameCustomLabel(oldName, trimmed); renameTarget = null; renameText = ""; Toast.makeText(context, "已重命名", Toast.LENGTH_SHORT).show() }
+                    scope.launch { viewModel.renameCustomLabel(oldName, trimmed); renameTarget = null; renameText = "" }
+                    Toast.makeText(context, "已重命名", Toast.LENGTH_SHORT).show()
                 }) { Text("确定") }
             },
             dismissButton = { TextButton(onClick = { renameTarget = null; renameText = "" }) { Text("取消") } }
@@ -135,7 +147,10 @@ fun LabelManagementScreen(
                         IconButton(onClick = {
                             if (selectedLabels.isNotEmpty()) {
                                 val count = selectedLabels.size
-                                scope.launch { viewModel.removeCustomLabels(selectedLabels); selectedLabels = emptySet(); isBatchMode = false; Toast.makeText(context, "已删除 $count 个标签", Toast.LENGTH_SHORT).show() }
+                                scope.launch { viewModel.removeCustomLabels(selectedLabels) }
+                                selectedLabels = emptySet()
+                                isBatchMode = false
+                                Toast.makeText(context, "已删除 $count 个标签", Toast.LENGTH_SHORT).show()
                             }
                         }) { Icon(Octicons.Trash24, "批量删除", tint = MaterialTheme.colorScheme.error) }
                     } else {
@@ -152,25 +167,45 @@ fun LabelManagementScreen(
                 val isCustom = label in customLabels
                 val checked = selectedLabels.contains(label)
                 Card(
-                    Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 3.dp)
-                        .clickable {
-                            if (isBatchMode && isCustom) {
-                                selectedLabels = if (checked) selectedLabels - label else selectedLabels + label
-                            } else if (!isBatchMode && isCustom) {
-                                isBatchMode = true; selectedLabels = setOf(label)
-                            }
-                        },
                     colors = CardDefaults.cardColors(containerColor = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(12.dp), elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 3.dp)
                 ) {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        if (isBatchMode && isCustom) { Checkbox(checked = checked, onCheckedChange = { selectedLabels = if (it) selectedLabels + label else selectedLabels - label }); Spacer(Modifier.width(4.dp)) }
+                    Row(
+                        Modifier.fillMaxWidth()
+                            .then(
+                                if (isCustom) Modifier.combinedClickable(
+                                    onClick = {
+                                        if (isBatchMode) {
+                                            selectedLabels = if (checked) selectedLabels - label else selectedLabels + label
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!isBatchMode) {
+                                            isBatchMode = true
+                                            selectedLabels = setOf(label)
+                                        }
+                                    }
+                                ) else Modifier
+                            )
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (isBatchMode && isCustom) {
+                            Checkbox(checked = checked, onCheckedChange = { selectedLabels = if (it) selectedLabels + label else selectedLabels - label })
+                            Spacer(Modifier.width(4.dp))
+                        }
                         Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
                         Text(if (isCustom) "自定义" else "默认", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (!isBatchMode && isCustom) {
                             Spacer(Modifier.width(6.dp))
-                            IconButton(onClick = { renameTarget = label; renameText = "" }, modifier = Modifier.size(32.dp)) { Icon(Octicons.Pencil24, "重命名", tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), modifier = Modifier.size(16.dp)) }
-                            IconButton(onClick = { deleteTarget = label }, modifier = Modifier.size(32.dp)) { Icon(Octicons.X24, "删除", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(18.dp)) }
+                            IconButton(onClick = { renameTarget = label; renameText = "" }, modifier = Modifier.size(32.dp)) {
+                                Icon(Octicons.Pencil24, "重命名", tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
+                            }
+                            IconButton(onClick = { deleteTarget = label }, modifier = Modifier.size(32.dp)) {
+                                Icon(Octicons.X24, "删除", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(18.dp))
+                            }
                         }
                     }
                 }
