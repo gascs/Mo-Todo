@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Circular badge -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,54m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
+
+    <!-- Checkmark -->
+    <path
+        android:fillColor="#5B7F6A"
+        android:fillType="nonZero"
+        android:pathData="M44,55.4l5.7,5.2l14.3,-14.3l4.2,4.2l-18.5,18.5l-9.9,-9.4z" />
+
+    <!-- Horizontal lines (todo list motif) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.3"
+        android:pathData="M20,82h68v2h-68zM20,88h48v2h-48zM20,94h56v2h-56z" />
+</vector>

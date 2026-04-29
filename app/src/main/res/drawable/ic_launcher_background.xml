@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Morandi green rounded square -->
+    <path
+        android:fillColor="#5B7F6A"
+        android:pathData="M24,24h60v60h-60z" />
+</vector>
