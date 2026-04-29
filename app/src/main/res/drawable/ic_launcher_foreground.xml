@@ -5,9 +5,9 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Checkmark -->
+    <!-- Centered checkmark within safe zone (21-87) -->
     <path
-        android:pathData="M38,54 L50,66 L70,42"
+        android:pathData="M36,57 L50,70 L72,43"
         android:strokeColor="#FFFFFF"
         android:strokeWidth="5"
         android:fillColor="@android:color/transparent"
