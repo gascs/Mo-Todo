@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -70,17 +71,18 @@ fun MainScreen(
             ) {
                 bottomNavItems.forEach { item ->
                     val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                    val label = stringResource(item.labelResId)
                     NavigationBarItem(
                         icon = {
                             Icon(
                                 item.icon,
-                                contentDescription = item.label,
+                                contentDescription = label,
                                 modifier = Modifier.size(22.dp)
                             )
                         },
                         label = {
                             Text(
-                                item.label,
+                                label,
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                                 fontSize = 11.sp

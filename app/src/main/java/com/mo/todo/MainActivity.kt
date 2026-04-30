@@ -8,19 +8,22 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mo.todo.ui.screen.MainScreen
@@ -32,7 +35,7 @@ import com.mo.todo.ui.viewmodel.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private var pendingTodoId by mutableLongStateOf(-1L)
 
@@ -67,6 +70,16 @@ class MainActivity : ComponentActivity() {
             val fontSizeKey by settingsViewModel.fontSize.collectAsState()
             val cornerStyleKey by settingsViewModel.cornerStyle.collectAsState()
             val isDynamicColor by settingsViewModel.isDynamicColor.collectAsState()
+            val language by settingsViewModel.language.collectAsState()
+
+            LaunchedEffect(language) {
+                val locales = when (language) {
+                    "zh" -> LocaleListCompat.forLanguageTags("zh")
+                    "en" -> LocaleListCompat.forLanguageTags("en")
+                    else -> LocaleListCompat.getEmptyLocaleList()
+                }
+                AppCompatDelegate.setApplicationLocales(locales)
+            }
 
             val colorTheme = ColorTheme.fromKey(colorThemeKey)
             val fontScale = FontSize.fromKey(fontSizeKey).scale

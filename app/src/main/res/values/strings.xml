@@ -1,4 +1,271 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Mo</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_todo">待办</string>
+    <string name="nav_memo">备忘录</string>
+    <string name="nav_profile">我的</string>
+
+    <!-- TodoScreen -->
+    <string name="todo_title">待办事项</string>
+    <string name="todo_add">添加待办</string>
+    <string name="todo_search">搜索待办…</string>
+    <string name="todo_empty_title">暂无待办</string>
+    <string name="todo_empty_subtitle">点击右下角添加你的第一个待办</string>
+    <string name="todo_empty_search">没有找到相关待办</string>
+    <string name="todo_completed_section">已完成（%d）</string>
+    <string name="todo_deleted">已删除待办</string>
+    <string name="todo_undo">撤销</string>
+
+    <!-- Sort Options -->
+    <string name="sort_priority">按优先级</string>
+    <string name="sort_created">按创建时间</string>
+    <string name="todo_active_section">待完成</string>
+    <string name="todo_collapse_completed">收起已完成 (%1$d)</string>
+    <string name="todo_show_completed">已完成 (%1$d)</string>
+
+    <!-- AddEditTodoScreen -->
+    <string name="todo_edit_title">编辑待办</string>
+    <string name="todo_create_title">新建待办</string>
+    <string name="todo_field_title">标题 *</string>
+    <string name="todo_field_title_placeholder">输入待办标题</string>
+    <string name="todo_field_notes">详情备注</string>
+    <string name="todo_field_notes_placeholder">添加备注…</string>
+    <string name="todo_field_reminder">提醒时间</string>
+    <string name="todo_field_due_date">截止日期</string>
+    <string name="todo_field_tag">标签</string>
+    <string name="todo_field_priority">优先级</string>
+    <string name="todo_btn_save">保存</string>
+    <string name="todo_btn_create">创建</string>
+    <string name="todo_btn_delete">删除待办</string>
+    <string name="toast_title_empty">请输入待办标题</string>
+    <string name="toast_deleted">待办已删除</string>
+
+    <!-- Reminder Quick Options -->
+    <string name="reminder_today">今天</string>
+    <string name="reminder_tomorrow">明天\n09:00</string>
+    <string name="reminder_next_week">下周</string>
+    <string name="reminder_clear">清除</string>
+    <string name="reminder_not_set">未设置</string>
+    <string name="reminder_set">提醒：%1$s</string>
+    <string name="reminder_due_set">截止：%1$s</string>
+    <string name="reminder_overdue">已过期</string>
+    <string name="reminder_due_today">今天到期</string>
+
+    <!-- Priority -->
+    <string name="priority_high">高</string>
+    <string name="priority_medium">中</string>
+    <string name="priority_low">低</string>
+
+    <!-- Tags - Todo -->
+    <string name="tag_all">全部</string>
+    <string name="tag_work">工作</string>
+    <string name="tag_personal">个人</string>
+    <string name="tag_shopping">购物</string>
+
+    <!-- Tags - Memo -->
+    <string name="tag_note">便签</string>
+    <string name="tag_reading">阅读笔记</string>
+    <string name="tag_project">项目</string>
+
+    <!-- MemoScreen -->
+    <string name="memo_title">备忘录</string>
+    <string name="memo_add">新建备忘录</string>
+    <string name="memo_search">搜索备忘录…</string>
+    <string name="memo_empty_title">暂无备忘录</string>
+    <string name="memo_empty_subtitle">点击右下角开始记录</string>
+    <string name="memo_empty_search">没有找到相关备忘录</string>
+    <string name="memo_no_content">暂无内容</string>
+    <string name="memo_edit">编辑</string>
+    <string name="memo_date_format">%1$d月%2$d日</string>
+    <string name="memo_star">星标</string>
+
+    <!-- AddEditMemoScreen -->
+    <string name="memo_edit_title">编辑备忘录</string>
+    <string name="memo_create_title">新建备忘录</string>
+    <string name="memo_field_title">标题</string>
+    <string name="memo_field_title_placeholder">输入标题…</string>
+    <string name="memo_field_content">内容</string>
+    <string name="memo_field_content_placeholder">开始书写你的想法…\n\n支持 Markdown 格式：\n**加粗** *斜体* ~~删除线~~\n- 无序列表\n1. 有序列表</string>
+    <string name="toast_memo_title_empty">请输入标题</string>
+    <string name="memo_rich_text">富文本</string>
+    <string name="memo_preview">预览</string>
+
+    <!-- Markdown toolbar -->
+    <string name="md_heading">标题</string>
+    <string name="md_heading_hint">标题</string>
+    <string name="md_bold">加粗</string>
+    <string name="md_italic">斜体</string>
+    <string name="md_strikethrough">删除线</string>
+    <string name="md_bullet">无序列表</string>
+    <string name="md_numbered">有序列表</string>
+    <string name="md_task">任务列表</string>
+    <string name="md_code">代码</string>
+    <string name="md_divider">分割线</string>
+
+    <!-- ProfileScreen -->
+    <string name="profile_morning">早上好</string>
+    <string name="profile_afternoon">下午好</string>
+    <string name="profile_evening">晚上好</string>
+    <string name="profile_default_nickname">Mo 用户</string>
+    <string name="profile_today_hint">今天也要加油哦 ✨</string>
+    <string name="profile_data_overview">数据概览</string>
+    <string name="profile_completion_rate">完成率</string>
+    <string name="profile_active_todos">进行中</string>
+    <string name="profile_total_memos">全部</string>
+    <string name="profile_starred">星标</string>
+    <string name="profile_completed">已完成</string>
+    <string name="profile_section_settings">设置</string>
+    <string name="profile_personalization">个性化</string>
+    <string name="profile_personalization_desc">主题、颜色、字体</string>
+    <string name="profile_reminder_settings">提醒设置</string>
+    <string name="profile_reminder_desc">提醒方式、默认时间</string>
+    <string name="profile_label_manage">标签管理</string>
+    <string name="profile_label_manage_desc">编辑、添加、删除标签</string>
+    <string name="profile_section_data">数据</string>
+    <string name="profile_data_manage">数据管理</string>
+    <string name="profile_data_manage_desc">备份、恢复、WebDAV</string>
+    <string name="profile_section_about">关于</string>
+    <string name="profile_about">关于 Mo</string>
+    <string name="profile_about_desc">版本、开发者、开源</string>
+    <string name="profile_share">分享给朋友</string>
+    <string name="profile_share_text">向你推荐「Mo」— 一款简洁优雅的待办与备忘录应用 📝✨ 极简设计，流畅体验，让每一天都井井有条！</string>
+
+    <!-- PersonalizationScreen -->
+    <string name="personalization_title">个性化</string>
+    <string name="personalization_color_theme">颜色主题</string>
+    <string name="personalization_theme_forest">森林绿</string>
+    <string name="personalization_theme_ocean">深海蓝</string>
+    <string name="personalization_theme_sunset">晚霞橙</string>
+    <string name="personalization_theme_lavender">薰衣草紫</string>
+    <string name="personalization_theme_rosegold">玫瑰金</string>
+    <string name="personalization_font_size">字体大小</string>
+    <string name="personalization_font_small">小</string>
+    <string name="personalization_font_normal">中</string>
+    <string name="personalization_font_large">大</string>
+    <string name="personalization_corner_style">圆角风格</string>
+    <string name="personalization_corner_round">圆润</string>
+    <string name="personalization_corner_square">方正</string>
+    <string name="personalization_corner_extra_round">超圆润</string>
+    <string name="personalization_theme_mode">深浅模式</string>
+    <string name="personalization_theme_follow">跟随系统</string>
+    <string name="personalization_theme_light">浅色</string>
+    <string name="personalization_theme_dark">深色</string>
+    <string name="personalization_dynamic_color">动态取色</string>
+    <string name="personalization_dynamic_color_desc">从壁纸提取主题色</string>
+    <string name="personalization_list_density">列表密度</string>
+    <string name="personalization_density_compact">紧凑</string>
+    <string name="personalization_density_normal">标准</string>
+    <string name="personalization_density_relaxed">放松</string>
+    <string name="personalization_default_priority">默认优先级</string>
+    <string name="personalization_notify_vibrate">通知振动</string>
+    <string name="personalization_notify_vibrate_desc">提醒时振动提示</string>
+    <string name="personalization_language">语言</string>
+    <string name="personalization_language_system">跟随系统</string>
+    <string name="personalization_language_zh">中文</string>
+    <string name="personalization_language_en">English</string>
+
+    <!-- AboutScreen -->
+    <string name="about_title">关于 Mo</string>
+    <string name="about_version">v%1$s</string>
+    <string name="about_subtitle">简洁待办 · 备忘录</string>
+    <string name="about_section_info">应用信息</string>
+    <string name="about_developer">开发者</string>
+    <string name="about_developer_name">gascs</string>
+    <string name="about_tech_stack">技术栈</string>
+    <string name="about_tech_desc">Jetpack Compose + Material 3</string>
+    <string name="about_platform">平台</string>
+    <string name="about_platform_desc">Android (Kotlin)</string>
+    <string name="about_section_open_source">开源声明</string>
+    <string name="about_open_source_desc">Mo 是一款开源应用，基于 MIT 许可证发布。欢迎任何人查看、修改和分发源代码。所有第三方库均为自由开源软件（FOSS）。</string>
+    <string name="about_open_source_link">GitHub 源码</string>
+    <string name="about_section_legal">法律信息</string>
+    <string name="about_github">GitHub 仓库</string>
+    <string name="about_privacy">隐私协议</string>
+    <string name="about_terms">用户协议</string>
+    <string name="about_disclaimer">免责声明</string>
+    <string name="about_open_source_license">开源许可</string>
+    <string name="about_privacy_title">隐私协议</string>
+    <string name="about_privacy_desc">Mo 尊重并保护您的隐私。本应用所有数据均存储在您的本地设备上，我们不会收集、存储或传输您的任何个人信息。\n\n数据存储\n所有待办事项和备忘录数据均保存在应用本地数据库中，不会上传到任何服务器。\n\n权限使用\n• 通知权限：仅用于待办提醒功能\n• 精确闹钟：仅用于定时提醒调度\n• 开机启动：仅用于重启后恢复提醒\n\n第三方服务\n本应用不集成任何第三方分析、广告或追踪服务。\n\n数据导出\n您可以随时通过导出功能备份数据，数据完全由您掌控。\n\n联系方式\n如有隐私相关问题，请通过 GitHub 联系我们。"</string>
+    <string name="about_open_source_title">开源声明</string>
+    <string name="about_open_source_full_desc">Mo 是一款自由开源软件，基于 MIT 许可证发布。\n\nMIT License\nCopyright (c) 2025 gascs\n\n特此免费授予任何获得本软件副本和相关文档文件（"软件"）的人不受限制地处理本软件的权利，包括但不限于使用、复制、修改、合并、发布、分发、再许可和/或出售本软件副本的权利。\n\n本软件按"原样"提供，不作任何明示或暗示的保证。</string>
+
+    <!-- ReminderSettingsScreen -->
+    <string name="reminder_settings_title">提醒设置</string>
+    <string name="reminder_settings_default_time">默认提醒时间</string>
+    <string name="reminder_settings_minutes">%1$d 分钟</string>
+    <string name="reminder_settings_minutes_before">提前 %1$d 分钟</string>
+    <string name="reminder_settings_at_due">到期时</string>
+    <string name="reminder_settings_notify_method">通知方式</string>
+    <string name="reminder_settings_high_priority">高优先级提醒</string>
+    <string name="reminder_settings_high_priority_desc">使用高优先级通知渠道，确保提醒不被静默。</string>
+    <string name="reminder_settings_full_screen">全屏弹出提醒</string>
+    <string name="reminder_settings_full_screen_desc">支持锁屏状态下全屏弹出提醒窗口，确保不错过重要提醒。</string>
+    <string name="reminder_settings_boot_restore">开机自动恢复</string>
+    <string name="reminder_settings_boot_restore_desc">设备重启后自动恢复所有未触发的提醒，无需手动操作。</string>
+    <string name="reminder_settings_test">测试通知</string>
+    <string name="reminder_settings_channel">通知渠道设置</string>
+    <string name="reminder_settings_channel_desc">前往系统设置管理通知渠道</string>
+    <string name="reminder_settings_test_btn">发送测试通知</string>
+    <string name="reminder_settings_test_desc">点击发送一条测试通知，验证通知功能是否正常工作</string>
+    <string name="reminder_settings_test_success">测试通知已发送！</string>
+    <string name="reminder_settings_tip">提示</string>
+    <string name="reminder_settings_tip_desc">如果提醒不生效，请检查：\n1. 系统通知权限是否开启\n2. 应用是否被电池优化限制\n3. 是否允许应用自启动\n4. 是否开启了勿扰模式"</string>
+
+    <!-- LabelManagementScreen -->
+    <string name="label_manage_title">标签管理</string>
+    <string name="label_manage_selected">已选 %1$d 项</string>
+    <string name="label_manage_add">添加标签</string>
+    <string name="label_manage_add_placeholder">输入标签名称</string>
+    <string name="label_manage_rename">重命名标签</string>
+    <string name="label_manage_delete">删除标签</string>
+    <string name="label_manage_delete_confirm">确定删除标签「%1$s」？</string>
+    <string name="label_manage_default">默认</string>
+    <string name="label_manage_custom">自定义</string>
+    <string name="label_manage_rename_action">重命名</string>
+    <string name="label_manage_delete_action">删除</string>
+    <string name="toast_label_empty">标签名不能为空</string>
+    <string name="toast_label_exists">标签已存在</string>
+    <string name="toast_label_deleted">已删除</string>
+    <string name="toast_label_renamed">已重命名</string>
+    <string name="toast_label_deleted_count">已删除 %1$d 个标签</string>
+    <string name="btn_confirm">确定</string>
+    <string name="btn_cancel">取消</string>
+
+    <!-- DataManagementScreen -->
+    <string name="data_manage_title">数据管理</string>
+    <string name="data_manage_local_backup">本地备份</string>
+    <string name="data_manage_export_json">导出 JSON</string>
+    <string name="data_manage_import_json">导入 JSON</string>
+    <string name="data_manage_webdav">WebDAV 云备份</string>
+    <string name="data_manage_upload">上传</string>
+    <string name="data_manage_restore">恢复</string>
+    <string name="data_manage_import_success">导入成功 (v%1$s)</string>
+    <string name="data_manage_import_fail">导入失败: %1$s</string>
+    <string name="data_manage_export_success">导出成功</string>
+    <string name="data_manage_export_fail">导出失败: %1$s</string>
+    <string name="data_manage_backup_fail">备份失败: %1$s</string>
+    <string name="data_manage_restore_fail">恢复失败: %1$s</string>
+    <string name="data_manage_webdav_not_config">请先配置 WebDAV</string>
+    <string name="data_manage_webdav_config">WebDAV 配置</string>
+
+    <!-- WebDavConfigScreen -->
+    <string name="webdav_title">WebDAV 配置</string>
+    <string name="webdav_server">服务器地址</string>
+    <string name="webdav_server_placeholder">https://dav.example.com/remote.php/dav</string>
+    <string name="webdav_username">用户名</string>
+    <string name="webdav_password">密码</string>
+    <string name="webdav_save">保存配置</string>
+    <string name="webdav_saved">配置已保存，可前往备份页面进行 WebDAV 操作</string>
+    <string name="toast_webdav_incomplete">请填写完整信息</string>
+    <string name="toast_webdav_saved">配置已保存</string>
+
+    <!-- Legal Pages -->
+    <string name="legal_disclaimer_title">免责声明</string>
+    <string name="legal_terms_title">用户协议</string>
+    <string name="legal_privacy_title">隐私协议</string>
+    <string name="legal_open_source_title">开源许可</string>
+    <string name="legal_disclaimer_content">免责声明\n\n1. Mo 应用按"现状"提供，不作任何明示或暗示的保证，包括但不限于对适销性、特定用途适用性和不侵权的保证。\n\n2. 开发者不对因使用或无法使用本应用而导致的任何直接、间接、偶然、特殊或后果性损害承担责任，包括但不限于利润损失、数据丢失或业务中断。\n\n3. 本应用的提醒功能依赖于系统级别的闹钟和通知服务。由于不同设备制造商（如 OPPO、小米、华为等）对 Android 系统进行了深度定制，可能会影响提醒功能的准确性。开发者不对因系统限制导致的提醒延迟或丢失承担责任。\n\n4. 用户应自行负责数据的备份。虽然本应用提供了导出和 WebDAV 备份功能，但开发者不对数据丢失承担责任。\n\n5. 本应用可能包含指向第三方网站或服务的链接。开发者对第三方网站或服务的内容、隐私政策或做法不承担责任。\n\n6. 开发者保留随时修改或终止本应用的权利，恕不另行通知。\n\n7. 使用本应用即表示您同意本免责声明的所有条款。如果您不同意本声明的任何条款，请停止使用本应用。</string>
+    <string name="legal_terms_content">用户协议\n\n欢迎使用 Mo 应用。在使用本应用之前，请仔细阅读以下用户协议。\n\n1. 服务说明\nMo 是一款本地待办事项和备忘录管理应用。本应用的所有功能均在您的设备本地运行，不提供在线服务。\n\n2. 使用规范\n您同意将本应用仅用于合法目的。您不得：\n• 使用本应用进行任何违法活动\n• 试图反向工程、反编译或反汇编本应用\n• 复制、修改或分发本应用的任何部分\n• 使用自动化工具批量访问或操作本应用\n\n3. 知识产权\n本应用及其原始内容、功能和特性归开发者所有。本应用使用 MIT 许可证开源，具体条款请参阅开源许可页面。\n\n4. 免责声明\n本应用按"现状"提供，不作任何明示或暗示的保证。详见免责声明页面。\n\n5. 数据安全\n本应用将所有数据存储在您的设备本地。我们强烈建议您定期使用导出或 WebDAV 备份功能备份数据。\n\n6. 协议修改\n开发者保留随时修改本协议的权利。修改后的协议将在应用内公布。继续使用本应用即表示您同意修改后的协议。\n\n7. 联系方式\n如有任何问题或建议，请通过 GitHub 联系我们：\nhttps://github.com/gascs/Mo-Todo</string>
 </resources>

@@ -101,6 +101,9 @@ dependencies {
     // Core KTX
     implementation("androidx.core:core-ktx:1.12.0")
 
+    // AppCompat (for per-app language support)
+    implementation("androidx.appcompat:appcompat:1.6.1")
+
     // OkHttp for WebDAV
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 

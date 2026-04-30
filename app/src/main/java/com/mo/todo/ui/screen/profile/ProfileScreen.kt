@@ -1,10 +1,8 @@
 package com.mo.todo.ui.screen.profile
 
 import android.content.Intent
-import android.net.Uri
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,63 +22,47 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import compose.icons.Octicons
 import compose.icons.octicons.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import com.mo.todo.R
 import com.mo.todo.ui.viewmodel.SettingsViewModel
 import com.mo.todo.ui.viewmodel.StatsViewModel
-import kotlinx.coroutines.launch
-import java.io.File
 import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onNavigateToLabelManagement: () -> Unit = {},
-    onNavigateToReminderSettings: () -> Unit = {},
-    onNavigateToAbout: () -> Unit = {},
-    onNavigateToPersonalization: () -> Unit = {},
-    onNavigateToDataManagement: () -> Unit = {},
-    viewModel: SettingsViewModel = hiltViewModel(),
+    onNavigateToLabelManagement: () -> Unit,
+    onNavigateToReminderSettings: () -> Unit,
+    onNavigateToAbout: () -> Unit,
+    onNavigateToPersonalization: () -> Unit,
+    onNavigateToDataManagement: () -> Unit,
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
     statsViewModel: StatsViewModel = hiltViewModel()
 ) {
-    val nickname by viewModel.nickname.collectAsState()
-    val avatarPath by viewModel.avatarPath.collectAsState()
-    val scope = rememberCoroutineScope()
+    val nickname by settingsViewModel.nickname.collectAsState(initial = "")
     val context = LocalContext.current
 
     val todoTotal by statsViewModel.todoTotal.collectAsState()
@@ -90,306 +72,264 @@ fun ProfileScreen(
     val memoStarred by statsViewModel.memoStarred.collectAsState()
     val completionRate by statsViewModel.completionRate.collectAsState()
 
-    val greeting = remember {
-        when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
-            in 5..11 -> "早上好"
-            in 12..13 -> "中午好"
-            in 14..17 -> "下午好"
-            in 18..22 -> "晚上好"
-            else -> "夜深了"
+    var greeting by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        greeting = when {
+            hour < 12 -> context.getString(R.string.profile_morning)
+            hour < 18 -> context.getString(R.string.profile_afternoon)
+            else -> context.getString(R.string.profile_evening)
         }
     }
 
-    var showNickDialog by remember { mutableStateOf(false) }
-    var editNick by remember { mutableStateOf(nickname) }
-
-    val avatarLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            try {
-                val inputStream = context.contentResolver.openInputStream(it)
-                val file = File(context.filesDir, "avatar_${System.currentTimeMillis()}.jpg")
-                inputStream?.use { inStream -> file.outputStream().use { outStream -> inStream.copyTo(outStream) } }
-                scope.launch { viewModel.setAvatarPath(file.absolutePath) }
-            } catch (e: Exception) {
-                Toast.makeText(context, "头像保存失败", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    if (showNickDialog) {
-        AlertDialog(
-            onDismissRequest = { showNickDialog = false },
-            title = { Text("修改昵称", style = MaterialTheme.typography.titleMedium) },
-            text = {
-                OutlinedTextField(
-                    value = editNick, onValueChange = { editNick = it },
-                    modifier = Modifier.fillMaxWidth(), singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    ),
-                    shape = MaterialTheme.shapes.medium
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    scope.launch { viewModel.setNickname(editNick.ifBlank { "Mo 用户" }) }
-                    showNickDialog = false
-                }) { Text("确定") }
-            },
-            dismissButton = { TextButton(onClick = { showNickDialog = false }) { Text("取消") } }
-        )
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "我的",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
+            .padding(top = 60.dp, bottom = 100.dp)
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Text(
+                text = "$greeting，",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-        ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable { editNick = nickname; showNickDialog = true }
-                    .padding(horizontal = 20.dp, vertical = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .clickable { avatarLauncher.launch("image/*") },
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (avatarPath.isNotBlank()) {
-                        AsyncImage(
-                            model = File(avatarPath),
-                            contentDescription = "头像",
-                            modifier = Modifier.fillMaxSize().clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Text(
-                            nickname.take(1).uppercase(),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-                Spacer(Modifier.width(14.dp))
-                Column {
-                    Text(
-                        "$greeting，$nickname",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        "让生活井井有条",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = nickname.ifBlank { stringResource(R.string.profile_default_nickname) },
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = stringResource(R.string.profile_today_hint),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        DataOverviewCard(
+            completionRate = completionRate,
+            todoTotal = todoTotal,
+            todoCompleted = todoCompleted,
+            todoActive = todoActive,
+            memoTotal = memoTotal,
+            memoStarred = memoStarred
+        )
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            SectionHeader(title = stringResource(R.string.profile_section_settings))
 
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-                shape = RoundedCornerShape(16.dp)
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Column(Modifier.padding(16.dp)) {
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "数据概览",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            "完成率 $completionRate%",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    LinearProgressIndicator(
-                        progress = { if (todoTotal == 0) 0f else todoCompleted.toFloat() / todoTotal },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp)),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                Column {
+                    SettingItem(
+                        icon = Octicons.Paintbrush16,
+                        title = stringResource(R.string.profile_personalization),
+                        subtitle = stringResource(R.string.profile_personalization_desc),
+                        onClick = onNavigateToPersonalization
                     )
-                    Spacer(Modifier.height(12.dp))
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                        StatItem("待办", todoTotal.toString(), MaterialTheme.colorScheme.primary)
-                        StatItem("进行中", todoActive.toString(), Color(0xFFBF8700))
-                        StatItem("已完成", todoCompleted.toString(), Color(0xFF1A7F37))
-                        StatItem("备忘录", memoTotal.toString(), Color(0xFF8250DF))
-                        StatItem("收藏", memoStarred.toString(), Color(0xFFCF222E))
-                    }
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                    SettingItem(
+                        icon = Octicons.Bell16,
+                        title = stringResource(R.string.profile_reminder_settings),
+                        subtitle = stringResource(R.string.profile_reminder_desc),
+                        onClick = onNavigateToReminderSettings
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                    SettingItem(
+                        icon = Octicons.Tag16,
+                        title = stringResource(R.string.profile_label_manage),
+                        subtitle = stringResource(R.string.profile_label_manage_desc),
+                        onClick = onNavigateToLabelManagement
+                    )
                 }
             }
+        }
 
-            Spacer(Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
-            SectionHeader("功能")
-            ProfileMenuItem(
-                Octicons.Tag24,
-                MaterialTheme.colorScheme.primary,
-                "标签管理",
-                "管理待办和备忘标签",
-                onClick = onNavigateToLabelManagement
-            )
-            ProfileMenuItem(
-                Octicons.Bell24,
-                Color(0xFFBF8700),
-                "提醒默认设置",
-                "设置默认提醒时间",
-                onClick = onNavigateToReminderSettings
-            )
-            ProfileMenuItem(
-                Icons.Filled.Palette,
-                Color(0xFF8250DF),
-                "个性化",
-                "配色 / 字体 / 圆角 / 主题",
-                onClick = onNavigateToPersonalization
-            )
-            ProfileMenuItem(
-                Octicons.Database24,
-                Color(0xFFCF222E),
-                "数据管理",
-                "导出导入 / WebDAV 备份",
-                onClick = onNavigateToDataManagement
-            )
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            SectionHeader(title = stringResource(R.string.profile_section_data))
 
-            Spacer(Modifier.height(12.dp))
-            SectionHeader("其他")
-            ProfileMenuItem(
-                Icons.Filled.Share,
-                Color(0xFF1A7F37),
-                "分享给朋友",
-                "推荐 Mo 给身边的人",
-                onClick = {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                SettingItem(
+                    icon = Octicons.Database16,
+                    title = stringResource(R.string.profile_data_manage),
+                    subtitle = stringResource(R.string.profile_data_manage_desc),
+                    onClick = onNavigateToDataManagement
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            SectionHeader(title = stringResource(R.string.profile_section_about))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                SettingItem(
+                    icon = Octicons.Info16,
+                    title = stringResource(R.string.profile_about),
+                    subtitle = stringResource(R.string.profile_about_desc),
+                    onClick = onNavigateToAbout
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+            Card(
+                modifier = Modifier.fillMaxWidth().clickable {
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
-                        putExtra(Intent.EXTRA_TEXT, "推荐一个简洁好用的待办备忘 App —— Mo\nhttps://github.com/gascs/Mo-Todo")
+                        putExtra(Intent.EXTRA_TEXT, context.getString(R.string.profile_share_text))
                     }
-                    context.startActivity(Intent.createChooser(shareIntent, "分享 Mo"))
+                    context.startActivity(Intent.createChooser(shareIntent, null))
+                },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(Octicons.Share16, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(R.string.profile_share),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
-            )
-            ProfileMenuItem(
-                Octicons.Info24,
-                MaterialTheme.colorScheme.onSurfaceVariant,
-                "关于 Mo",
-                "v1.0.0",
-                onClick = onNavigateToAbout
-            )
-
-            Spacer(Modifier.height(112.dp))
+            }
         }
     }
 }
 
 @Composable
-private fun StatItem(label: String, value: String, color: Color) {
+private fun DataOverviewCard(
+    completionRate: Int,
+    todoTotal: Int,
+    todoCompleted: Int,
+    todoActive: Int,
+    memoTotal: Int,
+    memoStarred: Int
+) {
+    val animatedProgress by animateFloatAsState(
+        targetValue = completionRate / 100f,
+        animationSpec = tween(durationMillis = 800),
+        label = "progress"
+    )
+
+    Card(
+        modifier = Modifier.padding(horizontal = 24.dp).fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.profile_data_overview),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(R.string.profile_completion_rate) + " $completionRate%",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LinearProgressIndicator(
+                progress = { animatedProgress },
+                modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                StatItem(label = stringResource(R.string.todo_title), value = "$todoTotal", sub = stringResource(R.string.profile_completed) + " $todoCompleted")
+                StatItem(label = stringResource(R.string.profile_active_todos), value = "$todoActive", sub = stringResource(R.string.profile_completion_rate) + " $completionRate%")
+                StatItem(label = stringResource(R.string.memo_title), value = "$memoTotal", sub = stringResource(R.string.profile_starred) + " $memoStarred")
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatItem(label: String, value: String, sub: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            value,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = color
-        )
-        Spacer(Modifier.height(2.dp))
-        Text(
-            label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-        )
+        Text(text = value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = sub, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), fontSize = 9.sp)
     }
 }
 
 @Composable
 private fun SectionHeader(title: String) {
     Text(
-        title,
-        style = MaterialTheme.typography.labelLarge,
-        fontWeight = FontWeight.SemiBold,
+        text = title,
+        style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-        modifier = Modifier.padding(start = 20.dp, top = 4.dp, bottom = 4.dp)
+        modifier = Modifier.padding(bottom = 8.dp)
     )
 }
 
 @Composable
-private fun ProfileMenuItem(
+private fun SettingItem(
     icon: ImageVector,
-    iconTint: Color,
-    label: String,
+    title: String,
     subtitle: String,
     onClick: () -> Unit
 ) {
     Row(
-        Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            Modifier
-                .size(38.dp)
-                .clip(CircleShape)
-                .background(iconTint.copy(alpha = 0.08f)),
+            modifier = Modifier.size(32.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, null, tint = iconTint.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
         }
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(
-                label,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-            )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        Icon(
-            Octicons.ChevronRight24,
-            null,
-            tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-            modifier = Modifier.size(18.dp)
-        )
+        Icon(Octicons.ChevronRight16, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), modifier = Modifier.size(16.dp))
     }
 }

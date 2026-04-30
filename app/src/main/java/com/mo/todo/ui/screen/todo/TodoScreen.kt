@@ -42,10 +42,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mo.todo.R
 import com.mo.todo.data.model.TagConfig
 import com.mo.todo.data.model.Todo
 import com.mo.todo.ui.component.SectionHeader
@@ -74,6 +77,7 @@ fun TodoScreen(
     var showMenuForTodo by remember { mutableStateOf<Todo?>(null) }
     val settingsViewModel: SettingsViewModel = hiltViewModel()
     val density by settingsViewModel.listDensity.collectAsState()
+    val context = LocalContext.current
 
     val isEmpty = activeTodos.isEmpty() && completedTodos.isEmpty()
 
@@ -82,7 +86,7 @@ fun TodoScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "待办",
+                        stringResource(R.string.todo_title),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -91,7 +95,7 @@ fun TodoScreen(
                     IconButton(onClick = { viewModel.setSearchActive(!isSearchActive) }) {
                         Icon(
                             Octicons.Search24,
-                            contentDescription = "搜索",
+                            contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -99,13 +103,13 @@ fun TodoScreen(
                         IconButton(onClick = { showMenu = true }) {
                             Icon(
                                 Octicons.KebabHorizontal24,
-                                contentDescription = "更多",
+                                contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                            DropdownMenuItem(text = { Text("按优先级排序") }, onClick = { showMenu = false })
-                            DropdownMenuItem(text = { Text("按创建时间排序") }, onClick = { showMenu = false })
+                            DropdownMenuItem(text = { Text(stringResource(R.string.sort_priority)) }, onClick = { showMenu = false })
+                            DropdownMenuItem(text = { Text(stringResource(R.string.sort_created)) }, onClick = { showMenu = false })
                         }
                     }
                 },
@@ -123,7 +127,7 @@ fun TodoScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = MaterialTheme.shapes.large
                 ) {
-                    Icon(Octicons.Plus24, contentDescription = "新建待办")
+                    Icon(Octicons.Plus24, contentDescription = stringResource(R.string.todo_add))
                 }
             }
         },
@@ -142,11 +146,11 @@ fun TodoScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = { Text("搜索待办...", style = MaterialTheme.typography.bodyMedium) },
+                    placeholder = { Text(stringResource(R.string.todo_search), style = MaterialTheme.typography.bodyMedium) },
                     singleLine = true,
                     trailingIcon = {
                         TextButton(onClick = { viewModel.setSearchActive(false) }) {
-                            Text("取消", style = MaterialTheme.typography.labelLarge)
+                            Text(stringResource(R.string.btn_cancel), style = MaterialTheme.typography.labelLarge)
                         }
                     },
                     colors = OutlinedTextFieldDefaults.colors(
@@ -183,13 +187,13 @@ fun TodoScreen(
                             )
                         }
                         Text(
-                            "暂无待办事项",
+                            stringResource(R.string.todo_empty_title),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            "点击 + 创建新待办",
+                            stringResource(R.string.todo_empty_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.outline,
                             textAlign = TextAlign.Center
@@ -198,7 +202,7 @@ fun TodoScreen(
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    item { SectionHeader(title = "待完成") }
+                    item { SectionHeader(title = stringResource(R.string.todo_active_section)) }
 
                     items(activeTodos, key = { it.id }) { todo ->
                         TodoItemRow(
@@ -211,8 +215,8 @@ fun TodoScreen(
                                 scope.launch {
                                     viewModel.deleteTodo(todo)
                                     val result = snackbarHostState.showSnackbar(
-                                        message = "\"${todo.title}\" 已删除",
-                                        actionLabel = "撤销",
+                                        message = context.getString(R.string.todo_deleted),
+                                        actionLabel = context.getString(R.string.todo_undo),
                                         duration = androidx.compose.material3.SnackbarDuration.Short
                                     )
                                     if (result == SnackbarResult.ActionPerformed) {
@@ -233,7 +237,7 @@ fun TodoScreen(
                                 modifier = Modifier.padding(horizontal = 12.dp)
                             ) {
                                 Text(
-                                    text = if (showCompleted) "收起已完成 (${completedTodos.size})" else "已完成 (${completedTodos.size})",
+                                    text = if (showCompleted) stringResource(R.string.todo_collapse_completed, completedTodos.size) else stringResource(R.string.todo_show_completed, completedTodos.size),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                                 )
@@ -258,8 +262,8 @@ fun TodoScreen(
                                                 scope.launch {
                                                     viewModel.deleteTodo(todo)
                                                     val result = snackbarHostState.showSnackbar(
-                                                        message = "\"${todo.title}\" 已删除",
-                                                        actionLabel = "撤销",
+                                                        message = context.getString(R.string.todo_deleted),
+                                                        actionLabel = context.getString(R.string.todo_undo),
                                                         duration = androidx.compose.material3.SnackbarDuration.Short
                                                     )
                                                     if (result == SnackbarResult.ActionPerformed) {
@@ -291,25 +295,25 @@ fun TodoScreen(
                         onClick = { showMenuForTodo = null; onNavigateToAddEdit(todo.id) },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("编辑", modifier = Modifier.fillMaxWidth())
+                        Text(stringResource(R.string.memo_edit), modifier = Modifier.fillMaxWidth())
                     }
                     TextButton(
                         onClick = {
                             scope.launch {
                                 viewModel.deleteTodo(todo)
-                                snackbarHostState.showSnackbar("\"${todo.title}\" 已删除", "撤销")
+                                snackbarHostState.showSnackbar(context.getString(R.string.todo_deleted), context.getString(R.string.todo_undo))
                             }
                             showMenuForTodo = null
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("删除", color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth())
+                        Text(stringResource(R.string.todo_btn_delete), color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth())
                     }
                 }
             },
             confirmButton = {},
             dismissButton = {
-                TextButton(onClick = { showMenuForTodo = null }) { Text("取消") }
+                TextButton(onClick = { showMenuForTodo = null }) { Text(stringResource(R.string.btn_cancel)) }
             }
         )
     }

@@ -62,6 +62,7 @@ class SettingsViewModel @Inject constructor(
         val NOTIFICATION_VIBRATE = booleanPreferencesKey("notification_vibrate")
         val DEFAULT_PRIORITY = intPreferencesKey("default_priority")
         val HIDDEN_DEFAULT_LABELS = stringSetPreferencesKey("hidden_default_labels")
+        val LANGUAGE = stringPreferencesKey("language")
     }
 
     private fun isSystemInDarkTheme(): Boolean =
@@ -83,6 +84,7 @@ class SettingsViewModel @Inject constructor(
     val listDensity: StateFlow<ListDensity> = context.dataStore.data.map { ListDensity.fromKey(it[K.LIST_DENSITY] ?: "normal") }.stateIn(viewModelScope, SharingStarted.Eagerly, ListDensity.NORMAL)
     val notificationVibrate: StateFlow<Boolean> = context.dataStore.data.map { it[K.NOTIFICATION_VIBRATE] ?: true }.stateIn(viewModelScope, SharingStarted.Eagerly, true)
     val defaultPriority: StateFlow<Int> = context.dataStore.data.map { it[K.DEFAULT_PRIORITY] ?: 1 }.stateIn(viewModelScope, SharingStarted.Eagerly, 1)
+    val language: StateFlow<String> = context.dataStore.data.map { it[K.LANGUAGE] ?: "system" }.stateIn(viewModelScope, SharingStarted.Eagerly, "system")
 
     val customLabels: Flow<Set<String>> = context.dataStore.data.map { it[K.CUSTOM_LABELS] ?: emptySet() }
     private val _customLabelsState = MutableStateFlow<Set<String>>(emptySet())
@@ -113,6 +115,7 @@ class SettingsViewModel @Inject constructor(
         context.dataStore.edit { it[K.NOTIFICATION_VIBRATE] = enabled }
         context.getSharedPreferences("mo_prefs", Context.MODE_PRIVATE).edit().putBoolean("notification_vibrate", enabled).apply()
     }
+    suspend fun setLanguage(lang: String) { context.dataStore.edit { it[K.LANGUAGE] = lang } }
     suspend fun setDefaultPriority(priority: Int) { context.dataStore.edit { it[K.DEFAULT_PRIORITY] = priority } }
 
     suspend fun addCustomLabel(label: String) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur + label } }

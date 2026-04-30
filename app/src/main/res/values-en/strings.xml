@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mo</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_todo">Todos</string>
+    <string name="nav_memo">Memos</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- TodoScreen -->
+    <string name="todo_title">Todos</string>
+    <string name="todo_add">Add Todo</string>
+    <string name="todo_search">Search todos…</string>
+    <string name="todo_empty_title">No todos yet</string>
+    <string name="todo_empty_subtitle">Tap the button below to add your first todo</string>
+    <string name="todo_empty_search">No matching todos found</string>
+    <string name="todo_completed_section">Completed (%d)</string>
+    <string name="todo_deleted">Todo deleted</string>
+    <string name="todo_undo">Undo</string>
+
+    <!-- Sort Options -->
+    <string name="sort_priority">By Priority</string>
+    <string name="sort_created">By Created Time</string>
+    <string name="todo_active_section">Active</string>
+    <string name="todo_collapse_completed">Hide Completed (%1$d)</string>
+    <string name="todo_show_completed">Completed (%1$d)</string>
+
+    <!-- AddEditTodoScreen -->
+    <string name="todo_edit_title">Edit Todo</string>
+    <string name="todo_create_title">New Todo</string>
+    <string name="todo_field_title">Title *</string>
+    <string name="todo_field_title_placeholder">Enter todo title</string>
+    <string name="todo_field_notes">Notes</string>
+    <string name="todo_field_notes_placeholder">Add notes…</string>
+    <string name="todo_field_reminder">Reminder</string>
+    <string name="todo_field_due_date">Due Date</string>
+    <string name="todo_field_tag">Tag</string>
+    <string name="todo_field_priority">Priority</string>
+    <string name="todo_btn_save">Save</string>
+    <string name="todo_btn_create">Create</string>
+    <string name="todo_btn_delete">Delete Todo</string>
+    <string name="toast_title_empty">Please enter a todo title</string>
+    <string name="toast_deleted">Todo deleted</string>
+
+    <!-- Reminder Quick Options -->
+    <string name="reminder_today">Today</string>
+    <string name="reminder_tomorrow">Tomorrow\n09:00</string>
+    <string name="reminder_next_week">Next\nWeek</string>
+    <string name="reminder_clear">Clear</string>
+    <string name="reminder_not_set">Not set</string>
+    <string name="reminder_set">Reminder: %1$s</string>
+    <string name="reminder_due_set">Due: %1$s</string>
+    <string name="reminder_overdue">Overdue</string>
+    <string name="reminder_due_today">Due today</string>
+
+    <!-- Priority -->
+    <string name="priority_high">High</string>
+    <string name="priority_medium">Med</string>
+    <string name="priority_low">Low</string>
+
+    <!-- Tags - Todo -->
+    <string name="tag_all">All</string>
+    <string name="tag_work">Work</string>
+    <string name="tag_personal">Personal</string>
+    <string name="tag_shopping">Shopping</string>
+
+    <!-- Tags - Memo -->
+    <string name="tag_note">Notes</string>
+    <string name="tag_reading">Reading</string>
+    <string name="tag_project">Project</string>
+
+    <!-- MemoScreen -->
+    <string name="memo_title">Memos</string>
+    <string name="memo_add">New Memo</string>
+    <string name="memo_search">Search memos…</string>
+    <string name="memo_empty_title">No memos yet</string>
+    <string name="memo_empty_subtitle">Tap the button below to start writing</string>
+    <string name="memo_empty_search">No matching memos found</string>
+    <string name="memo_no_content">No content</string>
+    <string name="memo_edit">Edit</string>
+    <string name="memo_date_format">%1$s %2$d</string>
+    <string name="memo_star">Star</string>
+
+    <!-- AddEditMemoScreen -->
+    <string name="memo_edit_title">Edit Memo</string>
+    <string name="memo_create_title">New Memo</string>
+    <string name="memo_field_title">Title</string>
+    <string name="memo_field_title_placeholder">Enter title…</string>
+    <string name="memo_field_content">Content</string>
+    <string name="memo_field_content_placeholder">Start writing your thoughts…\n\nSupports Markdown:\n**bold** *italic* ~~strikethrough~~\n- Bullet list\n1. Numbered list</string>
+    <string name="toast_memo_title_empty">Please enter a title</string>
+    <string name="memo_rich_text">Rich Text</string>
+    <string name="memo_preview">Preview</string>
+
+    <!-- Markdown toolbar -->
+    <string name="md_heading">Heading</string>
+    <string name="md_heading_hint">Heading</string>
+    <string name="md_bold">Bold</string>
+    <string name="md_italic">Italic</string>
+    <string name="md_strikethrough">Strikethrough</string>
+    <string name="md_bullet">Bullet list</string>
+    <string name="md_numbered">Numbered list</string>
+    <string name="md_task">Task list</string>
+    <string name="md_code">Code</string>
+    <string name="md_divider">Divider</string>
+
+    <!-- ProfileScreen -->
+    <string name="profile_morning">Good Morning</string>
+    <string name="profile_afternoon">Good Afternoon</string>
+    <string name="profile_evening">Good Evening</string>
+    <string name="profile_default_nickname">Mo User</string>
+    <string name="profile_today_hint">Have a productive day! ✨</string>
+    <string name="profile_data_overview">Overview</string>
+    <string name="profile_completion_rate">Completion</string>
+    <string name="profile_active_todos">Active</string>
+    <string name="profile_total_memos">All</string>
+    <string name="profile_starred">Starred</string>
+    <string name="profile_completed">Done</string>
+    <string name="profile_section_settings">Settings</string>
+    <string name="profile_personalization">Personalization</string>
+    <string name="profile_personalization_desc">Theme, colors, fonts</string>
+    <string name="profile_reminder_settings">Reminders</string>
+    <string name="profile_reminder_desc">Alert style, default time</string>
+    <string name="profile_label_manage">Label Manager</string>
+    <string name="profile_label_manage_desc">Edit, add, delete labels</string>
+    <string name="profile_section_data">Data</string>
+    <string name="profile_data_manage">Data Manager</string>
+    <string name="profile_data_manage_desc">Backup, restore, WebDAV</string>
+    <string name="profile_section_about">About</string>
+    <string name="profile_about">About Mo</string>
+    <string name="profile_about_desc">Version, developer, open source</string>
+    <string name="profile_share">Share with Friends</string>
+    <string name="profile_share_text">Check out "Mo" — a clean and elegant todo &amp; memo app 📝✨ Minimalist design, smooth experience, keep your days organized!</string>
+
+    <!-- PersonalizationScreen -->
+    <string name="personalization_title">Personalization</string>
+    <string name="personalization_color_theme">Color Theme</string>
+    <string name="personalization_theme_forest">Forest Green</string>
+    <string name="personalization_theme_ocean">Ocean Blue</string>
+    <string name="personalization_theme_sunset">Sunset Orange</string>
+    <string name="personalization_theme_lavender">Lavender</string>
+    <string name="personalization_theme_rosegold">Rose Gold</string>
+    <string name="personalization_font_size">Font Size</string>
+    <string name="personalization_font_small">Small</string>
+    <string name="personalization_font_normal">Medium</string>
+    <string name="personalization_font_large">Large</string>
+    <string name="personalization_corner_style">Corner Style</string>
+    <string name="personalization_corner_round">Rounded</string>
+    <string name="personalization_corner_square">Square</string>
+    <string name="personalization_corner_extra_round">Extra Rounded</string>
+    <string name="personalization_theme_mode">Theme Mode</string>
+    <string name="personalization_theme_follow">Follow System</string>
+    <string name="personalization_theme_light">Light</string>
+    <string name="personalization_theme_dark">Dark</string>
+    <string name="personalization_dynamic_color">Dynamic Colors</string>
+    <string name="personalization_dynamic_color_desc">Extract theme from wallpaper</string>
+    <string name="personalization_list_density">List Density</string>
+    <string name="personalization_density_compact">Compact</string>
+    <string name="personalization_density_normal">Standard</string>
+    <string name="personalization_density_relaxed">Relaxed</string>
+    <string name="personalization_default_priority">Default Priority</string>
+    <string name="personalization_notify_vibrate">Vibration</string>
+    <string name="personalization_notify_vibrate_desc">Vibrate for reminders</string>
+    <string name="personalization_language">Language</string>
+    <string name="personalization_language_system">Follow System</string>
+    <string name="personalization_language_zh">中文</string>
+    <string name="personalization_language_en">English</string>
+
+    <!-- AboutScreen -->
+    <string name="about_title">About Mo</string>
+    <string name="about_version">v%1$s</string>
+    <string name="about_subtitle">Todo &amp; Memo</string>
+    <string name="about_section_info">App Info</string>
+    <string name="about_developer">Developer</string>
+    <string name="about_developer_name">gascs</string>
+    <string name="about_tech_stack">Tech Stack</string>
+    <string name="about_tech_desc">Jetpack Compose + Material 3</string>
+    <string name="about_platform">Platform</string>
+    <string name="about_platform_desc">Android (Kotlin)</string>
+    <string name="about_section_open_source">Open Source</string>
+    <string name="about_open_source_desc">Mo is an open source app released under the MIT License. Anyone is welcome to view, modify, and distribute the source code. All third-party libraries are Free and Open Source Software (FOSS).</string>
+    <string name="about_open_source_link">GitHub Source</string>
+    <string name="about_section_legal">Legal</string>
+    <string name="about_github">GitHub Repository</string>
+    <string name="about_privacy">Privacy Policy</string>
+    <string name="about_terms">Terms of Service</string>
+    <string name="about_disclaimer">Disclaimer</string>
+    <string name="about_open_source_license">Open Source License</string>
+    <string name="about_privacy_title">Privacy Policy</string>
+    <string name="about_privacy_desc">Mo respects and protects your privacy. All data in this app is stored locally on your device. We do not collect, store, or transmit any of your personal information.\n\nData Storage\nAll todo items and memos are saved in the app\'s local database and are never uploaded to any server.\n\nPermissions\n• Notifications: Used only for todo reminders\n• Exact alarms: Used only for scheduled reminders\n• Boot receiver: Used only to restore reminders after reboot\n\nThird-Party Services\nThis app does not integrate any third-party analytics, advertising, or tracking services.\n\nData Export\nYou can back up your data at any time through the export feature. Your data is fully under your control.\n\nContact\nFor privacy-related questions, please contact us via GitHub.</string>
+    <string name="about_open_source_title">Open Source Notice</string>
+    <string name="about_open_source_full_desc">Mo is Free and Open Source Software released under the MIT License.\n\nMIT License\nCopyright (c) 2025 gascs\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software.\n\nThe Software is provided "as is", without warranty of any kind, express or implied.</string>
+
+    <!-- ReminderSettingsScreen -->
+    <string name="reminder_settings_title">Reminder Settings</string>
+    <string name="reminder_settings_default_time">Default Reminder Time</string>
+    <string name="reminder_settings_minutes">%1$d min</string>
+    <string name="reminder_settings_minutes_before">%1$d min before</string>
+    <string name="reminder_settings_at_due">At due time</string>
+    <string name="reminder_settings_notify_method">Notification Method</string>
+    <string name="reminder_settings_high_priority">High Priority Alerts</string>
+    <string name="reminder_settings_high_priority_desc">Use high-priority notification channel to ensure reminders are not silenced.</string>
+    <string name="reminder_settings_full_screen">Full-Screen Popup</string>
+    <string name="reminder_settings_full_screen_desc">Show full-screen reminder popup on lock screen to ensure important reminders are not missed.</string>
+    <string name="reminder_settings_boot_restore">Auto-Restore on Boot</string>
+    <string name="reminder_settings_boot_restore_desc">Automatically restore all pending reminders after device reboot.</string>
+    <string name="reminder_settings_test">Test Notification</string>
+    <string name="reminder_settings_channel">Notification Channel</string>
+    <string name="reminder_settings_channel_desc">Go to system settings to manage notification channel</string>
+    <string name="reminder_settings_test_btn">Send Test Notification</string>
+    <string name="reminder_settings_test_desc">Tap to send a test notification and verify notifications are working</string>
+    <string name="reminder_settings_test_success">Test notification sent!</string>
+    <string name="reminder_settings_tip">Tips</string>
+    <string name="reminder_settings_tip_desc">If reminders don\'t work, please check:\n1. System notification permission is enabled\n2. App is not restricted by battery optimization\n3. Auto-start permission is allowed\n4. Do Not Disturb mode is off</string>
+
+    <!-- LabelManagementScreen -->
+    <string name="label_manage_title">Label Manager</string>
+    <string name="label_manage_selected">%1$d selected</string>
+    <string name="label_manage_add">Add Label</string>
+    <string name="label_manage_add_placeholder">Enter label name</string>
+    <string name="label_manage_rename">Rename Label</string>
+    <string name="label_manage_delete">Delete Label</string>
+    <string name="label_manage_delete_confirm">Delete label \"%1$s\"?</string>
+    <string name="label_manage_default">Default</string>
+    <string name="label_manage_custom">Custom</string>
+    <string name="label_manage_rename_action">Rename</string>
+    <string name="label_manage_delete_action">Delete</string>
+    <string name="toast_label_empty">Label name cannot be empty</string>
+    <string name="toast_label_exists">Label already exists</string>
+    <string name="toast_label_deleted">Deleted</string>
+    <string name="toast_label_renamed">Renamed</string>
+    <string name="toast_label_deleted_count">Deleted %1$d labels</string>
+    <string name="btn_confirm">OK</string>
+    <string name="btn_cancel">Cancel</string>
+
+    <!-- DataManagementScreen -->
+    <string name="data_manage_title">Data Manager</string>
+    <string name="data_manage_local_backup">Local Backup</string>
+    <string name="data_manage_export_json">Export JSON</string>
+    <string name="data_manage_import_json">Import JSON</string>
+    <string name="data_manage_webdav">WebDAV Cloud Backup</string>
+    <string name="data_manage_upload">Upload</string>
+    <string name="data_manage_restore">Restore</string>
+    <string name="data_manage_import_success">Import successful (v%1$s)</string>
+    <string name="data_manage_import_fail">Import failed: %1$s</string>
+    <string name="data_manage_export_success">Export successful</string>
+    <string name="data_manage_export_fail">Export failed: %1$s</string>
+    <string name="data_manage_backup_fail">Backup failed: %1$s</string>
+    <string name="data_manage_restore_fail">Restore failed: %1$s</string>
+    <string name="data_manage_webdav_not_config">Please configure WebDAV first</string>
+    <string name="data_manage_webdav_config">WebDAV Config</string>
+
+    <!-- WebDavConfigScreen -->
+    <string name="webdav_title">WebDAV Config</string>
+    <string name="webdav_server">Server URL</string>
+    <string name="webdav_server_placeholder">https://dav.example.com/remote.php/dav</string>
+    <string name="webdav_username">Username</string>
+    <string name="webdav_password">Password</string>
+    <string name="webdav_save">Save Config</string>
+    <string name="webdav_saved">Config saved. Go to backup page for WebDAV operations.</string>
+    <string name="toast_webdav_incomplete">Please fill in all fields</string>
+    <string name="toast_webdav_saved">Config saved</string>
+
+    <!-- Legal Pages -->
+    <string name="legal_disclaimer_title">Disclaimer</string>
+    <string name="legal_terms_title">Terms of Service</string>
+    <string name="legal_privacy_title">Privacy Policy</string>
+    <string name="legal_open_source_title">Open Source License</string>
+    <string name="legal_disclaimer_content">Disclaimer\n\n1. The Mo app is provided "as is" without any express or implied warranties, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.\n\n2. The developer shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from the use or inability to use this app, including but not limited to loss of profits, data loss, or business interruption.\n\n3. The reminder functionality of this app relies on system-level alarm and notification services. Due to deep customizations of Android by different device manufacturers (such as OPPO, Xiaomi, Huawei, etc.), the accuracy of reminders may be affected. The developer shall not be liable for reminder delays or failures caused by system limitations.\n\n4. Users are responsible for their own data backups. Although this app provides export and WebDAV backup features, the developer shall not be liable for data loss.\n\n5. This app may contain links to third-party websites or services. The developer is not responsible for the content, privacy policies, or practices of third-party websites or services.\n\n6. The developer reserves the right to modify or terminate this app at any time without prior notice.\n\n7. By using this app, you agree to all terms of this disclaimer. If you do not agree with any terms of this disclaimer, please stop using this app.</string>
+    <string name="legal_terms_content">Terms of Service\n\nWelcome to the Mo app. Please read the following terms of service carefully before using this app.\n\n1. Service Description\nMo is a local todo and memo management app. All features of this app run locally on your device and no online services are provided.\n\n2. Usage Guidelines\nYou agree to use this app only for lawful purposes. You shall not:\n• Use this app for any illegal activities\n• Attempt to reverse engineer, decompile, or disassemble this app\n• Copy, modify, or distribute any part of this app\n• Use automated tools to bulk access or operate this app\n\n3. Intellectual Property\nThis app and its original content, features, and functionality are owned by the developer. This app is open source under the MIT License. Please refer to the Open Source License page for specific terms.\n\n4. Disclaimer\nThis app is provided "as is" without any express or implied warranties. See the Disclaimer page for details.\n\n5. Data Security\nThis app stores all data locally on your device. We strongly recommend that you regularly back up your data using the export or WebDAV backup features.\n\n6. Agreement Modifications\nThe developer reserves the right to modify this agreement at any time. Modified agreements will be published within the app. Continued use of this app constitutes your agreement to the modified terms.\n\n7. Contact\nFor any questions or suggestions, please contact us via GitHub:\nhttps://github.com/gascs/Mo-Todo</string>
+</resources>

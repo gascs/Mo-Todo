@@ -12,6 +12,7 @@ import com.mo.todo.ui.screen.memo.MemoScreen
 import com.mo.todo.ui.screen.profile.AboutScreen
 import com.mo.todo.ui.screen.profile.DataManagementScreen
 import com.mo.todo.ui.screen.profile.LabelManagementScreen
+import com.mo.todo.ui.screen.profile.LegalScreen
 import com.mo.todo.ui.screen.profile.PersonalizationScreen
 import com.mo.todo.ui.screen.profile.ProfileScreen
 import com.mo.todo.ui.screen.profile.ReminderSettingsScreen
@@ -31,6 +32,7 @@ object MoRoutes {
     const val PERSONALIZATION = "personalization"
     const val DATA_MANAGEMENT = "data_management"
     const val WEBDAC_CONFIG = "webdav_config"
+    const val LEGAL = "legal/{type}"
 
     fun addEditTodoRoute(todoId: Long? = null) = if (todoId != null) "add_edit_todo?todoId=$todoId" else "add_edit_todo"
     fun addEditMemoRoute(memoId: Long? = null) = if (memoId != null) "add_edit_memo?memoId=$memoId" else "add_edit_memo"
@@ -60,9 +62,13 @@ fun MoNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
         }
         composable(MoRoutes.LABEL_MANAGEMENT) { LabelManagementScreen(onNavigateBack = { navController.popBackStack() }) }
         composable(MoRoutes.REMINDER_SETTINGS) { ReminderSettingsScreen(onNavigateBack = { navController.popBackStack() }) }
-        composable(MoRoutes.ABOUT) { AboutScreen(onNavigateBack = { navController.popBackStack() }) }
+        composable(MoRoutes.ABOUT) { AboutScreen(onNavigateBack = { navController.popBackStack() }, onNavigateToLegal = { type -> navController.navigate("legal/$type") }) }
         composable(MoRoutes.PERSONALIZATION) { PersonalizationScreen(onNavigateBack = { navController.popBackStack() }) }
         composable(MoRoutes.DATA_MANAGEMENT) { DataManagementScreen(onNavigateBack = { navController.popBackStack() }, onNavigateToWebDavConfig = { navController.navigate(MoRoutes.WEBDAC_CONFIG) }) }
         composable(MoRoutes.WEBDAC_CONFIG) { WebDavConfigScreen(onNavigateBack = { navController.popBackStack() }) }
+        composable(MoRoutes.LEGAL, arguments = listOf(navArgument("type") { type = NavType.StringType })) { backStackEntry ->
+            val type = backStackEntry.arguments?.getString("type") ?: "privacy"
+            LegalScreen(type = type, onNavigateBack = { navController.popBackStack() })
+        }
     }
 }
