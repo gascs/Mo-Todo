@@ -21,6 +21,22 @@
 
 ---
 
+> **⚠️ 已知问题 | Known Issue**
+>
+> 当应用不在后台运行时，提醒通知可能无法正常触发。这是由于本人技术水平有限，目前尚未找到可靠的解决方案。如果你有更好的思路，欢迎提 Issue 或 PR，非常感谢！
+>
+> Reminders may not fire when the app is not running in the background. This is due to my limited technical knowledge and I haven't found a reliable solution yet. If you have any ideas, feel free to open an Issue or submit a PR — thank you!
+>
+> ---
+>
+> **📌 项目状态 | Project Status**
+>
+> 应用主体框架和功能已全部搭建完成，核心功能均可正常使用。
+>
+> The main framework and all core features have been fully built and are functional.
+
+---
+
 <a id="功能特性"></a>
 
 ## 功能特性
