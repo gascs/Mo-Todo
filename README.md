@@ -1,6 +1,7 @@
 <div align="center">
   <h1>Mo</h1>
   <p><strong>待办 · 备忘录 · 提醒</strong></p>
+  <p><strong>Todo · Memo · Reminder</strong></p>
 
   <p>
     <img alt="Android" src="https://img.shields.io/badge/Android-14%2B-3DDC84?logo=android&logoColor=white">
@@ -11,19 +12,16 @@
   </p>
 
   <p>一款简洁优雅的 Android 待办与备忘录应用，采用 Material 3 设计语言，专注本地体验与数据隐私。</p>
+  <p>A clean and elegant Android todo & memo app built with Material 3, focused on local experience and data privacy.</p>
+
+  <p>
+    <a href="#功能特性">中文</a> | <a href="#features">English</a>
+  </p>
 </div>
 
 ---
 
-## 截图
-
-<!-- 替换为实际截图 -->
-<p align="center">
-  <img src="screenshots/home.png" width="24%" />
-  <img src="screenshots/todo.png" width="24%" />
-  <img src="screenshots/memo.png" width="24%" />
-  <img src="screenshots/profile.png" width="24%" />
-</p>
+<a id="功能特性"></a>
 
 ## 功能特性
 
@@ -42,7 +40,6 @@
 - 创建、编辑、删除备忘录，支持星标收藏
 - 7 种颜色标签 + 分类筛选
 - 网格/列表视图切换，网格列数自适应（手机 2 列，平板 3-4 列）
-- Markdown 富文本编辑（加粗/斜体/删除线/列表）
 - 关键词搜索
 
 ### 智能提醒
@@ -57,13 +54,20 @@
 
 ### 个性化
 
-- 5 套莫兰迪配色主题（森林绿 / 深海蓝 / 晚霞橙 / 薰衣草紫 / 玫瑰金）
+- 多套莫兰迪配色主题（森林绿 / 深海蓝 / 晚霞橙 / 薰衣草紫 / 玫瑰金 等）
 - Material You 动态取色（从壁纸提取配色）
 - 浅色 / 深色 / 跟随系统三种模式
-- 字体大小（小/中/大）、圆角风格（圆润/方正）可调
+- 字体大小（小/中/大）可调
+- 圆角风格（圆润/方正/超圆润）可调
 - 列表密度（紧凑/标准/放松）
 - 新建待办默认优先级设置
 - 通知振动开关
+
+### 多语言
+
+- 支持 **中文 / English** 双语切换
+- 在设置页面自由选择语言（跟随系统 / 中文 / English）
+- 自动检测系统语言并匹配
 
 ### 数据管理
 
@@ -78,61 +82,151 @@
 - 功能分组菜单：标签管理、提醒设置、个性化、数据管理
 - 一键分享应用给朋友
 
-## 技术栈
+### 法律与隐私
 
-| 类别 | 技术 |
-|------|------|
-| 语言 | Kotlin 2.1.10 |
-| UI | Jetpack Compose + Material 3 |
-| 架构 | MVVM + Flow / StateFlow |
-| 数据库 | Room 2.6.1 |
-| DI | Hilt 2.55 |
-| 后台任务 | WorkManager 2.10.0 + AlarmManager |
-| 偏好存储 | DataStore Preferences |
-| 网络 | OkHttp 4 (WebDAV) |
-| 图片加载 | Coil |
-| 最低 SDK | 34 (Android 14) |
+- 应用内内置免责声明、用户协议、隐私政策、开源协议页面
+- 仓库提供独立 .md 文件：[DISCLAIMER.md](DISCLAIMER.md) | [TERMS.md](TERMS.md) | [PRIVACY.md](PRIVACY.md)
 
-## 构建
+---
+
+<a id="features"></a>
+
+## Features
+
+### Todo Management
+
+- Create, edit, and delete todos with title and detailed notes
+- Three-level priority indicators (High/Medium/Low) with color-coded bars
+- Label-based filtering (Work/Personal/Shopping/Notes etc.), with custom label support
+- Quick reminders (Today/Tomorrow 09:00/Next week) + precise date-time picker
+- Swipe-to-delete with Snackbar undo
+- Completion animation, collapsible completed section
+- Real-time keyword search, sort by priority or creation time
+
+### Memo
+
+- Create, edit, and delete memos with star/favorite support
+- 7 color labels + category filtering
+- Grid/List view toggle with adaptive columns (2 for phones, 3-4 for tablets)
+- Keyword search
+
+### Smart Reminders
+
+- **Triple-safeguard scheduling**: AlarmManager precise alarms + WorkManager backup + 15-minute periodic scan fallback
+- Notification channels auto-rebuilt on every launch (fixes stale channel settings)
+- Notification priority `CATEGORY_ALARM`, full-screen lock-screen popup + Heads-up banner
+- Auto-reschedule all pending reminders after device reboot
+- Tap notification to navigate directly to the corresponding todo
+- Battery optimization detection / Auto-launch guidance / Notification channel settings
+- **Test notification**: One-tap test notification to verify notification functionality
+
+### Personalization
+
+- Multiple Morandi color themes (Forest Green / Deep Ocean Blue / Sunset Orange / Lavender Purple / Rose Gold, etc.)
+- Material You dynamic color extraction from wallpaper
+- Light / Dark / Follow system theme modes
+- Font size (Small/Medium/Large) adjustable
+- Corner style (Rounded/Square/Extra Rounded) adjustable
+- List density (Compact/Standard/Relaxed)
+- Default priority setting for new todos
+- Notification vibration toggle
+
+### Multi-language
+
+- **Chinese / English** bilingual support
+- Free language switching in Settings (Follow System / Chinese / English)
+- Automatic system language detection and matching
+
+### Data Management
+
+- JSON local export/import
+- WebDAV cloud backup and restore
+- Label management: add, edit, rename, delete + batch operations
+
+### Profile
+
+- Time-based greeting + data overview card (Todos/In Progress/Completed/Memos/Favorites statistics + completion rate progress bar)
+- Custom avatar (initials placeholder) + nickname editing
+- Grouped function menu: Label Management, Reminder Settings, Personalization, Data Management
+- One-tap share app with friends
+
+### Legal & Privacy
+
+- In-app pages for Disclaimer, Terms of Service, Privacy Policy, and Open Source License
+- Standalone .md files in the repository: [DISCLAIMER.md](DISCLAIMER.md) | [TERMS.md](TERMS.md) | [PRIVACY.md](PRIVACY.md)
+
+---
+
+## 技术栈 | Tech Stack
+
+| 类别 | Category | 技术 | Technology |
+|------|----------|------|------------|
+| 语言 | Language | Kotlin 2.1.10 | Kotlin 2.1.10 |
+| UI 框架 | UI Framework | Jetpack Compose + Material 3 | Jetpack Compose + Material 3 |
+| 架构 | Architecture | MVVM + Flow / StateFlow | MVVM + Flow / StateFlow |
+| 数据库 | Database | Room 2.6.1 | Room 2.6.1 |
+| 依赖注入 | DI | Hilt 2.55 | Hilt 2.55 |
+| 后台任务 | Background | WorkManager 2.10.0 + AlarmManager | WorkManager 2.10.0 + AlarmManager |
+| 偏好存储 | Preferences | DataStore Preferences | DataStore Preferences |
+| 网络 | Network | OkHttp 4 (WebDAV) | OkHttp 4 (WebDAV) |
+| 多语言 | i18n | AppCompat Per-App Language API | AppCompat Per-App Language API |
+| 最低 SDK | Min SDK | 34 (Android 14) | 34 (Android 14) |
+
+## 构建 | Build
 
 ```bash
-# 需要 JDK 21, Android SDK 35
+# 需要 JDK 21, Android SDK 35 | Requires JDK 21, Android SDK 35
 ./gradlew assembleDebug
 ```
 
-APK 输出路径：`app/build/outputs/apk/debug/app-debug.apk`
+APK 输出路径 | APK output: `app/build/outputs/apk/debug/app-debug.apk`
 
-## 项目结构
+## 安装 | Installation
+
+从 [Releases](https://github.com/MoYuan00MoYuan/Mo-Todo/releases) 页面下载最新的 APK 文件。
+
+Download the latest APK from the [Releases](https://github.com/MoYuan00MoYuan/Mo-Todo/releases) page.
+
+## 项目结构 | Project Structure
 
 ```
 app/src/main/java/com/mo/todo/
-├── MainActivity.kt                 # 入口 Activity
-├── MoApplication.kt                # Application，初始化通知渠道
+├── MainActivity.kt                 # 入口 Activity | Entry Activity
+├── MoApplication.kt                # Application，初始化通知渠道 | Init notification channels
 ├── data/
-│   ├── model/                      # Todo / Memo 数据模型
+│   ├── model/                      # Todo / Memo 数据模型 | Data models
 │   ├── dao/                        # TodoDao / MemoDao
 │   ├── database/                   # AppDatabase (Room)
 │   ├── repository/                 # TodoRepository / MemoRepository
 │   └── network/                    # WebDavClient
-├── di/                             # Hilt 依赖注入模块
+├── di/                             # Hilt 依赖注入 | DI modules
 ├── ui/
-│   ├── theme/                      # Color / Type / Theme (莫兰迪配色系统)
+│   ├── theme/                      # Color / Type / Theme (莫兰迪配色 | Morandi palette)
 │   ├── navigation/                 # BottomNavItem / MoNavHost / MoRoutes
-│   ├── component/                  # 通用组件 (TodoItemRow 等)
+│   ├── component/                  # 通用组件 | Common components
 │   ├── screen/
-│   │   ├── MainScreen.kt           # 主界面 (底部导航 + NavHost)
+│   │   ├── MainScreen.kt           # 主界面 | Main screen (bottom nav + NavHost)
 │   │   ├── todo/                   # TodoScreen / AddEditTodoScreen
 │   │   ├── memo/                   # MemoScreen / AddEditMemoScreen
-│   │   └── profile/                # Profile / About / Label / Personalization / Reminder / WebDAV / Data
+│   │   └── profile/                # Profile / About / Legal / Label / Personalization / Reminder / WebDAV / Data
 │   └── viewmodel/                  # TodoVM / MemoVM / SettingsVM / StatsVM
 └── worker/
-    ├── AlarmReceiver.kt            # 闹钟广播接收器
-    ├── BootReceiver.kt             # 开机广播，重调度提醒
-    ├── NotificationHelper.kt       # 通知构建与发送
-    ├── ReminderScheduler.kt        # 提醒调度器 (AlarmManager + WorkManager)
+    ├── AlarmReceiver.kt            # 闹钟广播接收器 | Alarm broadcast receiver
+    ├── BootReceiver.kt             # 开机广播，重调度提醒 | Boot receiver, reschedule reminders
+    ├── NotificationHelper.kt       # 通知构建与发送 | Notification builder
+    ├── ReminderScheduler.kt        # 提醒调度器 | Reminder scheduler
     └── ReminderWorker.kt           # WorkManager Worker
 ```
 
-## 许可证
+## 法律文档 | Legal Documents
+
+| 文档 | Document | 链接 | Link |
+|------|----------|------|------|
+| 免责声明 | Disclaimer | [中文 & English](DISCLAIMER.md) |
+| 用户协议 | Terms of Service | [中文 & English](TERMS.md) |
+| 隐私政策 | Privacy Policy | [中文 & English](PRIVACY.md) |
+| 开源协议 | Open Source License | [MIT License](LICENSE) |
+
+## 许可证 | License
 
 [MIT](LICENSE)

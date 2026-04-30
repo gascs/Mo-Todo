@@ -14,3 +14,11 @@ local.properties
 *.aab
 *.jks
 *.keystore
+.kotlin/
+build_log.txt
+build_output.txt
+clean_build.txt
+error_lines.txt
+remote_hash.txt
+__build_log.txt
+o.html
