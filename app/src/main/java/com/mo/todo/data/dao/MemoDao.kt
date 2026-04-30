@@ -47,4 +47,10 @@ interface MemoDao {
 
     @Query("UPDATE memos SET tag = :newTag WHERE tag = :oldTag")
     suspend fun updateTagByTag(oldTag: String, newTag: String): Int
+
+    @Query("SELECT COUNT(*) FROM memos")
+    fun getTotalCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM memos WHERE isStarred = 1")
+    fun getStarredCount(): Flow<Int>
 }

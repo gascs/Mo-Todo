@@ -22,4 +22,6 @@ class MemoRepository @Inject constructor(
     suspend fun updateStarred(id: Long, isStarred: Boolean): Result<Unit> = runCatching { memoDao.updateStarred(id, isStarred) }
     suspend fun getMemoById(id: Long): Result<Memo?> = runCatching { memoDao.getMemoById(id) }
     suspend fun updateTagByTag(oldTag: String, newTag: String): Result<Int> = runCatching { memoDao.updateTagByTag(oldTag, newTag) }
+    fun getTotalCount(): Flow<Int> = memoDao.getTotalCount()
+    fun getStarredCount(): Flow<Int> = memoDao.getStarredCount()
 }

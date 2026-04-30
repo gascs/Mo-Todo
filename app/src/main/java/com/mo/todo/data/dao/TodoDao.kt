@@ -59,4 +59,16 @@ interface TodoDao {
 
     @Query("UPDATE todos SET tag = :newTag WHERE tag = :oldTag")
     suspend fun updateTagByTag(oldTag: String, newTag: String): Int
+
+    @Query("SELECT COUNT(*) FROM todos")
+    fun getTotalCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM todos WHERE isCompleted = 1")
+    fun getCompletedCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM todos WHERE isCompleted = 0")
+    fun getActiveCount(): Flow<Int>
+
+    @Query("SELECT * FROM todos ORDER BY createdAt DESC LIMIT 1")
+    fun getLatestTodo(): Flow<Todo?>
 }

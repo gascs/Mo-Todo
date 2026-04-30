@@ -1,11 +1,13 @@
 ﻿package com.mo.todo.ui.screen.profile
 
+import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,15 +20,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import compose.icons.Octicons
 import compose.icons.octicons.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -50,12 +57,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.mo.todo.ui.viewmodel.SettingsViewModel
+import com.mo.todo.ui.viewmodel.StatsViewModel
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,12 +75,30 @@ fun ProfileScreen(
     onNavigateToAbout: () -> Unit = {},
     onNavigateToPersonalization: () -> Unit = {},
     onNavigateToDataManagement: () -> Unit = {},
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel(),
+    statsViewModel: StatsViewModel = hiltViewModel()
 ) {
     val nickname by viewModel.nickname.collectAsState()
     val avatarPath by viewModel.avatarPath.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    val todoTotal by statsViewModel.todoTotal.collectAsState()
+    val todoCompleted by statsViewModel.todoCompleted.collectAsState()
+    val todoActive by statsViewModel.todoActive.collectAsState()
+    val memoTotal by statsViewModel.memoTotal.collectAsState()
+    val memoStarred by statsViewModel.memoStarred.collectAsState()
+    val completionRate by statsViewModel.completionRate.collectAsState()
+
+    val greeting = remember {
+        when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+            in 5..11 -> "早上好"
+            in 12..13 -> "中午好"
+            in 14..17 -> "下午好"
+            in 18..22 -> "晚上好"
+            else -> "夜深了"
+        }
+    }
 
     var showNickDialog by remember { mutableStateOf(false) }
     var editNick by remember { mutableStateOf(nickname) }
@@ -134,7 +162,6 @@ fun ProfileScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // User info section - minimal
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -154,14 +181,12 @@ fun ProfileScreen(
                         AsyncImage(
                             model = File(avatarPath),
                             contentDescription = "头像",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape),
+                            modifier = Modifier.fillMaxSize().clip(CircleShape),
                             contentScale = ContentScale.Crop
                         )
                     } else {
                         Text(
-                            "M",
+                            nickname.take(1).uppercase(),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -171,10 +196,12 @@ fun ProfileScreen(
                 Spacer(Modifier.width(14.dp))
                 Column {
                     Text(
-                        nickname,
+                        "$greeting，$nickname",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
@@ -185,12 +212,55 @@ fun ProfileScreen(
                 }
             }
 
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                thickness = 0.5.dp
-            )
-            Spacer(Modifier.height(8.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "数据概览",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            "完成率 $completionRate%",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    LinearProgressIndicator(
+                        progress = { if (todoTotal == 0) 0f else todoCompleted.toFloat() / todoTotal },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp)),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        StatItem("待办", todoTotal.toString(), MaterialTheme.colorScheme.primary)
+                        StatItem("进行中", todoActive.toString(), Color(0xFFBF8700))
+                        StatItem("已完成", todoCompleted.toString(), Color(0xFF1A7F37))
+                        StatItem("备忘录", memoTotal.toString(), Color(0xFF8250DF))
+                        StatItem("收藏", memoStarred.toString(), Color(0xFFCF222E))
+                    }
+                }
+            }
 
+            Spacer(Modifier.height(16.dp))
+
+            SectionHeader("功能")
             ProfileMenuItem(
                 Octicons.Tag24,
                 MaterialTheme.colorScheme.primary,
@@ -219,6 +289,22 @@ fun ProfileScreen(
                 "导出导入 / WebDAV 备份",
                 onClick = onNavigateToDataManagement
             )
+
+            Spacer(Modifier.height(12.dp))
+            SectionHeader("其他")
+            ProfileMenuItem(
+                Icons.Filled.Share,
+                Color(0xFF1A7F37),
+                "分享给朋友",
+                "推荐 Mo 给身边的人",
+                onClick = {
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, "推荐一个简洁好用的待办备忘 App —— Mo\nhttps://github.com/gascs/Mo-Todo")
+                    }
+                    context.startActivity(Intent.createChooser(shareIntent, "分享 Mo"))
+                }
+            )
             ProfileMenuItem(
                 Octicons.Info24,
                 MaterialTheme.colorScheme.onSurfaceVariant,
@@ -230,6 +316,35 @@ fun ProfileScreen(
             Spacer(Modifier.height(112.dp))
         }
     }
+}
+
+@Composable
+private fun StatItem(label: String, value: String, color: Color) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            value,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
+    }
+}
+
+@Composable
+private fun SectionHeader(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        modifier = Modifier.padding(start = 20.dp, top = 4.dp, bottom = 4.dp)
+    )
 }
 
 @Composable
