@@ -3,7 +3,7 @@ package com.mo.todo
 import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.mo.todo.worker.ReminderWorker
+import com.mo.todo.worker.NotificationHelper
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -17,8 +17,6 @@ class MoApplication : android.app.Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            ReminderWorker.createChannel(this)
-        }
+        NotificationHelper.createAllChannels(this)
     }
 }

@@ -1,6 +1,7 @@
 package com.mo.todo.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -36,8 +37,8 @@ object MoRoutes {
 }
 
 @Composable
-fun MoNavHost(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = MoRoutes.TODO) {
+fun MoNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
+    NavHost(navController = navController, startDestination = MoRoutes.TODO, modifier = modifier) {
         composable(MoRoutes.TODO) { TodoScreen(onNavigateToAddEdit = { navController.navigate(MoRoutes.addEditTodoRoute(it)) }) }
         composable(MoRoutes.ADD_EDIT_TODO, arguments = listOf(navArgument("todoId") { type = NavType.LongType; defaultValue = -1L })) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("todoId") ?: -1L

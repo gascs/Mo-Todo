@@ -57,7 +57,6 @@ import com.mo.todo.ui.theme.PriorityHigh
 import com.mo.todo.ui.theme.PriorityLow
 import com.mo.todo.ui.theme.PriorityMedium
 import com.mo.todo.ui.theme.StarColor
-import com.mo.todo.ui.theme.MemoChipColors
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -72,24 +71,18 @@ fun TodoItemRow(
     onSwipeDelete: () -> Unit,
     onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier,
-    verticalPadding: androidx.compose.ui.unit.Dp = 6.dp
+    verticalPadding: androidx.compose.ui.unit.Dp = 4.dp
 ) {
     val animatedScale by animateFloatAsState(
-        targetValue = if (todo.isCompleted) 0.97f else 1f,
-        animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
+        targetValue = if (todo.isCompleted) 0.98f else 1f,
+        animationSpec = spring(dampingRatio = 0.6f, stiffness = 300f),
         label = "todoScale"
     )
 
     val textAlpha by animateFloatAsState(
-        targetValue = if (todo.isCompleted) 0.5f else 1f,
-        animationSpec = tween(250),
+        targetValue = if (todo.isCompleted) 0.45f else 1f,
+        animationSpec = tween(200),
         label = "textAlpha"
-    )
-
-    val checkboxAlpha by animateFloatAsState(
-        targetValue = if (todo.isCompleted) 0.6f else 1f,
-        animationSpec = tween(300),
-        label = "checkboxAlpha"
     )
 
     val priorityColor = when (todo.priority) {
@@ -133,8 +126,8 @@ fun TodoItemRow(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = if (todo.isCompleted) 0.dp else 1.dp)
+            shape = RoundedCornerShape(14.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -142,28 +135,28 @@ fun TodoItemRow(
                     .height(IntrinsicSize.Min),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Priority color bar on left edge
+                // Minimal priority indicator
                 Box(
                     modifier = Modifier
-                        .width(4.dp)
+                        .width(3.dp)
                         .height(IntrinsicSize.Max)
-                        .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
-                        .clip(RoundedCornerShape(2.dp))
                         .background(
-                            if (todo.isCompleted) Color.Gray.copy(alpha = 0.3f) else priorityColor
+                            if (todo.isCompleted) Color.Gray.copy(alpha = 0.2f) else priorityColor.copy(alpha = 0.8f)
                         )
                 )
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 10.dp),
+                        .padding(start = 8.dp, end = 12.dp, top = 10.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(
                         checked = todo.isCompleted,
                         onCheckedChange = { onToggleCompletion() },
-                        modifier = Modifier.alpha(checkboxAlpha),
+                        modifier = Modifier
+                            .size(22.dp)
+                            .alpha(if (todo.isCompleted) 0.5f else 1f),
                         colors = CheckboxDefaults.colors(
                             checkedColor = MaterialTheme.colorScheme.primary,
                             uncheckedColor = MaterialTheme.colorScheme.outline,
@@ -171,80 +164,83 @@ fun TodoItemRow(
                         )
                     )
 
-                Spacer(Modifier.width(4.dp))
+                    Spacer(Modifier.width(10.dp))
 
-                Column(modifier = Modifier.weight(1f).alpha(textAlpha)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(if (todo.isCompleted) Color.Gray.copy(alpha = 0.4f) else priorityColor)
-                        )
-                        Spacer(Modifier.width(6.dp))
+                    Column(modifier = Modifier.weight(1f).alpha(textAlpha)) {
                         Text(
                             text = todo.title,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             textDecoration = if (todo.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                             color = if (todo.isCompleted)
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                             else
                                 MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false)
-                        )
-                    }
-
-                    if (todo.description != null && todo.description.isNotBlank()) {
-                        Spacer(Modifier.height(2.dp))
-                        Text(
-                            text = todo.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                    }
 
-                    Spacer(Modifier.height(4.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        if (todo.reminderTime != null) {
-                            val dateFormat = remember { SimpleDateFormat("M/d HH:mm", Locale.getDefault()) }
+                        if (todo.description != null && todo.description.isNotBlank()) {
+                            Spacer(Modifier.height(2.dp))
                             Text(
-                                text = dateFormat.format(Date(todo.reminderTime)),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                text = todo.description,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
 
-                        val tagLabel = when (todo.tag) {
-                            "work" -> "工作"
-                            "personal" -> "个人"
-                            "shopping" -> "购物"
-                            else -> todo.tag
+                        Spacer(Modifier.height(4.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            if (todo.reminderTime != null) {
+                                val dateFormat = remember { SimpleDateFormat("M/d HH:mm", Locale.getDefault()) }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Octicons.Bell16, null,
+                                        modifier = Modifier.size(11.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    )
+                                    Spacer(Modifier.width(3.dp))
+                                    Text(
+                                        text = dateFormat.format(Date(todo.reminderTime)),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    )
+                                }
+                            }
+
+                            val tagLabel = when (todo.tag) {
+                                "work" -> "工作"
+                                "personal" -> "个人"
+                                "shopping" -> "购物"
+                                else -> todo.tag
+                            }
+
+                            Text(
+                                text = tagLabel,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+
+                            if (!todo.isCompleted) {
+                                Text(
+                                    text = priorityLabel,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = priorityColor.copy(alpha = 0.8f),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
-
-                        Text(
-                            text = tagLabel,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        Text(
-                            text = priorityLabel,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (todo.isCompleted) Color.Gray.copy(alpha = 0.4f) else priorityColor,
-                            fontWeight = FontWeight.SemiBold
-                        )
                     }
                 }
             }
         }
     }
-}
 }
 
 @Composable
@@ -263,29 +259,29 @@ fun EmptyPlaceholder(
     ) {
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .size(72.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(36.dp),
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
             )
         }
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(4.dp))
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
         )
     }
 }
@@ -299,11 +295,8 @@ fun MemoGridCard(
     onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val cardColor = memo.color?.let { Color(it) }
-        ?: MaterialTheme.colorScheme.primaryContainer
-
     val accentColor = memo.color?.let { Color(it) }
-        ?: (MemoChipColors.getOrElse(memo.id.toInt() % MemoChipColors.size) { MaterialTheme.colorScheme.primaryContainer })
+        ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
 
     val tagLabel = when (memo.tag) {
         "note" -> "便签"
@@ -317,83 +310,75 @@ fun MemoGridCard(
             .fillMaxWidth()
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(18.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(14.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column {
-            // Color accent bar on top
+            // Subtle color accent bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
+                    .height(3.dp)
                     .background(accentColor)
             )
             Column(modifier = Modifier.padding(14.dp)) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(cardColor.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("\uD83D\uDCDD", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        text = memo.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = if (memo.isStarred) Octicons.StarFill24 else Octicons.Star24,
+                        contentDescription = "星标",
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clickable { onToggleStar() },
+                        tint = if (memo.isStarred) StarColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+                    )
                 }
 
-            Spacer(Modifier.height(10.dp))
+                if (memo.content.isNotBlank()) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = memo.content,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = memo.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-                Icon(
-                    imageVector = if (memo.isStarred) Octicons.StarFill24 else Octicons.Star24,
-                    contentDescription = "星标",
-                    modifier = Modifier.size(18.dp).clickable { onToggleStar() },
-                    tint = if (memo.isStarred) StarColor else MaterialTheme.colorScheme.outline
-                )
-            }
+                Spacer(Modifier.height(10.dp))
 
-            if (memo.content.isNotBlank()) {
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = memo.content,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Spacer(Modifier.height(8.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                val dateFormat = remember { SimpleDateFormat("M\u6708d\u65e5", Locale.getDefault()) }
-                Text(
-                    text = dateFormat.format(Date(memo.updatedAt)),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline
-                )
-                Text(
-                    text = tagLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val dateFormat = remember { SimpleDateFormat("M月d日", Locale.getDefault()) }
+                    Text(
+                        text = dateFormat.format(Date(memo.updatedAt)),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = tagLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                    )
+                }
             }
         }
     }
-}
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -405,8 +390,8 @@ fun MemoListItem(
     onLongClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val cardColor = memo.color?.let { Color(it) }
-        ?: MaterialTheme.colorScheme.primaryContainer
+    val accentColor = memo.color?.let { Color(it) }
+        ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
 
     val tagLabel = when (memo.tag) {
         "note" -> "便签"
@@ -420,7 +405,7 @@ fun MemoListItem(
             .fillMaxWidth()
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(14.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -429,12 +414,16 @@ fun MemoListItem(
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(cardColor.copy(alpha = 0.3f)),
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(accentColor),
                 contentAlignment = Alignment.Center
             ) {
-                Text("\uD83D\uDCDD", style = MaterialTheme.typography.titleMedium)
+                Icon(
+                    Octicons.File16, null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
             }
 
             Spacer(Modifier.width(12.dp))
@@ -442,26 +431,27 @@ fun MemoListItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = memo.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (memo.content.isNotBlank()) {
+                    Spacer(Modifier.height(2.dp))
                     Text(
                         text = memo.content,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Spacer(Modifier.height(2.dp))
+                Spacer(Modifier.height(3.dp))
                 Text(
                     text = tagLabel,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                 )
             }
 
@@ -470,8 +460,10 @@ fun MemoListItem(
             Icon(
                 imageVector = if (memo.isStarred) Octicons.StarFill24 else Octicons.Star24,
                 contentDescription = "星标",
-                modifier = Modifier.size(20.dp).clickable { onToggleStar() },
-                tint = if (memo.isStarred) StarColor else MaterialTheme.colorScheme.outline
+                modifier = Modifier
+                    .size(18.dp)
+                    .clickable { onToggleStar() },
+                tint = if (memo.isStarred) StarColor else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
             )
         }
     }
@@ -484,9 +476,9 @@ fun SectionHeader(
 ) {
     Text(
         text = title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        modifier = modifier.padding(horizontal = 20.dp, vertical = 10.dp)
     )
 }
 
@@ -502,34 +494,45 @@ fun <T> TagChipRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         items.forEach { item ->
             val key = keySelector(item)
             val isSelected = selectedKey == key
             val bgColor by animateColorAsState(
-                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                targetValue = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) else Color.Transparent,
                 animationSpec = tween(200),
                 label = "chipBg"
             )
             val textColor by animateColorAsState(
-                targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 animationSpec = tween(200),
                 label = "chipText"
             )
+            val borderColor by animateColorAsState(
+                targetValue = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outlineVariant,
+                animationSpec = tween(200),
+                label = "chipBorder"
+            )
 
-            Text(
-                text = labelSelector(item),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                color = textColor,
+            Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
                     .background(bgColor)
+                    .then(
+                        if (!isSelected) Modifier else Modifier
+                    )
                     .clickable { onItemClick(key) }
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+                    .padding(horizontal = 14.dp, vertical = 7.dp)
+            ) {
+                Text(
+                    text = labelSelector(item),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = textColor
+                )
+            }
         }
     }
 }

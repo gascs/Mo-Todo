@@ -17,7 +17,7 @@ sealed class BottomNavItem(
 
     data object Memo : BottomNavItem(
         route = "memo",
-        label = "备忘",
+        label = "备忘录",
         icon = Octicons.Note24
     )
 

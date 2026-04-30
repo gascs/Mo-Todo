@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.Intent
 import com.mo.todo.data.database.AppDatabase
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -14,7 +17,14 @@ class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            ReminderWorker.rescheduleAllAfterBoot(context, database)
+            val pendingResult = goAsync()
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    ReminderScheduler.rescheduleAll(context, database)
+                } finally {
+                    pendingResult.finish()
+                }
+            }
         }
     }
 }

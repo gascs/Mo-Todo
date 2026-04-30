@@ -1,8 +1,7 @@
-package com.mo.todo.ui.screen.todo
+﻿package com.mo.todo.ui.screen.todo
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
@@ -21,7 +20,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -82,14 +80,28 @@ fun TodoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mo \u00b7 待办", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        "待办",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 actions = {
                     IconButton(onClick = { viewModel.setSearchActive(!isSearchActive) }) {
-                        Icon(Octicons.Search24, contentDescription = "搜索")
+                        Icon(
+                            Octicons.Search24,
+                            contentDescription = "搜索",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Octicons.KebabHorizontal24, contentDescription = "更多")
+                            Icon(
+                                Octicons.KebabHorizontal24,
+                                contentDescription = "更多",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             DropdownMenuItem(text = { Text("按优先级排序") }, onClick = { showMenu = false })
@@ -97,18 +109,22 @@ fun TodoScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onNavigateToAddEdit(null) },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = MaterialTheme.shapes.extraLarge,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp, pressedElevation = 8.dp)
-            ) {
-                Icon(Octicons.Plus24, contentDescription = "新建待办")
+            Box(modifier = Modifier.padding(bottom = 80.dp)) {
+                FloatingActionButton(
+                    onClick = { onNavigateToAddEdit(null) },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = MaterialTheme.shapes.large
+                ) {
+                    Icon(Octicons.Plus24, contentDescription = "新建待办")
+                }
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -123,15 +139,23 @@ fun TodoScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.setSearchQuery(it) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = { Text("搜索待办...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = { Text("搜索待办...", style = MaterialTheme.typography.bodyMedium) },
                     singleLine = true,
-                    trailingIcon = { TextButton(onClick = { viewModel.setSearchActive(false) }) { Text("取消") } },
+                    trailingIcon = {
+                        TextButton(onClick = { viewModel.setSearchActive(false) }) {
+                            Text("取消", style = MaterialTheme.typography.labelLarge)
+                        }
+                    },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
                     ),
-                    shape = MaterialTheme.shapes.small
+                    shape = MaterialTheme.shapes.medium
                 )
             }
 
@@ -146,11 +170,30 @@ fun TodoScreen(
             if (isEmpty) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("\u2615\ufe0f", style = MaterialTheme.typography.displayLarge)
-                        Spacer(Modifier.height(12.dp))
-                        Text("今日无事，静享清闲", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.height(4.dp))
-                        Text("点击下方 + 开始添加吧", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, textAlign = TextAlign.Center)
+                        Box(
+                            modifier = Modifier
+                                .padding(bottom = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Octicons.CheckCircle24,
+                                contentDescription = null,
+                                modifier = Modifier.height(48.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
+                        }
+                        Text(
+                            "暂无待办事项",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            "点击 + 创建新待办",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.outline,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             } else {
@@ -168,7 +211,7 @@ fun TodoScreen(
                                 scope.launch {
                                     viewModel.deleteTodo(todo)
                                     val result = snackbarHostState.showSnackbar(
-                                        message = "[${todo.title}] 已删除",
+                                        message = "\"${todo.title}\" 已删除",
                                         actionLabel = "撤销",
                                         duration = androidx.compose.material3.SnackbarDuration.Short
                                     )
@@ -182,48 +225,57 @@ fun TodoScreen(
                         )
                     }
 
-                    item {
-                        Spacer(Modifier.height(4.dp))
-                        TextButton(
-                            onClick = { showCompleted = !showCompleted },
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        ) {
-                            Text(
-                                text = if (showCompleted) "收起已完成 (${completedTodos.size})" else "已完成 (${completedTodos.size})",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                    if (completedTodos.isNotEmpty()) {
+                        item {
+                            Spacer(Modifier.height(4.dp))
+                            TextButton(
+                                onClick = { showCompleted = !showCompleted },
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            ) {
+                                Text(
+                                    text = if (showCompleted) "收起已完成 (${completedTodos.size})" else "已完成 (${completedTodos.size})",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                )
+                            }
                         }
-                    }
 
-                    item {
-                        AnimatedVisibility(visible = showCompleted, enter = fadeIn(), exit = fadeOut()) {
-                            Column(modifier = Modifier.animateContentSize()) {
-                                completedTodos.forEach { todo ->
-                                    TodoItemRow(
-                                        todo = todo,
-                                        onToggleCompletion = { viewModel.toggleCompletion(todo.id, !todo.isCompleted) },
-                                        onClick = { onNavigateToAddEdit(todo.id) },
-                                        onSwipeDelete = {
-                                            scope.launch {
-                                                viewModel.deleteTodo(todo)
-                                                val result = snackbarHostState.showSnackbar(
-                                                    message = "[${todo.title}] 已删除",
-                                                    actionLabel = "撤销",
-                                                    duration = androidx.compose.material3.SnackbarDuration.Short
-                                                )
-                                                if (result == SnackbarResult.ActionPerformed) {
-                                                    viewModel.insertTodo(todo)
+                        item {
+                            AnimatedVisibility(
+                                visible = showCompleted,
+                                enter = fadeIn(),
+                                exit = fadeOut()
+                            ) {
+                                Column(modifier = Modifier.animateContentSize()) {
+                                    completedTodos.forEach { todo ->
+                                        TodoItemRow(
+                                            todo = todo,
+                                            onToggleCompletion = {
+                                                viewModel.toggleCompletion(todo.id, !todo.isCompleted)
+                                            },
+                                            onClick = { onNavigateToAddEdit(todo.id) },
+                                            onSwipeDelete = {
+                                                scope.launch {
+                                                    viewModel.deleteTodo(todo)
+                                                    val result = snackbarHostState.showSnackbar(
+                                                        message = "\"${todo.title}\" 已删除",
+                                                        actionLabel = "撤销",
+                                                        duration = androidx.compose.material3.SnackbarDuration.Short
+                                                    )
+                                                    if (result == SnackbarResult.ActionPerformed) {
+                                                        viewModel.insertTodo(todo)
+                                                    }
                                                 }
-                                            }
-                                        },
-                                        onLongClick = { showMenuForTodo = todo },
-                                        verticalPadding = density.verticalPadding.dp,
-                                    )
+                                            },
+                                            onLongClick = { showMenuForTodo = todo },
+                                            verticalPadding = density.verticalPadding.dp,
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
+                    item { Spacer(Modifier.height(80.dp)) }
                 }
             }
         }
@@ -232,25 +284,33 @@ fun TodoScreen(
     showMenuForTodo?.let { todo ->
         AlertDialog(
             onDismissRequest = { showMenuForTodo = null },
-            title = { Text(todo.title, maxLines = 1) },
+            title = { Text(todo.title, maxLines = 1, style = MaterialTheme.typography.titleMedium) },
             text = {
                 Column {
-                    TextButton(onClick = { showMenuForTodo = null; onNavigateToAddEdit(todo.id) }, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = { showMenuForTodo = null; onNavigateToAddEdit(todo.id) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Text("编辑", modifier = Modifier.fillMaxWidth())
                     }
-                    TextButton(onClick = {
-                        scope.launch {
-                            viewModel.deleteTodo(todo)
-                            snackbarHostState.showSnackbar("[${todo.title}] 已删除", "撤销")
-                        }
-                        showMenuForTodo = null
-                    }, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = {
+                            scope.launch {
+                                viewModel.deleteTodo(todo)
+                                snackbarHostState.showSnackbar("\"${todo.title}\" 已删除", "撤销")
+                            }
+                            showMenuForTodo = null
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Text("删除", color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth())
                     }
                 }
             },
             confirmButton = {},
-            dismissButton = { TextButton(onClick = { showMenuForTodo = null }) { Text("取消") } }
+            dismissButton = {
+                TextButton(onClick = { showMenuForTodo = null }) { Text("取消") }
+            }
         )
     }
 }

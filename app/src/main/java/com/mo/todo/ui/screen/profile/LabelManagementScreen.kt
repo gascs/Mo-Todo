@@ -22,6 +22,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,6 +60,7 @@ fun LabelManagementScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val customLabels by viewModel.customLabelsState.collectAsState()
+    val hiddenDefaults by viewModel.hiddenDefaultLabelsState.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var showAddDialog by remember { mutableStateOf(false) }
@@ -67,8 +70,10 @@ fun LabelManagementScreen(
     var renameText by remember { mutableStateOf("") }
     var isBatchMode by remember { mutableStateOf(false) }
     var selectedLabels by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var menuExpandedFor by remember { mutableStateOf<String?>(null) }
 
-    val allLabels = (defaultLabels + customLabels.toList()).distinct()
+    val visibleDefaults = defaultLabels.filter { it !in hiddenDefaults }
+    val allLabels = (visibleDefaults + customLabels.toList()).distinct()
 
     if (showAddDialog) {
         AlertDialog(
@@ -103,7 +108,14 @@ fun LabelManagementScreen(
             text = { Text("确定删除标签「${label}」？") },
             confirmButton = {
                 TextButton(onClick = {
-                    scope.launch { viewModel.removeCustomLabel(label); deleteTarget = null }
+                    scope.launch {
+                        if (label in defaultLabels) {
+                            viewModel.hideDefaultLabel(label)
+                        } else {
+                            viewModel.removeCustomLabel(label)
+                        }
+                    }
+                    deleteTarget = null
                     Toast.makeText(context, "已删除", Toast.LENGTH_SHORT).show()
                 }) { Text("删除", color = MaterialTheme.colorScheme.error) }
             },
@@ -130,7 +142,14 @@ fun LabelManagementScreen(
                     val trimmed = renameText.trim()
                     if (trimmed.isBlank()) { Toast.makeText(context, "标签名不能为空", Toast.LENGTH_SHORT).show(); return@TextButton }
                     if (trimmed in allLabels && trimmed != oldName) { Toast.makeText(context, "标签已存在", Toast.LENGTH_SHORT).show(); return@TextButton }
-                    scope.launch { viewModel.renameCustomLabel(oldName, trimmed); renameTarget = null; renameText = "" }
+                    scope.launch {
+                        if (oldName in defaultLabels) {
+                            viewModel.renameDefaultLabel(oldName, trimmed)
+                        } else {
+                            viewModel.renameCustomLabel(oldName, trimmed)
+                        }
+                    }
+                    renameTarget = null; renameText = ""
                     Toast.makeText(context, "已重命名", Toast.LENGTH_SHORT).show()
                 }) { Text("确定") }
             },
@@ -148,7 +167,12 @@ fun LabelManagementScreen(
                         IconButton(onClick = {
                             if (selectedLabels.isNotEmpty()) {
                                 val count = selectedLabels.size
-                                scope.launch { viewModel.removeCustomLabels(selectedLabels) }
+                                scope.launch {
+                                    val customSelected = selectedLabels.filter { it in customLabels }.toSet()
+                                    val defaultSelected = selectedLabels.filter { it in defaultLabels }.toSet()
+                                    if (customSelected.isNotEmpty()) viewModel.removeCustomLabels(customSelected)
+                                    if (defaultSelected.isNotEmpty()) viewModel.hideDefaultLabels(defaultSelected)
+                                }
                                 selectedLabels = emptySet()
                                 isBatchMode = false
                                 Toast.makeText(context, "已删除 $count 个标签", Toast.LENGTH_SHORT).show()
@@ -165,7 +189,7 @@ fun LabelManagementScreen(
         Column(Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(4.dp))
             allLabels.forEach { label ->
-                val isCustom = label in customLabels
+                val isDefault = label in defaultLabels
                 val checked = selectedLabels.contains(label)
                 Card(
                     colors = CardDefaults.cardColors(containerColor = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface),
@@ -177,38 +201,58 @@ fun LabelManagementScreen(
                         Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (isBatchMode && isCustom) {
+                        if (isBatchMode) {
                             Checkbox(checked = checked, onCheckedChange = { selectedLabels = if (it) selectedLabels + label else selectedLabels - label })
                             Spacer(Modifier.width(4.dp))
                         }
                         Box(
                             Modifier.weight(1f)
                                 .then(
-                                    if (isCustom) Modifier.combinedClickable(
-                                        onClick = {
-                                            if (isBatchMode) {
-                                                selectedLabels = if (checked) selectedLabels - label else selectedLabels + label
-                                            }
-                                        },
+                                    if (!isBatchMode) Modifier.combinedClickable(
+                                        onClick = {},
                                         onLongClick = {
-                                            if (!isBatchMode) {
-                                                isBatchMode = true
-                                                selectedLabels = setOf(label)
-                                            }
+                                            isBatchMode = true
+                                            selectedLabels = setOf(label)
                                         }
-                                    ) else Modifier
+                                    ) else Modifier.combinedClickable(
+                                        onClick = {
+                                            selectedLabels = if (checked) selectedLabels - label else selectedLabels + label
+                                        },
+                                        onLongClick = {}
+                                    )
                                 )
                         ) {
                             Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
                         }
-                        Text(if (isCustom) "自定义" else "默认", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        if (!isBatchMode && isCustom) {
-                            Spacer(Modifier.width(6.dp))
-                            IconButton(onClick = { renameTarget = label; renameText = "" }, modifier = Modifier.size(32.dp)) {
-                                Icon(Octicons.Pencil24, "重命名", tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
-                            }
-                            IconButton(onClick = { deleteTarget = label }, modifier = Modifier.size(32.dp)) {
-                                Icon(Octicons.X24, "删除", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(18.dp))
+                        Text(if (isDefault) "默认" else "自定义", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (!isBatchMode) {
+                            Spacer(Modifier.width(2.dp))
+                            Box {
+                                IconButton(onClick = { menuExpandedFor = label }, modifier = Modifier.size(36.dp)) {
+                                    Icon(Octicons.KebabHorizontal16, "更多操作", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                                }
+                                DropdownMenu(
+                                    expanded = menuExpandedFor == label,
+                                    onDismissRequest = { menuExpandedFor = null }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("重命名") },
+                                        leadingIcon = { Icon(Octicons.Pencil16, null, modifier = Modifier.size(16.dp)) },
+                                        onClick = {
+                                            menuExpandedFor = null
+                                            renameTarget = label
+                                            renameText = ""
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                                        leadingIcon = { Icon(Octicons.Trash16, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp)) },
+                                        onClick = {
+                                            menuExpandedFor = null
+                                            deleteTarget = label
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

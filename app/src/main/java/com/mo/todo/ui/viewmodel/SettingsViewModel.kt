@@ -61,6 +61,7 @@ class SettingsViewModel @Inject constructor(
         val LIST_DENSITY = stringPreferencesKey("list_density")
         val NOTIFICATION_VIBRATE = booleanPreferencesKey("notification_vibrate")
         val DEFAULT_PRIORITY = intPreferencesKey("default_priority")
+        val HIDDEN_DEFAULT_LABELS = stringSetPreferencesKey("hidden_default_labels")
     }
 
     private fun isSystemInDarkTheme(): Boolean =
@@ -86,7 +87,15 @@ class SettingsViewModel @Inject constructor(
     val customLabels: Flow<Set<String>> = context.dataStore.data.map { it[K.CUSTOM_LABELS] ?: emptySet() }
     private val _customLabelsState = MutableStateFlow<Set<String>>(emptySet())
     val customLabelsState: StateFlow<Set<String>> = _customLabelsState.asStateFlow()
-    init { viewModelScope.launch { customLabels.collect { _customLabelsState.value = it } } }
+
+    val hiddenDefaultLabels: Flow<Set<String>> = context.dataStore.data.map { it[K.HIDDEN_DEFAULT_LABELS] ?: emptySet() }
+    private val _hiddenDefaultLabelsState = MutableStateFlow<Set<String>>(emptySet())
+    val hiddenDefaultLabelsState: StateFlow<Set<String>> = _hiddenDefaultLabelsState.asStateFlow()
+
+    init {
+        viewModelScope.launch { customLabels.collect { _customLabelsState.value = it } }
+        viewModelScope.launch { hiddenDefaultLabels.collect { _hiddenDefaultLabelsState.value = it } }
+    }
 
     suspend fun setThemeMode(mode: ThemeMode) { context.dataStore.edit { it[K.THEME_MODE] = mode.value } }
     suspend fun setColorTheme(key: String) { context.dataStore.edit { it[K.COLOR_THEME] = key } }
@@ -110,6 +119,16 @@ class SettingsViewModel @Inject constructor(
     suspend fun removeCustomLabel(label: String) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur - label } }
     suspend fun removeCustomLabels(labels: Set<String>) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur - labels } }
     suspend fun renameCustomLabel(oldName: String, newName: String) { context.dataStore.edit { val cur = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = cur - oldName + newName } }
+
+    suspend fun hideDefaultLabel(label: String) { context.dataStore.edit { val cur = it[K.HIDDEN_DEFAULT_LABELS] ?: emptySet(); it[K.HIDDEN_DEFAULT_LABELS] = cur + label } }
+    suspend fun hideDefaultLabels(labels: Set<String>) { context.dataStore.edit { val cur = it[K.HIDDEN_DEFAULT_LABELS] ?: emptySet(); it[K.HIDDEN_DEFAULT_LABELS] = cur + labels } }
+    suspend fun showDefaultLabel(label: String) { context.dataStore.edit { val cur = it[K.HIDDEN_DEFAULT_LABELS] ?: emptySet(); it[K.HIDDEN_DEFAULT_LABELS] = cur - label } }
+    suspend fun renameDefaultLabel(oldName: String, newName: String) {
+        context.dataStore.edit {
+            val hidden = it[K.HIDDEN_DEFAULT_LABELS] ?: emptySet(); it[K.HIDDEN_DEFAULT_LABELS] = hidden + oldName
+            val custom = it[K.CUSTOM_LABELS] ?: emptySet(); it[K.CUSTOM_LABELS] = custom + newName
+        }
+    }
 
     suspend fun saveWebDavConfig(url: String, user: String, pass: String) {
         context.dataStore.edit { it[K.WEBDAC_URL] = url; it[K.WEBDAC_USER] = user }

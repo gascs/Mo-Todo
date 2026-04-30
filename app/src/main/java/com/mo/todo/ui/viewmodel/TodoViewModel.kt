@@ -3,14 +3,9 @@ package com.mo.todo.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
-import androidx.work.WorkManager
 import com.mo.todo.data.model.Todo
 import com.mo.todo.repository.TodoRepository
-import com.mo.todo.worker.ReminderWorker
+import com.mo.todo.worker.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -100,20 +95,10 @@ class TodoViewModel @Inject constructor(
         todoRepository.updateTagByTag(oldTag, newTag).getOrDefault(0)
 
     private fun scheduleReminder(todoId: Long, title: String, reminderTime: Long) {
-        val delay = reminderTime - System.currentTimeMillis()
-        if (delay <= 0) return
-        val inputData = Data.Builder().putLong("todo_id", todoId).putString("todo_title", title).build()
-        val workRequest = OneTimeWorkRequestBuilder<ReminderWorker>()
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .setInputData(inputData)
-            .addTag("todo_reminder_$todoId")
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .build()
-        WorkManager.getInstance(application)
-            .enqueueUniqueWork("reminder_$todoId", ExistingWorkPolicy.REPLACE, workRequest)
+        ReminderScheduler.schedule(application, todoId, title, reminderTime)
     }
 
     private fun cancelReminder(todoId: Long) {
-        WorkManager.getInstance(application).cancelAllWorkByTag("todo_reminder_$todoId")
+        ReminderScheduler.cancel(application, todoId)
     }
 }

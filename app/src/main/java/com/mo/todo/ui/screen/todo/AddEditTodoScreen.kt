@@ -1,7 +1,6 @@
 package com.mo.todo.ui.screen.todo
 
 import android.widget.Toast
-import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +23,6 @@ import compose.icons.octicons.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,12 +33,15 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.mo.todo.data.model.TagConfig
 import com.mo.todo.data.model.Todo
@@ -81,9 +83,13 @@ fun AddEditTodoScreen(
     val isEditing = todoId != null
     val calendar = remember { Calendar.getInstance() }
 
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
+    var showDateTimePicker by remember { mutableStateOf(false) }
+    var pickerStep by remember { mutableIntStateOf(0) } // 0=日期, 1=时间
     val datePickerState = rememberDatePickerState()
+    val timePickerState = rememberTimePickerState(
+        initialHour = calendar.get(Calendar.HOUR_OF_DAY),
+        initialMinute = calendar.get(Calendar.MINUTE)
+    )
 
     val settingsViewModel: com.mo.todo.ui.viewmodel.SettingsViewModel = hiltViewModel()
     LaunchedEffect(Unit) {
@@ -110,42 +116,86 @@ fun AddEditTodoScreen(
         }
     }
 
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        calendar.timeInMillis = millis
-                        showDatePicker = false
-                        showTimePicker = true
-                    }
-                }) { Text("下一步") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("取消") }
-            },
-            shape = RoundedCornerShape(24.dp)
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
+    // 统一的日期时间选择对话框
+    if (showDateTimePicker) {
+        Dialog(onDismissRequest = { showDateTimePicker = false; pickerStep = 0 }) {
+            androidx.compose.material3.Surface(
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 6.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = if (pickerStep == 0) "选择日期" else "选择时间",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(16.dp))
 
-    if (showTimePicker) {
-        android.app.TimePickerDialog(
-            context,
-            { _, hourOfDay, minute ->
-                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                calendar.set(Calendar.MINUTE, minute)
-                reminderTime = calendar.timeInMillis
-                val fmt = SimpleDateFormat("M月d日 HH:mm", Locale.getDefault())
-                reminderText = fmt.format(Date(reminderTime))
-                showTimePicker = false
-            },
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE),
-            true
-        ).show()
+                    if (pickerStep == 0) {
+                        // 日期选择器
+                        DatePicker(
+                            state = datePickerState,
+                            showModeToggle = false,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        // 时间选择器
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            TimePicker(state = timePickerState)
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = {
+                            showDateTimePicker = false
+                            pickerStep = 0
+                        }) {
+                            Text("取消")
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        if (pickerStep == 0) {
+                            TextButton(onClick = {
+                                datePickerState.selectedDateMillis?.let {
+                                    calendar.timeInMillis = it
+                                }
+                                pickerStep = 1
+                            }) {
+                                Text("下一步")
+                            }
+                        } else {
+                            TextButton(onClick = {
+                                datePickerState.selectedDateMillis?.let {
+                                    calendar.timeInMillis = it
+                                }
+                                calendar.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                                calendar.set(Calendar.MINUTE, timePickerState.minute)
+                                calendar.set(Calendar.SECOND, 0)
+                                calendar.set(Calendar.MILLISECOND, 0)
+                                reminderTime = calendar.timeInMillis
+                                val fmt = SimpleDateFormat("M月d日 HH:mm", Locale.getDefault())
+                                reminderText = fmt.format(Date(reminderTime))
+                                showDateTimePicker = false
+                                pickerStep = 0
+                            }) {
+                                Text("确定")
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     Scaffold(
@@ -190,7 +240,7 @@ fun AddEditTodoScreen(
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
-                    onClick = { showDatePicker = true },
+                    onClick = { showDateTimePicker = true },
                     modifier = Modifier.weight(1f),
                     shape = MaterialTheme.shapes.small
                 ) {

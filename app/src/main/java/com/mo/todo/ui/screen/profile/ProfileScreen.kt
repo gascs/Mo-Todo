@@ -1,4 +1,4 @@
-package com.mo.todo.ui.screen.profile
+﻿package com.mo.todo.ui.screen.profile
 
 import android.net.Uri
 import android.widget.Toast
@@ -53,7 +53,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.mo.todo.ui.theme.MoPrimary
 import com.mo.todo.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
 import java.io.File
@@ -92,13 +91,16 @@ fun ProfileScreen(
     if (showNickDialog) {
         AlertDialog(
             onDismissRequest = { showNickDialog = false },
-            title = { Text("修改昵称") },
+            title = { Text("修改昵称", style = MaterialTheme.typography.titleMedium) },
             text = {
                 OutlinedTextField(
                     value = editNick, onValueChange = { editNick = it },
                     modifier = Modifier.fillMaxWidth(), singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant),
-                    shape = MaterialTheme.shapes.small
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                    ),
+                    shape = MaterialTheme.shapes.medium
                 )
             },
             confirmButton = {
@@ -113,56 +115,166 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Mo · 我的", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))
+            TopAppBar(
+                title = {
+                    Text(
+                        "我的",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+            )
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Column(Modifier.fillMaxSize().padding(innerPadding).verticalScroll(rememberScrollState())) {
-            Row(Modifier.fillMaxWidth().padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(64.dp).clip(CircleShape).background(MoPrimary).clickable { avatarLauncher.launch("image/*") },
-                    contentAlignment = Alignment.Center) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // User info section - minimal
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { editNick = nickname; showNickDialog = true }
+                    .padding(horizontal = 20.dp, vertical = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .clickable { avatarLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
                     if (avatarPath.isNotBlank()) {
-                        AsyncImage(model = File(avatarPath), contentDescription = "头像", modifier = Modifier.fillMaxSize().clip(CircleShape), contentScale = ContentScale.Crop)
+                        AsyncImage(
+                            model = File(avatarPath),
+                            contentDescription = "头像",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
                     } else {
-                        Text("M", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(
+                            "M",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
-                Spacer(Modifier.width(16.dp))
-                Column(Modifier.clickable { editNick = nickname; showNickDialog = true }) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(nickname, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                        Spacer(Modifier.width(6.dp))
-                        Icon(Octicons.Pencil24, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.outline)
-                    }
+                Spacer(Modifier.width(14.dp))
+                Column {
+                    Text(
+                        nickname,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                     Spacer(Modifier.height(2.dp))
-                    Text("让生活井井有条", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "让生活井井有条",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
                 }
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                thickness = 0.5.dp
+            )
             Spacer(Modifier.height(8.dp))
 
-            ProfileMenuItem(Octicons.Tag24, Color(0xFF0969DA), "标签管理", "管理待办和备忘标签", onClick = onNavigateToLabelManagement)
-            ProfileMenuItem(Octicons.Bell24, Color(0xFFBF8700), "提醒默认设置", "设置默认提醒时间", onClick = onNavigateToReminderSettings)
-            ProfileMenuItem(Icons.Filled.Palette, Color(0xFF8250DF), "个性化", "配色方案 / 字体 / 圆角 / 主题", onClick = onNavigateToPersonalization)
-            ProfileMenuItem(Octicons.Database24, Color(0xFFCF222E), "数据管理", "本地导出导入 / WebDAV 备份恢复", onClick = onNavigateToDataManagement)
-            ProfileMenuItem(Octicons.Info24, Color(0xFF0969DA), "关于 Mo", "v1.0.0", onClick = onNavigateToAbout)
+            ProfileMenuItem(
+                Octicons.Tag24,
+                MaterialTheme.colorScheme.primary,
+                "标签管理",
+                "管理待办和备忘标签",
+                onClick = onNavigateToLabelManagement
+            )
+            ProfileMenuItem(
+                Octicons.Bell24,
+                Color(0xFFBF8700),
+                "提醒默认设置",
+                "设置默认提醒时间",
+                onClick = onNavigateToReminderSettings
+            )
+            ProfileMenuItem(
+                Icons.Filled.Palette,
+                Color(0xFF8250DF),
+                "个性化",
+                "配色 / 字体 / 圆角 / 主题",
+                onClick = onNavigateToPersonalization
+            )
+            ProfileMenuItem(
+                Octicons.Database24,
+                Color(0xFFCF222E),
+                "数据管理",
+                "导出导入 / WebDAV 备份",
+                onClick = onNavigateToDataManagement
+            )
+            ProfileMenuItem(
+                Octicons.Info24,
+                MaterialTheme.colorScheme.onSurfaceVariant,
+                "关于 Mo",
+                "v1.0.0",
+                onClick = onNavigateToAbout
+            )
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(112.dp))
         }
     }
 }
 
 @Composable
-private fun ProfileMenuItem(icon: ImageVector, iconTint: Color, label: String, subtitle: String, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clickable { onClick() }.padding(horizontal = 20.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(44.dp).clip(CircleShape).background(iconTint.copy(alpha = 0.1f)), contentAlignment = Alignment.Center) { Icon(icon, null, tint = iconTint, modifier = Modifier.size(22.dp)) }
+private fun ProfileMenuItem(
+    icon: ImageVector,
+    iconTint: Color,
+    label: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(iconTint.copy(alpha = 0.08f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, null, tint = iconTint.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
+        }
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                label,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
         }
-        Icon(Octicons.ChevronRight24, null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
+        Icon(
+            Octicons.ChevronRight24,
+            null,
+            tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+            modifier = Modifier.size(18.dp)
+        )
     }
 }

@@ -54,6 +54,9 @@ interface TodoDao {
     @Query("SELECT * FROM todos WHERE reminderTime IS NOT NULL AND reminderTime > :now AND reminderTime < :threshold AND isCompleted = 0")
     suspend fun getUpcomingReminders(now: Long, threshold: Long): List<Todo>
 
+    @Query("SELECT * FROM todos WHERE reminderTime IS NOT NULL AND reminderTime > :now AND isCompleted = 0")
+    suspend fun getUpcomingRemindersSync(now: Long): List<Todo>
+
     @Query("UPDATE todos SET tag = :newTag WHERE tag = :oldTag")
     suspend fun updateTagByTag(oldTag: String, newTag: String): Int
 }

@@ -29,7 +29,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,20 +75,35 @@ fun MemoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mo \u00b7 备忘", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        "备忘",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 actions = {
                     IconButton(onClick = { viewModel.setSearchActive(!isSearchActive) }) {
-                        Icon(Octicons.Search24, contentDescription = "搜索")
+                        Icon(
+                            Octicons.Search24,
+                            contentDescription = "搜索",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     IconButton(onClick = { viewModel.toggleViewMode() }) {
                         Icon(
                             if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Filled.GridView,
-                            contentDescription = if (isGridView) "列表视图" else "网格视图"
+                            contentDescription = if (isGridView) "列表视图" else "网格视图",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Octicons.KebabHorizontal24, contentDescription = "更多")
+                            Icon(
+                                Octicons.KebabHorizontal24,
+                                contentDescription = "更多",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                         DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                             DropdownMenuItem(text = { Text("按更新时间排序") }, onClick = { showMenu = false })
@@ -97,18 +111,22 @@ fun MemoScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onNavigateToAddEdit(null) },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = MaterialTheme.shapes.extraLarge,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp, pressedElevation = 8.dp)
-            ) {
-                Icon(Octicons.Plus24, contentDescription = "新建备忘录")
+            Box(modifier = Modifier.padding(bottom = 80.dp)) {
+                FloatingActionButton(
+                    onClick = { onNavigateToAddEdit(null) },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = MaterialTheme.shapes.large
+                ) {
+                    Icon(Octicons.Plus24, contentDescription = "新建备忘录")
+                }
             }
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -118,28 +136,60 @@ fun MemoScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.setSearchQuery(it) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = { Text("搜索备忘录...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = { Text("搜索备忘录...", style = MaterialTheme.typography.bodyMedium) },
                     singleLine = true,
-                    trailingIcon = { TextButton(onClick = { viewModel.setSearchActive(false) }) { Text("取消") } },
+                    trailingIcon = {
+                        TextButton(onClick = { viewModel.setSearchActive(false) }) {
+                            Text("取消", style = MaterialTheme.typography.labelLarge)
+                        }
+                    },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
                     ),
-                    shape = MaterialTheme.shapes.small
+                    shape = MaterialTheme.shapes.medium
                 )
             }
 
-            TagChipRow(items = TagConfig.memoTags, selectedKey = selectedTag, keySelector = { it.key }, labelSelector = { it.label }, onItemClick = { viewModel.setSelectedTag(it) })
+            TagChipRow(
+                items = TagConfig.memoTags,
+                selectedKey = selectedTag,
+                keySelector = { it.key },
+                labelSelector = { it.label },
+                onItemClick = { viewModel.setSelectedTag(it) }
+            )
 
             if (memos.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("\u270D\ufe0f", style = MaterialTheme.typography.displayLarge)
-                        Spacer(Modifier.height(12.dp))
-                        Text("开始记录灵感", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.height(4.dp))
-                        Text("点击下方 + 创建第一条备忘录吧", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, textAlign = TextAlign.Center)
+                        Box(
+                            modifier = Modifier.padding(bottom = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Octicons.Note24,
+                                contentDescription = null,
+                                modifier = Modifier.height(48.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            )
+                        }
+                        Text(
+                            "暂无备忘录",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            "点击 + 开始记录",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.outline,
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
             } else {
@@ -153,23 +203,23 @@ fun MemoScreen(
                             }
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(columns),
-                            contentPadding = PaddingValues(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            items(memos, key = { it.id }) { memo ->
-                                MemoGridCard(
-                                    memo = memo,
-                                    onClick = { onNavigateToAddEdit(memo.id) },
-                                    onToggleStar = { viewModel.toggleStarred(memo.id, !memo.isStarred) },
-                                    onLongClick = { contextMemo = memo }
-                                )
+                                contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 92.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                items(memos, key = { it.id }) { memo ->
+                                    MemoGridCard(
+                                        memo = memo,
+                                        onClick = { onNavigateToAddEdit(memo.id) },
+                                        onToggleStar = { viewModel.toggleStarred(memo.id, !memo.isStarred) },
+                                        onLongClick = { contextMemo = memo }
+                                    )
+                                }
                             }
                         }
-                    }
                     } else {
                         LazyColumn(
-                            contentPadding = PaddingValues(12.dp),
+                            contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 92.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             items(memos, key = { it.id }) { memo ->
@@ -190,23 +240,29 @@ fun MemoScreen(
     contextMemo?.let { memo ->
         AlertDialog(
             onDismissRequest = { contextMemo = null },
-            title = { Text(memo.title, maxLines = 1) },
+            title = { Text(memo.title, maxLines = 1, style = MaterialTheme.typography.titleMedium) },
             text = {
                 Column {
-                    TextButton(onClick = { contextMemo = null; onNavigateToAddEdit(memo.id) }, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = { contextMemo = null; onNavigateToAddEdit(memo.id) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Icon(Octicons.Pencil24, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                         Text("编辑", modifier = Modifier.weight(1f))
                     }
-                    TextButton(onClick = {
-                        contextMemo = null
-                    }, modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = { contextMemo = null },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Icon(Octicons.Copy24, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                         Text("复制文本", modifier = Modifier.weight(1f))
                     }
                 }
             },
             confirmButton = {},
-            dismissButton = { TextButton(onClick = { contextMemo = null }) { Text("取消") } }
+            dismissButton = {
+                TextButton(onClick = { contextMemo = null }) { Text("取消") }
+            }
         )
     }
 }

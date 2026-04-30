@@ -1,6 +1,7 @@
 package com.mo.todo
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -16,6 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
@@ -30,6 +33,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private var pendingTodoId by mutableLongStateOf(-1L)
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -53,6 +58,8 @@ class MainActivity : ComponentActivity() {
             requestBatteryOptimization()
         }
 
+        pendingTodoId = intent.getLongExtra("todo_id", -1L)
+
         setContent {
             val settingsViewModel: SettingsViewModel = hiltViewModel()
             val isDarkTheme by settingsViewModel.isDarkTheme.collectAsState()
@@ -73,10 +80,19 @@ class MainActivity : ComponentActivity() {
                 cornerMultiplier = cornerMult
             ) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    MainScreen()
+                    MainScreen(
+                        pendingTodoId = pendingTodoId,
+                        onTodoIdConsumed = { pendingTodoId = -1L }
+                    )
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingTodoId = intent.getLongExtra("todo_id", -1L)
     }
 
     private fun requestBatteryOptimization() {
