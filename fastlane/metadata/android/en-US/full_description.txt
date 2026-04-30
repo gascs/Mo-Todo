@@ -1,46 +1,37 @@
-Mo is a minimalist yet powerful Android todo and memo app built with Jetpack Compose and Material 3 design language. It focuses on simplicity, elegance, and data privacy — no accounts required, no analytics, no tracking.
+Mo is a clean and elegant Android todo & memo app built with Material 3, focused on local experience and data privacy.
 
-Features:
+## Features
 
-Todo Management
-• Create, edit and delete todos with title and notes
-• Three priority levels (high/medium/low) with color-coded indicators
-• Tag-based filtering (Work/Personal/Shopping/Notes and custom tags)
-• Quick reminders (Today/Tomorrow 09:00/Next Week) + precise date-time picker
-• Swipe-to-delete with undo via Snackbar
-• Completion animations, collapsible completed section
-• Real-time keyword search, sort by priority or creation time
+### Todo Management
+- Create, edit, and delete todos with title and detailed notes
+- Three-level priority indicators (High/Medium/Low) with color-coded bars
+- Label-based filtering (Work/Personal/Shopping/Notes etc.), with custom label support
+- Quick reminders (Today/Tomorrow/Next week) + precise date-time picker
+- Swipe-to-delete with undo
+- Completion animation, collapsible completed section
+- Real-time keyword search, sort by priority or creation time
 
-Memos
-• Create, edit and delete memos with star/favorite support
-• 7 color labels + category filtering
-• Grid/list view toggle, adaptive column count (2 on phones, 3-4 on tablets)
-• Markdown rich text editing (bold/italic/strikethrough/lists)
-• Keyword search
+### Memo
+- Create, edit, and delete memos with star/favorite support
+- 7 color labels + category filtering
+- Grid/List view toggle with adaptive columns (2 for phones, 3-4 for tablets)
 
-Smart Reminders
-• Triple-guarantee scheduling: AlarmManager + WorkManager backup + 15-minute periodic scan
-• Notification channel auto-rebuilt on every app start
-• CATEGORY_ALARM priority with lockscreen full-screen popup and heads-up banner
-• Auto-reschedule all pending reminders after device reboot
-• Tap notification to jump directly to the corresponding todo
-• Battery optimization detection and auto-start guidance
-• One-tap test notification to verify functionality
+### Smart Reminders
+- Triple-safeguard scheduling: AlarmManager precise alarms + WorkManager backup + periodic scan fallback
+- Notification priority CATEGORY_ALARM, full-screen lock-screen popup + Heads-up banner
+- Auto-reschedule all pending reminders after device reboot
+- Tap notification to navigate directly to the corresponding todo
+- Battery optimization detection / Auto-launch guidance / Notification channel settings
+- One-tap test notification
 
-Personalization
-• 5 Morandi color themes (Forest Green/Ocean Blue/Sunset Orange/Lavender Purple/Rose Gold)
-• Material You dynamic colors extracted from wallpaper
-• Light/Dark/System-following theme modes
-• Font size (Small/Medium/Large), corner style (Rounded/Square)
-• List density (Compact/Standard/Relaxed)
+### Personalization
+- Multiple Morandi color themes
+- Material You dynamic color extraction from wallpaper
+- Light / Dark / Follow system theme modes
+- Font size, corner style, and list density adjustable
+- Chinese / English bilingual support
 
-Data Management
-• JSON local export/import
-• WebDAV cloud backup and restore
-• Tag management: add/delete/rename with batch operations
-
-Privacy
-• All data stored locally on your device
-• No internet permission required for core features
-• No analytics, no tracking, no accounts
-• FOSS (Free and Open Source Software)
+### Data Management
+- JSON local export/import
+- WebDAV cloud backup and restore
+- Label management: add, edit, rename, delete + batch operations

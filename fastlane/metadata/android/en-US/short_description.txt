@@ -1,1 +1,1 @@
-A clean, elegant and privacy-first todo & memo app with Material 3 design
+A clean todo & memo app with Material 3 design, focused on local experience and data privacy
