@@ -5,8 +5,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
-import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -37,13 +35,16 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        private var notificationRequestedThisSession = false
+    }
+
     private var pendingTodoId by mutableLongStateOf(-1L)
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         Log.d("MainActivity", "POST_NOTIFICATIONS permission: $granted")
-        if (granted) requestBatteryOptimization()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,14 +52,12 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            } else {
-                requestBatteryOptimization()
-            }
-        } else {
-            requestBatteryOptimization()
+        if (!notificationRequestedThisSession
+            && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationRequestedThisSession = true
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
         pendingTodoId = intent.getLongExtra("todo_id", -1L)
@@ -108,19 +107,4 @@ class MainActivity : AppCompatActivity() {
         pendingTodoId = intent.getLongExtra("todo_id", -1L)
     }
 
-    private fun requestBatteryOptimization() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val pm = getSystemService(POWER_SERVICE) as PowerManager
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                try {
-                    @Suppress("Deprecation")
-                    startActivity(android.content.Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                        data = android.net.Uri.parse("package:$packageName")
-                    })
-                } catch (_: Exception) {
-                    Log.w("MainActivity", "Failed to open battery optimization dialog")
-                }
-            }
-        }
-    }
 }
