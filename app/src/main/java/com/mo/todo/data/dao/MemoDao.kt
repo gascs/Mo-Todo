@@ -48,6 +48,9 @@ interface MemoDao {
     @Query("UPDATE memos SET tag = :newTag WHERE tag = :oldTag")
     suspend fun updateTagByTag(oldTag: String, newTag: String): Int
 
+    @Query("DELETE FROM memos WHERE tag = :tag")
+    suspend fun deleteByTag(tag: String)
+
     @Query("SELECT COUNT(*) FROM memos")
     fun getTotalCount(): Flow<Int>
 

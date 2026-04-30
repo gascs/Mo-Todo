@@ -1,6 +1,5 @@
 package com.mo.todo.ui.screen.profile
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,10 +39,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mo.todo.R
 import com.mo.todo.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,13 +73,13 @@ fun WebDavBackupScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("WebDAV 备份", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.webdav_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Octicons.ArrowLeft24, "返回") }
+                    IconButton(onClick = onNavigateBack) { Icon(Octicons.ArrowLeft24, stringResource(R.string.btn_back)) }
                 },
                 actions = {
                     IconButton(onClick = onNavigateToConfig) {
-                        Icon(Icons.Filled.Settings, contentDescription = "WebDAV 配置")
+                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.webdav_title))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
@@ -94,9 +95,9 @@ fun WebDavBackupScreen(
 
             Text("\u2601\ufe0f", style = MaterialTheme.typography.displayLarge)
             Spacer(Modifier.height(8.dp))
-            Text("WebDAV 云备份", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(stringResource(R.string.data_manage_webdav_title), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.height(4.dp))
-            Text("将数据备份到你的 WebDAV 服务器", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.data_manage_cloud_desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             Spacer(Modifier.height(32.dp))
 
@@ -107,11 +108,11 @@ fun WebDavBackupScreen(
                             isLoading = true
                             statusMessage = ""
                             try {
-                                val result = withContext(Dispatchers.IO) { performWebDavBackup(viewModel) }
+                                val result = withContext(Dispatchers.IO) { performWebDavBackup(viewModel, context) }
                                 statusMessage = result
                                 statusIsError = false
                             } catch (e: Exception) {
-                                statusMessage = "备份失败: ${e.message}"
+                                statusMessage = context.getString(R.string.data_manage_backup_fail, e.message ?: "")
                                 statusIsError = true
                             }
                             isLoading = false
@@ -123,7 +124,7 @@ fun WebDavBackupScreen(
                 ) {
                     Icon(Icons.Filled.CloudUpload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("备份到 WebDAV")
+                    Text(stringResource(R.string.data_manage_upload))
                 }
 
                 OutlinedButton(
@@ -132,11 +133,11 @@ fun WebDavBackupScreen(
                             isLoading = true
                             statusMessage = ""
                             try {
-                                val result = withContext(Dispatchers.IO) { performWebDavRestore(viewModel) }
+                                val result = withContext(Dispatchers.IO) { performWebDavRestore(viewModel, context) }
                                 statusMessage = result
                                 statusIsError = false
                             } catch (e: Exception) {
-                                statusMessage = "恢复失败: ${e.message}"
+                                statusMessage = context.getString(R.string.data_manage_restore_fail, e.message ?: "")
                                 statusIsError = true
                             }
                             isLoading = false
@@ -148,7 +149,7 @@ fun WebDavBackupScreen(
                 ) {
                     Icon(Icons.Filled.CloudDownload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("从 WebDAV 恢复")
+                    Text(stringResource(R.string.data_manage_restore))
                 }
             }
 
@@ -156,7 +157,7 @@ fun WebDavBackupScreen(
                 Spacer(Modifier.height(24.dp))
                 CircularProgressIndicator(modifier = Modifier.size(36.dp), color = MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.height(8.dp))
-                Text("处理中...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.data_manage_exporting), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
             if (statusMessage.isNotBlank()) {
@@ -172,8 +173,8 @@ fun WebDavBackupScreen(
     }
 }
 
-private suspend fun performWebDavBackup(viewModel: SettingsViewModel): String {
-    val config = viewModel.getWebDavConfig() ?: return "请先配置 WebDAV 连接信息"
+private suspend fun performWebDavBackup(viewModel: SettingsViewModel, context: android.content.Context): String {
+    val config = viewModel.getWebDavConfig() ?: return context.getString(R.string.data_manage_webdav_not_config)
     val (serverUrl, username, password) = config
 
     val root = JSONObject()
@@ -200,14 +201,14 @@ private suspend fun performWebDavBackup(viewModel: SettingsViewModel): String {
 
     val response = client.newCall(request).execute()
     return if (response.isSuccessful) {
-        "备份成功: ${response.code}"
+        context.getString(R.string.data_manage_export_success)
     } else {
         throw Exception("${response.code} ${response.message}")
     }
 }
 
-private suspend fun performWebDavRestore(viewModel: SettingsViewModel): String {
-    val config = viewModel.getWebDavConfig() ?: return "请先配置 WebDAV 连接信息"
+private suspend fun performWebDavRestore(viewModel: SettingsViewModel, context: android.content.Context): String {
+    val config = viewModel.getWebDavConfig() ?: return context.getString(R.string.data_manage_webdav_not_config)
     val (serverUrl, username, password) = config
 
     val client = OkHttpClient.Builder()
@@ -225,7 +226,7 @@ private suspend fun performWebDavRestore(viewModel: SettingsViewModel): String {
     val response = client.newCall(request).execute()
     if (!response.isSuccessful) throw Exception("${response.code} ${response.message}")
 
-    val json = response.body?.string() ?: throw Exception("响应内容为空")
+    val json = response.body?.string() ?: throw Exception(context.getString(R.string.data_manage_toast_import_empty))
     val root = JSONObject(json)
-    return "恢复成功 (v${root.optString("version", "?")})"
+    return context.getString(R.string.data_manage_import_success, root.optString("version", "?"))
 }

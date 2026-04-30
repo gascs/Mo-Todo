@@ -2,6 +2,15 @@
 <resources>
     <string name="app_name">Mo</string>
 
+    <!-- Common Buttons -->
+    <string name="btn_back">返回</string>
+    <string name="btn_delete">删除</string>
+    <string name="btn_edit">编辑</string>
+    <string name="btn_add">添加</string>
+    <string name="btn_confirm">确定</string>
+    <string name="btn_cancel">取消</string>
+    <string name="search_clear">清除搜索</string>
+
     <!-- Bottom Navigation -->
     <string name="nav_todo">待办</string>
     <string name="nav_memo">备忘录</string>
@@ -42,11 +51,22 @@
     <string name="toast_title_empty">请输入待办标题</string>
     <string name="toast_deleted">待办已删除</string>
 
+    <!-- Notification -->
+    <string name="notification_channel_name">待办提醒</string>
+    <string name="notification_channel_desc">待办事项到期提醒通知</string>
+    <string name="notification_channel_name_low">待办提醒（静默）</string>
+    <string name="notification_channel_desc_low">待办事项提醒（无声音振动）</string>
+    <string name="notification_title">⏰ 待办提醒</string>
+    <string name="notification_test_title">🔔 测试通知</string>
+    <string name="notification_test_content">如果你能看到这条通知，说明通知功能正常！</string>
+
     <!-- Reminder Quick Options -->
     <string name="reminder_today">今天</string>
-    <string name="reminder_tomorrow">明天\n09:00</string>
+    <string name="reminder_tomorrow">明天</string>
     <string name="reminder_next_week">下周</string>
     <string name="reminder_clear">清除</string>
+    <string name="reminder_custom">自定义</string>
+    <string name="reminder_tap_to_edit">点击下方按钮修改</string>
     <string name="reminder_not_set">未设置</string>
     <string name="reminder_set">提醒：%1$s</string>
     <string name="reminder_due_set">截止：%1$s</string>
@@ -73,13 +93,18 @@
     <string name="memo_title">备忘录</string>
     <string name="memo_add">新建备忘录</string>
     <string name="memo_search">搜索备忘录…</string>
+    <string name="memo_search_placeholder">搜索备忘录…</string>
     <string name="memo_empty_title">暂无备忘录</string>
     <string name="memo_empty_subtitle">点击右下角开始记录</string>
     <string name="memo_empty_search">没有找到相关备忘录</string>
+    <string name="memo_empty">暂无备忘录，点击右下角开始记录</string>
     <string name="memo_no_content">暂无内容</string>
     <string name="memo_edit">编辑</string>
     <string name="memo_date_format">%1$d月%2$d日</string>
     <string name="memo_star">星标</string>
+    <string name="memo_filter_star">筛选星标</string>
+    <string name="memo_toggle_view">切换视图</string>
+    <string name="memo_btn_add">新建备忘录</string>
 
     <!-- AddEditMemoScreen -->
     <string name="memo_edit_title">编辑备忘录</string>
@@ -91,6 +116,20 @@
     <string name="toast_memo_title_empty">请输入标题</string>
     <string name="memo_rich_text">富文本</string>
     <string name="memo_preview">预览</string>
+    <string name="memo_field_tag">标签</string>
+    <string name="memo_field_color">颜色</string>
+    <string name="memo_btn_save">保存</string>
+    <string name="memo_btn_create">创建</string>
+    <string name="memo_btn_delete">删除备忘录</string>
+
+    <!-- Memo Colors -->
+    <string name="memo_color_default">默认</string>
+    <string name="memo_color_lavender">薰衣草</string>
+    <string name="memo_color_mint">薄荷</string>
+    <string name="memo_color_coral">珊瑚</string>
+    <string name="memo_color_amber">琥珀</string>
+    <string name="memo_color_sky">天空</string>
+    <string name="memo_color_rose">玫瑰</string>
 
     <!-- Markdown toolbar -->
     <string name="md_heading">标题</string>
@@ -187,12 +226,29 @@
     <string name="about_disclaimer">免责声明</string>
     <string name="about_open_source_license">开源许可</string>
     <string name="about_privacy_title">隐私协议</string>
-    <string name="about_privacy_desc">Mo 尊重并保护您的隐私。本应用所有数据均存储在您的本地设备上，我们不会收集、存储或传输您的任何个人信息。\n\n数据存储\n所有待办事项和备忘录数据均保存在应用本地数据库中，不会上传到任何服务器。\n\n权限使用\n• 通知权限：仅用于待办提醒功能\n• 精确闹钟：仅用于定时提醒调度\n• 开机启动：仅用于重启后恢复提醒\n\n第三方服务\n本应用不集成任何第三方分析、广告或追踪服务。\n\n数据导出\n您可以随时通过导出功能备份数据，数据完全由您掌控。\n\n联系方式\n如有隐私相关问题，请通过 GitHub 联系我们。"</string>
+    <string name="about_privacy_desc">Mo 尊重并保护您的隐私。本应用所有数据均存储在您的本地设备上，我们不会收集、存储或传输您的任何个人信息。\n\n数据存储\n所有待办事项和备忘录数据均保存在应用本地数据库中，不会上传到任何服务器。\n\n权限使用\n• 通知权限：仅用于待办提醒功能\n• 精确闹钟：仅用于定时提醒调度\n• 开机启动：仅用于重启后恢复提醒\n\n第三方服务\n本应用不集成任何第三方分析、广告或追踪服务。\n\n数据导出\n您可以随时通过导出功能备份数据，数据完全由您掌控。\n\n联系方式\n如有隐私相关问题，请通过 GitHub 联系我们。</string>
     <string name="about_open_source_title">开源声明</string>
     <string name="about_open_source_full_desc">Mo 是一款自由开源软件，基于 MIT 许可证发布。\n\nMIT License\nCopyright (c) 2025 gascs\n\n特此免费授予任何获得本软件副本和相关文档文件（"软件"）的人不受限制地处理本软件的权利，包括但不限于使用、复制、修改、合并、发布、分发、再许可和/或出售本软件副本的权利。\n\n本软件按"原样"提供，不作任何明示或暗示的保证。</string>
 
     <!-- ReminderSettingsScreen -->
     <string name="reminder_settings_title">提醒设置</string>
+    <string name="reminder_settings_notification_title">通知权限</string>
+    <string name="reminder_settings_notification_desc">前往系统设置开启通知权限</string>
+    <string name="reminder_settings_battery_title">电池优化白名单</string>
+    <string name="reminder_settings_battery_desc">关闭电池优化，确保后台提醒不被系统杀死</string>
+    <string name="reminder_settings_channel_title">通知渠道设置</string>
+    <string name="reminder_settings_channel_desc">前往系统设置管理通知渠道</string>
+    <string name="reminder_settings_cannot_open">无法打开系统设置</string>
+    <string name="reminder_settings_status_title">提醒状态</string>
+    <string name="reminder_settings_notification_status">通知权限</string>
+    <string name="reminder_settings_status_enabled">已开启</string>
+    <string name="reminder_settings_status_disabled">未开启</string>
+    <string name="reminder_settings_battery_status">电池白名单</string>
+    <string name="reminder_settings_status_ignored">已忽略</string>
+    <string name="reminder_settings_status_not_ignored">未忽略</string>
+    <string name="reminder_settings_test_title">测试通知</string>
+    <string name="reminder_settings_test_desc">点击发送一条测试通知，验证通知功能是否正常工作</string>
+    <string name="reminder_settings_btn_test">发送测试通知</string>
     <string name="reminder_settings_default_time">默认提醒时间</string>
     <string name="reminder_settings_minutes">%1$d 分钟</string>
     <string name="reminder_settings_minutes_before">提前 %1$d 分钟</string>
@@ -206,35 +262,62 @@
     <string name="reminder_settings_boot_restore_desc">设备重启后自动恢复所有未触发的提醒，无需手动操作。</string>
     <string name="reminder_settings_test">测试通知</string>
     <string name="reminder_settings_channel">通知渠道设置</string>
-    <string name="reminder_settings_channel_desc">前往系统设置管理通知渠道</string>
     <string name="reminder_settings_test_btn">发送测试通知</string>
-    <string name="reminder_settings_test_desc">点击发送一条测试通知，验证通知功能是否正常工作</string>
     <string name="reminder_settings_test_success">测试通知已发送！</string>
     <string name="reminder_settings_tip">提示</string>
-    <string name="reminder_settings_tip_desc">如果提醒不生效，请检查：\n1. 系统通知权限是否开启\n2. 应用是否被电池优化限制\n3. 是否允许应用自启动\n4. 是否开启了勿扰模式"</string>
+    <string name="reminder_settings_tip_desc">如果提醒不生效，请检查：\n1. 系统通知权限是否开启\n2. 应用是否被电池优化限制\n3. 是否允许应用自启动\n4. 是否开启了勿扰模式</string>
 
     <!-- LabelManagementScreen -->
     <string name="label_manage_title">标签管理</string>
+    <string name="label_manage_btn_add">添加标签</string>
+    <string name="label_manage_stats_title">标签概览</string>
+    <string name="label_manage_stats_desc">共 %1$d 个标签，已使用 %2$d 个</string>
+    <string name="label_manage_all_title">全部标签</string>
     <string name="label_manage_selected">已选 %1$d 项</string>
     <string name="label_manage_add">添加标签</string>
+    <string name="label_manage_add_title">添加标签</string>
+    <string name="label_manage_add_desc">输入新标签名称</string>
     <string name="label_manage_add_placeholder">输入标签名称</string>
     <string name="label_manage_rename">重命名标签</string>
+    <string name="label_manage_rename_title">重命名标签</string>
+    <string name="label_manage_rename_desc">输入新的标签名称</string>
     <string name="label_manage_delete">删除标签</string>
-    <string name="label_manage_delete_confirm">确定删除标签「%1$s」？</string>
+    <string name="label_manage_delete_title">删除标签</string>
+    <string name="label_manage_delete_desc">确定删除标签「%1$s」？\n该操作将同时删除所有使用此标签的待办和备忘录关联。</string>
     <string name="label_manage_default">默认</string>
     <string name="label_manage_custom">自定义</string>
     <string name="label_manage_rename_action">重命名</string>
     <string name="label_manage_delete_action">删除</string>
+    <string name="label_manage_toast_deleted">标签已删除</string>
+    <string name="label_manage_toast_conflict">标签名已存在</string>
+    <string name="label_manage_toast_renamed">标签已重命名</string>
+    <string name="label_manage_toast_exists">标签已存在</string>
+    <string name="label_manage_toast_added">标签已添加</string>
     <string name="toast_label_empty">标签名不能为空</string>
     <string name="toast_label_exists">标签已存在</string>
     <string name="toast_label_deleted">已删除</string>
     <string name="toast_label_renamed">已重命名</string>
     <string name="toast_label_deleted_count">已删除 %1$d 个标签</string>
-    <string name="btn_confirm">确定</string>
-    <string name="btn_cancel">取消</string>
 
     <!-- DataManagementScreen -->
     <string name="data_manage_title">数据管理</string>
+    <string name="data_manage_local_title">本地数据</string>
+    <string name="data_manage_local_desc">将数据导出为 JSON 文件，或从文件导入数据</string>
+    <string name="data_manage_export_title">导出数据</string>
+    <string name="data_manage_export_desc">将所有待办事项导出为 JSON 文件</string>
+    <string name="data_manage_import_title">导入数据</string>
+    <string name="data_manage_import_desc">从 JSON 文件导入待办事项</string>
+    <string name="data_manage_exporting">正在导出…</string>
+    <string name="data_manage_importing">正在导入…</string>
+    <string name="data_manage_cloud_title">云备份</string>
+    <string name="data_manage_cloud_desc">通过 WebDAV 协议将数据同步到云端</string>
+    <string name="data_manage_webdav_title">WebDAV 云备份</string>
+    <string name="data_manage_webdav_desc">配置 WebDAV 服务器进行云端备份和恢复</string>
+    <string name="data_manage_toast_export_success">导出成功</string>
+    <string name="data_manage_toast_export_fail">导出失败: %1$s</string>
+    <string name="data_manage_toast_import_empty">导入文件为空</string>
+    <string name="data_manage_toast_import_success">导入成功，共 %1$d 条待办</string>
+    <string name="data_manage_toast_import_fail">导入失败: %1$s</string>
     <string name="data_manage_local_backup">本地备份</string>
     <string name="data_manage_export_json">导出 JSON</string>
     <string name="data_manage_import_json">导入 JSON</string>
@@ -252,14 +335,37 @@
 
     <!-- WebDavConfigScreen -->
     <string name="webdav_title">WebDAV 配置</string>
-    <string name="webdav_server">服务器地址</string>
-    <string name="webdav_server_placeholder">https://dav.example.com/remote.php/dav</string>
+    <string name="webdav_url">服务器地址</string>
+    <string name="webdav_url_placeholder">https://dav.example.com/remote.php/dav</string>
     <string name="webdav_username">用户名</string>
+    <string name="webdav_username_placeholder">输入用户名</string>
     <string name="webdav_password">密码</string>
+    <string name="webdav_password_placeholder">输入密码</string>
+    <string name="webdav_path">远程路径</string>
+    <string name="webdav_path_placeholder">backup/mo_todos.json</string>
+    <string name="webdav_tip_title">提示</string>
+    <string name="webdav_tip_desc">支持 Nextcloud、坚果云等 WebDAV 服务。请确保服务器地址、用户名和密码正确。</string>
+    <string name="webdav_btn_test">测试连接</string>
+    <string name="webdav_btn_upload">上传备份</string>
+    <string name="webdav_btn_download">下载恢复</string>
+    <string name="webdav_toast_test_success">连接成功！</string>
+    <string name="webdav_toast_test_fail">连接失败</string>
+    <string name="webdav_toast_test_error">连接错误: %1$s</string>
+    <string name="webdav_toast_upload_success">上传成功</string>
+    <string name="webdav_toast_upload_fail">上传失败: %1$s</string>
+    <string name="webdav_toast_download_empty">云端文件为空</string>
+    <string name="webdav_toast_download_success">下载恢复成功，共 %1$d 条待办</string>
+    <string name="webdav_toast_download_fail">下载失败: %1$s</string>
     <string name="webdav_save">保存配置</string>
     <string name="webdav_saved">配置已保存，可前往备份页面进行 WebDAV 操作</string>
     <string name="toast_webdav_incomplete">请填写完整信息</string>
     <string name="toast_webdav_saved">配置已保存</string>
+
+    <!-- Error Messages -->
+    <string name="error_save_failed">保存失败: %1$s</string>
+    <string name="error_update_failed">更新失败: %1$s</string>
+    <string name="error_delete_failed">删除失败: %1$s</string>
+    <string name="error_operation_failed">操作失败: %1$s</string>
 
     <!-- Legal Pages -->
     <string name="legal_disclaimer_title">免责声明</string>

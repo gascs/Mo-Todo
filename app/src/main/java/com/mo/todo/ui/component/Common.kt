@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mo.todo.R
 import com.mo.todo.data.model.Memo
+import com.mo.todo.data.model.TagConfig
 import com.mo.todo.data.model.Todo
 import com.mo.todo.ui.theme.PriorityHigh
 import com.mo.todo.ui.theme.PriorityLow
@@ -103,6 +105,9 @@ fun TodoItemRow(
     onLongClick: () -> Unit,
     verticalPadding: Dp = 4.dp,
 ) {
+    val context = LocalContext.current
+    val tagResId = TagConfig.labelDisplayNameResId(todo.tag)
+    val tagDisplayName = if (tagResId != 0) context.getString(tagResId) else todo.tag
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -164,7 +169,7 @@ fun TodoItemRow(
                         .padding(horizontal = 4.dp, vertical = 1.dp)
                 ) {
                     Text(
-                        text = todo.tag,
+                        text = tagDisplayName,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

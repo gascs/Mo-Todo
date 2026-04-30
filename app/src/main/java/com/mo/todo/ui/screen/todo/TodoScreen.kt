@@ -166,8 +166,11 @@ fun TodoScreen(
             TagChipRow(
                 items = TagConfig.todoTags,
                 selectedKey = selectedTag,
-                keySelector = { it.key },
-                labelSelector = { it.label },
+                keySelector = { it.label },
+                labelSelector = { tag ->
+                    val resId = TagConfig.displayNameResId(tag.key)
+                    if (resId != 0) context.getString(resId) else tag.label
+                },
                 onItemClick = { viewModel.setSelectedTag(it) }
             )
 

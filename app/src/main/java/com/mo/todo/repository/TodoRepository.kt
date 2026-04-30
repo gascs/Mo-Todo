@@ -24,6 +24,7 @@ class TodoRepository @Inject constructor(
     suspend fun getTodoById(id: Long): Result<Todo?> = runCatching { todoDao.getTodoById(id) }
     suspend fun getUpcomingReminders(now: Long, threshold: Long): List<Todo> = todoDao.getUpcomingReminders(now, threshold)
     suspend fun updateTagByTag(oldTag: String, newTag: String): Result<Int> = runCatching { todoDao.updateTagByTag(oldTag, newTag) }
+    suspend fun deleteByTag(tag: String): Result<Unit> = runCatching { todoDao.deleteByTag(tag) }
     fun getTotalCount(): Flow<Int> = todoDao.getTotalCount()
     fun getCompletedCount(): Flow<Int> = todoDao.getCompletedCount()
     fun getActiveCount(): Flow<Int> = todoDao.getActiveCount()

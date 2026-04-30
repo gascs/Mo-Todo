@@ -1,21 +1,24 @@
 package com.mo.todo.ui.screen.profile
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import compose.icons.Octicons
-import compose.icons.octicons.*
+import compose.icons.octicons.ArrowLeft24
+import compose.icons.octicons.FileDirectory16
+import compose.icons.octicons.Key16
+import compose.icons.octicons.Person16
+import compose.icons.octicons.Server16
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,7 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,12 +38,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mo.todo.R
 import com.mo.todo.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
 
@@ -48,24 +51,39 @@ import kotlinx.coroutines.launch
 @Composable
 fun WebDavConfigScreen(
     onNavigateBack: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel()
+    settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     var serverUrl by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showPassword by remember { mutableStateOf(false) }
-    var isSaving by remember { mutableStateOf(false) }
-    var saved by remember { mutableStateOf(false) }
+    var remotePath by remember { mutableStateOf("backup/mo_todos.json") }
+
+    LaunchedEffect(Unit) {
+        val config = settingsViewModel.getWebDavConfig()
+        if (config != null) {
+            serverUrl = config.first
+            username = config.second
+            password = config.third
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("WebDAV 配置", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        stringResource(R.string.webdav_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Octicons.ArrowLeft24, "返回") }
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Octicons.ArrowLeft24, stringResource(R.string.btn_back))
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
@@ -73,83 +91,131 @@ fun WebDavConfigScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(20.dp).verticalScroll(rememberScrollState())
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 20.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("服务器地址", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                stringResource(R.string.webdav_url),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             OutlinedTextField(
                 value = serverUrl,
                 onValueChange = { serverUrl = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("https://dav.example.com/remote.php/dav") },
+                placeholder = { Text(stringResource(R.string.webdav_url_placeholder)) },
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, focusedContainerColor = MaterialTheme.colorScheme.surface, unfocusedContainerColor = MaterialTheme.colorScheme.surface),
+                leadingIcon = { Icon(Octicons.Server16, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                ),
                 shape = MaterialTheme.shapes.small
             )
 
-            Spacer(Modifier.height(20.dp))
-            Text("用户名", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(6.dp))
+            Text(
+                stringResource(R.string.webdav_username),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             OutlinedTextField(
                 value = username,
                 onValueChange = { username = it },
                 modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.webdav_username_placeholder)) },
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, focusedContainerColor = MaterialTheme.colorScheme.surface, unfocusedContainerColor = MaterialTheme.colorScheme.surface),
+                leadingIcon = { Icon(Octicons.Person16, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                ),
                 shape = MaterialTheme.shapes.small
             )
 
-            Spacer(Modifier.height(20.dp))
-            Text("密码", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(6.dp))
+            Text(
+                stringResource(R.string.webdav_password),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.webdav_password_placeholder)) },
                 singleLine = true,
-                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { showPassword = !showPassword }) {
-                        Icon(if (showPassword) Octicons.Eye24 else Octicons.EyeClosed24, contentDescription = null)
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, focusedContainerColor = MaterialTheme.colorScheme.surface, unfocusedContainerColor = MaterialTheme.colorScheme.surface),
+                visualTransformation = PasswordVisualTransformation(),
+                leadingIcon = { Icon(Octicons.Key16, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                ),
                 shape = MaterialTheme.shapes.small
             )
 
-            Spacer(Modifier.height(32.dp))
-
-            Button(
-                onClick = {
-                    if (serverUrl.isBlank() || username.isBlank() || password.isBlank()) {
-                        Toast.makeText(context, "请填写完整信息", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    scope.launch {
-                        isSaving = true
-                        viewModel.saveWebDavConfig(serverUrl.trim(), username.trim(), password.trim())
-                        isSaving = false
-                        saved = true
-                        Toast.makeText(context, "配置已保存", Toast.LENGTH_SHORT).show()
-                    }
-                },
+            Text(
+                stringResource(R.string.webdav_path),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            OutlinedTextField(
+                value = remotePath,
+                onValueChange = { remotePath = it },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isSaving,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                placeholder = { Text(stringResource(R.string.webdav_path_placeholder)) },
+                singleLine = true,
+                leadingIcon = { Icon(Octicons.FileDirectory16, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                ),
+                shape = MaterialTheme.shapes.small
+            )
+
+            Spacer(Modifier.height(4.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
                 shape = MaterialTheme.shapes.small
             ) {
-                if (isSaving) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary)
-                } else {
-                    Text("保存配置")
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(stringResource(R.string.webdav_tip_title), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(R.string.webdav_tip_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
-            if (saved) {
-                Spacer(Modifier.height(8.dp))
-                Text("配置已保存，可前往备份页面进行 WebDAV 操作", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(8.dp))
+
+            Button(
+                onClick = {
+                    scope.launch {
+                        if (serverUrl.isNotBlank() && username.isNotBlank() && password.isNotBlank()) {
+                            settingsViewModel.saveWebDavConfig(serverUrl, username, password)
+                            Toast.makeText(context, context.getString(R.string.webdav_saved), Toast.LENGTH_SHORT).show()
+                            onNavigateBack()
+                        } else {
+                            Toast.makeText(context, context.getString(R.string.toast_webdav_incomplete), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.small
+            ) {
+                Text(stringResource(R.string.webdav_save))
             }
+
+            Spacer(Modifier.height(24.dp))
         }
     }
 }

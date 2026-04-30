@@ -2,6 +2,15 @@
 <resources>
     <string name="app_name">Mo</string>
 
+    <!-- Common Buttons -->
+    <string name="btn_back">Back</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_edit">Edit</string>
+    <string name="btn_add">Add</string>
+    <string name="btn_confirm">OK</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="search_clear">Clear search</string>
+
     <!-- Bottom Navigation -->
     <string name="nav_todo">Todos</string>
     <string name="nav_memo">Memos</string>
@@ -42,11 +51,22 @@
     <string name="toast_title_empty">Please enter a todo title</string>
     <string name="toast_deleted">Todo deleted</string>
 
+    <!-- Notification -->
+    <string name="notification_channel_name">Todo Reminder</string>
+    <string name="notification_channel_desc">Todo reminder notification</string>
+    <string name="notification_channel_name_low">Todo Reminder (Silent)</string>
+    <string name="notification_channel_desc_low">Todo reminder (no sound or vibration)</string>
+    <string name="notification_title">⏰ Todo Reminder</string>
+    <string name="notification_test_title">🔔 Test Notification</string>
+    <string name="notification_test_content">If you can see this notification, your notification system is working!</string>
+
     <!-- Reminder Quick Options -->
     <string name="reminder_today">Today</string>
-    <string name="reminder_tomorrow">Tomorrow\n09:00</string>
-    <string name="reminder_next_week">Next\nWeek</string>
+    <string name="reminder_tomorrow">Tomorrow</string>
+    <string name="reminder_next_week">Next Week</string>
     <string name="reminder_clear">Clear</string>
+    <string name="reminder_custom">Custom</string>
+    <string name="reminder_tap_to_edit">Tap button below to change</string>
     <string name="reminder_not_set">Not set</string>
     <string name="reminder_set">Reminder: %1$s</string>
     <string name="reminder_due_set">Due: %1$s</string>
@@ -73,13 +93,18 @@
     <string name="memo_title">Memos</string>
     <string name="memo_add">New Memo</string>
     <string name="memo_search">Search memos…</string>
+    <string name="memo_search_placeholder">Search memos…</string>
     <string name="memo_empty_title">No memos yet</string>
     <string name="memo_empty_subtitle">Tap the button below to start writing</string>
     <string name="memo_empty_search">No matching memos found</string>
+    <string name="memo_empty">No memos yet. Tap the button below to start writing.</string>
     <string name="memo_no_content">No content</string>
     <string name="memo_edit">Edit</string>
     <string name="memo_date_format">%1$s %2$d</string>
     <string name="memo_star">Star</string>
+    <string name="memo_filter_star">Filter starred</string>
+    <string name="memo_toggle_view">Toggle view</string>
+    <string name="memo_btn_add">New Memo</string>
 
     <!-- AddEditMemoScreen -->
     <string name="memo_edit_title">Edit Memo</string>
@@ -91,6 +116,20 @@
     <string name="toast_memo_title_empty">Please enter a title</string>
     <string name="memo_rich_text">Rich Text</string>
     <string name="memo_preview">Preview</string>
+    <string name="memo_field_tag">Tag</string>
+    <string name="memo_field_color">Color</string>
+    <string name="memo_btn_save">Save</string>
+    <string name="memo_btn_create">Create</string>
+    <string name="memo_btn_delete">Delete Memo</string>
+
+    <!-- Memo Colors -->
+    <string name="memo_color_default">Default</string>
+    <string name="memo_color_lavender">Lavender</string>
+    <string name="memo_color_mint">Mint</string>
+    <string name="memo_color_coral">Coral</string>
+    <string name="memo_color_amber">Amber</string>
+    <string name="memo_color_sky">Sky</string>
+    <string name="memo_color_rose">Rose</string>
 
     <!-- Markdown toolbar -->
     <string name="md_heading">Heading</string>
@@ -193,6 +232,23 @@
 
     <!-- ReminderSettingsScreen -->
     <string name="reminder_settings_title">Reminder Settings</string>
+    <string name="reminder_settings_notification_title">Notification Permission</string>
+    <string name="reminder_settings_notification_desc">Go to system settings to enable notifications</string>
+    <string name="reminder_settings_battery_title">Battery Optimization Whitelist</string>
+    <string name="reminder_settings_battery_desc">Disable battery optimization to keep reminders working in the background</string>
+    <string name="reminder_settings_channel_title">Notification Channel Settings</string>
+    <string name="reminder_settings_channel_desc">Go to system settings to manage notification channel</string>
+    <string name="reminder_settings_cannot_open">Unable to open system settings</string>
+    <string name="reminder_settings_status_title">Reminder Status</string>
+    <string name="reminder_settings_notification_status">Notifications</string>
+    <string name="reminder_settings_status_enabled">Enabled</string>
+    <string name="reminder_settings_status_disabled">Disabled</string>
+    <string name="reminder_settings_battery_status">Battery Whitelist</string>
+    <string name="reminder_settings_status_ignored">Ignored</string>
+    <string name="reminder_settings_status_not_ignored">Not Ignored</string>
+    <string name="reminder_settings_test_title">Test Notification</string>
+    <string name="reminder_settings_test_desc">Tap to send a test notification and verify notifications are working</string>
+    <string name="reminder_settings_btn_test">Send Test Notification</string>
     <string name="reminder_settings_default_time">Default Reminder Time</string>
     <string name="reminder_settings_minutes">%1$d min</string>
     <string name="reminder_settings_minutes_before">%1$d min before</string>
@@ -206,35 +262,62 @@
     <string name="reminder_settings_boot_restore_desc">Automatically restore all pending reminders after device reboot.</string>
     <string name="reminder_settings_test">Test Notification</string>
     <string name="reminder_settings_channel">Notification Channel</string>
-    <string name="reminder_settings_channel_desc">Go to system settings to manage notification channel</string>
     <string name="reminder_settings_test_btn">Send Test Notification</string>
-    <string name="reminder_settings_test_desc">Tap to send a test notification and verify notifications are working</string>
     <string name="reminder_settings_test_success">Test notification sent!</string>
     <string name="reminder_settings_tip">Tips</string>
     <string name="reminder_settings_tip_desc">If reminders don\'t work, please check:\n1. System notification permission is enabled\n2. App is not restricted by battery optimization\n3. Auto-start permission is allowed\n4. Do Not Disturb mode is off</string>
 
     <!-- LabelManagementScreen -->
     <string name="label_manage_title">Label Manager</string>
+    <string name="label_manage_btn_add">Add Label</string>
+    <string name="label_manage_stats_title">Label Overview</string>
+    <string name="label_manage_stats_desc">%1$d labels total, %2$d in use</string>
+    <string name="label_manage_all_title">All Labels</string>
     <string name="label_manage_selected">%1$d selected</string>
     <string name="label_manage_add">Add Label</string>
+    <string name="label_manage_add_title">Add Label</string>
+    <string name="label_manage_add_desc">Enter new label name</string>
     <string name="label_manage_add_placeholder">Enter label name</string>
     <string name="label_manage_rename">Rename Label</string>
+    <string name="label_manage_rename_title">Rename Label</string>
+    <string name="label_manage_rename_desc">Enter new label name</string>
     <string name="label_manage_delete">Delete Label</string>
-    <string name="label_manage_delete_confirm">Delete label \"%1$s\"?</string>
+    <string name="label_manage_delete_title">Delete Label</string>
+    <string name="label_manage_delete_desc">Delete label \"%1$s\"?\nThis will also remove all todo and memo associations with this label.</string>
     <string name="label_manage_default">Default</string>
     <string name="label_manage_custom">Custom</string>
     <string name="label_manage_rename_action">Rename</string>
     <string name="label_manage_delete_action">Delete</string>
+    <string name="label_manage_toast_deleted">Label deleted</string>
+    <string name="label_manage_toast_conflict">Label name already exists</string>
+    <string name="label_manage_toast_renamed">Label renamed</string>
+    <string name="label_manage_toast_exists">Label already exists</string>
+    <string name="label_manage_toast_added">Label added</string>
     <string name="toast_label_empty">Label name cannot be empty</string>
     <string name="toast_label_exists">Label already exists</string>
     <string name="toast_label_deleted">Deleted</string>
     <string name="toast_label_renamed">Renamed</string>
     <string name="toast_label_deleted_count">Deleted %1$d labels</string>
-    <string name="btn_confirm">OK</string>
-    <string name="btn_cancel">Cancel</string>
 
     <!-- DataManagementScreen -->
     <string name="data_manage_title">Data Manager</string>
+    <string name="data_manage_local_title">Local Data</string>
+    <string name="data_manage_local_desc">Export data to JSON file or import from file</string>
+    <string name="data_manage_export_title">Export Data</string>
+    <string name="data_manage_export_desc">Export all todos to a JSON file</string>
+    <string name="data_manage_import_title">Import Data</string>
+    <string name="data_manage_import_desc">Import todos from a JSON file</string>
+    <string name="data_manage_exporting">Exporting…</string>
+    <string name="data_manage_importing">Importing…</string>
+    <string name="data_manage_cloud_title">Cloud Backup</string>
+    <string name="data_manage_cloud_desc">Sync data to cloud via WebDAV protocol</string>
+    <string name="data_manage_webdav_title">WebDAV Cloud Backup</string>
+    <string name="data_manage_webdav_desc">Configure WebDAV server for cloud backup and restore</string>
+    <string name="data_manage_toast_export_success">Export successful</string>
+    <string name="data_manage_toast_export_fail">Export failed: %1$s</string>
+    <string name="data_manage_toast_import_empty">Import file is empty</string>
+    <string name="data_manage_toast_import_success">Import successful, %1$d todos imported</string>
+    <string name="data_manage_toast_import_fail">Import failed: %1$s</string>
     <string name="data_manage_local_backup">Local Backup</string>
     <string name="data_manage_export_json">Export JSON</string>
     <string name="data_manage_import_json">Import JSON</string>
@@ -252,14 +335,37 @@
 
     <!-- WebDavConfigScreen -->
     <string name="webdav_title">WebDAV Config</string>
-    <string name="webdav_server">Server URL</string>
-    <string name="webdav_server_placeholder">https://dav.example.com/remote.php/dav</string>
+    <string name="webdav_url">Server URL</string>
+    <string name="webdav_url_placeholder">https://dav.example.com/remote.php/dav</string>
     <string name="webdav_username">Username</string>
+    <string name="webdav_username_placeholder">Enter username</string>
     <string name="webdav_password">Password</string>
+    <string name="webdav_password_placeholder">Enter password</string>
+    <string name="webdav_path">Remote Path</string>
+    <string name="webdav_path_placeholder">backup/mo_todos.json</string>
+    <string name="webdav_tip_title">Tips</string>
+    <string name="webdav_tip_desc">Supports Nextcloud, Jianguoyun, and other WebDAV services. Make sure the server URL, username, and password are correct.</string>
+    <string name="webdav_btn_test">Test Connection</string>
+    <string name="webdav_btn_upload">Upload Backup</string>
+    <string name="webdav_btn_download">Download &amp; Restore</string>
+    <string name="webdav_toast_test_success">Connection successful!</string>
+    <string name="webdav_toast_test_fail">Connection failed</string>
+    <string name="webdav_toast_test_error">Connection error: %1$s</string>
+    <string name="webdav_toast_upload_success">Upload successful</string>
+    <string name="webdav_toast_upload_fail">Upload failed: %1$s</string>
+    <string name="webdav_toast_download_empty">Remote file is empty</string>
+    <string name="webdav_toast_download_success">Download successful, %1$d todos restored</string>
+    <string name="webdav_toast_download_fail">Download failed: %1$s</string>
     <string name="webdav_save">Save Config</string>
     <string name="webdav_saved">Config saved. Go to backup page for WebDAV operations.</string>
     <string name="toast_webdav_incomplete">Please fill in all fields</string>
     <string name="toast_webdav_saved">Config saved</string>
+
+    <!-- Error Messages -->
+    <string name="error_save_failed">Save failed: %1$s</string>
+    <string name="error_update_failed">Update failed: %1$s</string>
+    <string name="error_delete_failed">Delete failed: %1$s</string>
+    <string name="error_operation_failed">Operation failed: %1$s</string>
 
     <!-- Legal Pages -->
     <string name="legal_disclaimer_title">Disclaimer</string>

@@ -44,7 +44,7 @@ fun MoNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
         composable(MoRoutes.TODO) { TodoScreen(onNavigateToAddEdit = { navController.navigate(MoRoutes.addEditTodoRoute(it)) }) }
         composable(MoRoutes.ADD_EDIT_TODO, arguments = listOf(navArgument("todoId") { type = NavType.LongType; defaultValue = -1L })) { backStackEntry ->
             val id = backStackEntry.arguments?.getLong("todoId") ?: -1L
-            AddEditTodoScreen(todoId = if (id == -1L) null else id, onNavigateBack = { navController.popBackStack() })
+            AddEditTodoScreen(todoId = if (id == -1L) null else id, onNavigateBack = { navController.popBackStack() }, onNavigateToReminderSettings = { navController.navigate(MoRoutes.REMINDER_SETTINGS) })
         }
         composable(MoRoutes.MEMO) { MemoScreen(onNavigateToAddEdit = { navController.navigate(MoRoutes.addEditMemoRoute(it)) }) }
         composable(MoRoutes.ADD_EDIT_MEMO, arguments = listOf(navArgument("memoId") { type = NavType.LongType; defaultValue = -1L })) { backStackEntry ->
@@ -64,7 +64,7 @@ fun MoNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
         composable(MoRoutes.REMINDER_SETTINGS) { ReminderSettingsScreen(onNavigateBack = { navController.popBackStack() }) }
         composable(MoRoutes.ABOUT) { AboutScreen(onNavigateBack = { navController.popBackStack() }, onNavigateToLegal = { type -> navController.navigate("legal/$type") }) }
         composable(MoRoutes.PERSONALIZATION) { PersonalizationScreen(onNavigateBack = { navController.popBackStack() }) }
-        composable(MoRoutes.DATA_MANAGEMENT) { DataManagementScreen(onNavigateBack = { navController.popBackStack() }, onNavigateToWebDavConfig = { navController.navigate(MoRoutes.WEBDAC_CONFIG) }) }
+        composable(MoRoutes.DATA_MANAGEMENT) { DataManagementScreen(onNavigateBack = { navController.popBackStack() }, onNavigateToWebDav = { navController.navigate(MoRoutes.WEBDAC_CONFIG) }) }
         composable(MoRoutes.WEBDAC_CONFIG) { WebDavConfigScreen(onNavigateBack = { navController.popBackStack() }) }
         composable(MoRoutes.LEGAL, arguments = listOf(navArgument("type") { type = NavType.StringType })) { backStackEntry ->
             val type = backStackEntry.arguments?.getString("type") ?: "privacy"

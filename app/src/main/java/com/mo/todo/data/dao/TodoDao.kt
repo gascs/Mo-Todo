@@ -27,10 +27,10 @@ interface TodoDao {
     @Query("SELECT * FROM todos WHERE title LIKE '%' || :query || '%' ORDER BY createdAt DESC")
     fun searchTodos(query: String): Flow<List<Todo>>
 
-    @Query("SELECT * FROM todos WHERE isCompleted = 1 AND (tag = :tag OR :tag = 'all') ORDER BY createdAt DESC")
+    @Query("SELECT * FROM todos WHERE isCompleted = 1 AND (tag = :tag OR :tag = '全部') ORDER BY createdAt DESC")
     fun getCompletedTodosByTag(tag: String): Flow<List<Todo>>
 
-    @Query("SELECT * FROM todos WHERE isCompleted = 0 AND (tag = :tag OR :tag = 'all') ORDER BY priority DESC, createdAt DESC")
+    @Query("SELECT * FROM todos WHERE isCompleted = 0 AND (tag = :tag OR :tag = '全部') ORDER BY priority DESC, createdAt DESC")
     fun getActiveTodosByTag(tag: String): Flow<List<Todo>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -59,6 +59,9 @@ interface TodoDao {
 
     @Query("UPDATE todos SET tag = :newTag WHERE tag = :oldTag")
     suspend fun updateTagByTag(oldTag: String, newTag: String): Int
+
+    @Query("DELETE FROM todos WHERE tag = :tag")
+    suspend fun deleteByTag(tag: String)
 
     @Query("SELECT COUNT(*) FROM todos")
     fun getTotalCount(): Flow<Int>

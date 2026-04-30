@@ -12,19 +12,15 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.mo.todo.MainActivity
+import com.mo.todo.R
 
 object NotificationHelper {
 
     private const val TAG = "NotificationHelper"
 
-    // 主提醒渠道 - 高优先级 heads-up
     const val CHANNEL_REMINDER = "mo_reminder"
-    // 备用渠道 - 普通优先级
     const val CHANNEL_REMINDER_LOW = "mo_reminder_low"
 
-    /**
-     * 创建所有通知渠道（Application.onCreate 时调用）
-     */
     fun createAllChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nm = context.getSystemService(NotificationManager::class.java)
@@ -37,8 +33,8 @@ object NotificationHelper {
             nm.deleteNotificationChannel(CHANNEL_REMINDER)
             nm.deleteNotificationChannel(CHANNEL_REMINDER_LOW)
 
-            val mainChannel = NotificationChannel(CHANNEL_REMINDER, "待办提醒", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "待办事项到期提醒通知"
+            val mainChannel = NotificationChannel(CHANNEL_REMINDER, context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_HIGH).apply {
+                description = context.getString(R.string.notification_channel_desc)
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 500, 200, 500)
                 setSound(soundUri, audioAttrs)
@@ -49,8 +45,8 @@ object NotificationHelper {
             }
             nm.createNotificationChannel(mainChannel)
 
-            val lowChannel = NotificationChannel(CHANNEL_REMINDER_LOW, "待办提醒（静默）", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "待办事项提醒（无声音振动）"
+            val lowChannel = NotificationChannel(CHANNEL_REMINDER_LOW, context.getString(R.string.notification_channel_name_low), NotificationManager.IMPORTANCE_LOW).apply {
+                description = context.getString(R.string.notification_channel_desc_low)
                 setShowBadge(true)
                 enableLights(true)
             }
@@ -60,15 +56,11 @@ object NotificationHelper {
         }
     }
 
-    /**
-     * 发送提醒通知 - 使用 heads-up 模式
-     */
     fun sendReminderNotification(context: Context, todoId: Long, title: String) {
         try {
             val vibrate = context.getSharedPreferences("mo_prefs", Context.MODE_PRIVATE)
                 .getBoolean("notification_vibrate", true)
 
-            // 点击通知打开 MainActivity
             val contentIntent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 putExtra("todo_id", todoId)
@@ -78,7 +70,6 @@ object NotificationHelper {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            // 全屏 Intent - 锁屏时也能弹出
             val fullScreenIntent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 putExtra("todo_id", todoId)
@@ -92,9 +83,9 @@ object NotificationHelper {
 
             val builder = NotificationCompat.Builder(context, CHANNEL_REMINDER)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("⏰ 待办提醒")
+                .setContentTitle(context.getString(R.string.notification_title))
                 .setContentText(title)
-                .setSubText("Mo Todo")
+                .setSubText(context.getString(R.string.app_name))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setContentIntent(contentPendingIntent)
@@ -111,13 +102,43 @@ object NotificationHelper {
                 builder.setVibrate(longArrayOf(0, 500, 200, 500))
             }
 
-            // 设置大文本样式，显示更多内容
             builder.setStyle(NotificationCompat.BigTextStyle().bigText(title))
 
             NotificationManagerCompat.from(context).notify(todoId.toInt(), builder.build())
             Log.i(TAG, "Notification sent: id=$todoId, title=$title")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to send notification: ${e.message}", e)
+        }
+    }
+
+    fun showReminderNotification(context: Context, todoId: Long, title: String, content: String) {
+        try {
+            val contentIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                context, todoId.toInt(), contentIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val builder = NotificationCompat.Builder(context, CHANNEL_REMINDER)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setSubText(context.getString(R.string.app_name))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setVibrate(longArrayOf(0, 500, 200, 500))
+
+            NotificationManagerCompat.from(context).notify(todoId.toInt(), builder.build())
+            Log.i(TAG, "Reminder notification shown: id=$todoId")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to show reminder notification: ${e.message}", e)
         }
     }
 
@@ -133,9 +154,9 @@ object NotificationHelper {
 
             val builder = NotificationCompat.Builder(context, CHANNEL_REMINDER)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("🔔 测试通知")
-                .setContentText("如果你能看到这条通知，说明通知功能正常！")
-                .setSubText("Mo Todo")
+                .setContentTitle(context.getString(R.string.notification_test_title))
+                .setContentText(context.getString(R.string.notification_test_content))
+                .setSubText(context.getString(R.string.app_name))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setContentIntent(pendingIntent)
@@ -150,5 +171,18 @@ object NotificationHelper {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to send test notification: ${e.message}", e)
         }
+    }
+
+    fun isNotificationChannelEnabled(context: Context): Boolean {
+        val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        return nm.areNotificationsEnabled()
+    }
+
+    fun isIgnoringBatteryOptimization(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            return pm.isIgnoringBatteryOptimizations(context.packageName)
+        }
+        return true
     }
 }
