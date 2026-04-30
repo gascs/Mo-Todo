@@ -11,7 +11,6 @@ import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
@@ -156,7 +155,6 @@ object ReminderScheduler {
             .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
             .setInputData(inputData)
             .addTag("todo_reminder_$todoId")
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .build()
 
         WorkManager.getInstance(context)
