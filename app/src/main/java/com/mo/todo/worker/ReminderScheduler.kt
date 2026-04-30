@@ -6,10 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import androidx.work.Constraints
 import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
@@ -158,5 +161,24 @@ object ReminderScheduler {
 
         WorkManager.getInstance(context)
             .enqueueUniqueWork("reminder_$todoId", ExistingWorkPolicy.REPLACE, workRequest)
+    }
+
+    // ========== 定期扫描备用方案（ColorOS 等激进省电 ROM 的终极兜底） ==========
+
+    fun schedulePeriodicCheck(context: Context) {
+        val workRequest = PeriodicWorkRequestBuilder<ReminderWorker>(
+            15, TimeUnit.MINUTES
+        )
+            .addTag("periodic_reminder_check")
+            .build()
+
+        WorkManager.getInstance(context)
+            .enqueueUniquePeriodicWork(
+                "periodic_reminder_check",
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest
+            )
+
+        Log.i(TAG, "Periodic reminder check scheduled (every 15 min)")
     }
 }

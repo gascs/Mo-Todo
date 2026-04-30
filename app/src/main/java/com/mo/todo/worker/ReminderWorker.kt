@@ -22,6 +22,7 @@ class ReminderWorker @AssistedInject constructor(
 
     companion object {
         private const val TAG = "ReminderWorker"
+        private const val PREFS_NAME = "reminder_notified"
     }
 
     override suspend fun doWork(): Result {
@@ -38,15 +39,28 @@ class ReminderWorker @AssistedInject constructor(
 
         if (todoId > 0 && todoTitle != null) {
             NotificationHelper.sendReminderNotification(applicationContext, todoId, todoTitle)
+            markNotified(todoId)
             return Result.success()
         }
 
-        // 备用：扫描所有过期提醒
-        val overdueTodos = database.todoDao().getUpcomingReminders(0, now)
-        Log.d(TAG, "Overdue: ${overdueTodos.size}")
-        overdueTodos.forEach {
-            NotificationHelper.sendReminderNotification(applicationContext, it.id, it.title)
+        // 定期扫描：只处理最近 30 分钟内过期且未通知的提醒
+        val windowStart = now - 30 * 60 * 1000L
+        val overdueTodos = database.todoDao().getUpcomingReminders(windowStart, now)
+        val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        var sent = 0
+        overdueTodos.forEach { todo ->
+            if (!prefs.getBoolean("notified_${todo.id}", false)) {
+                NotificationHelper.sendReminderNotification(applicationContext, todo.id, todo.title)
+                markNotified(todo.id)
+                sent++
+            }
         }
+        if (sent > 0) Log.d(TAG, "Periodic scan sent $sent notifications")
         return Result.success()
+    }
+
+    private fun markNotified(todoId: Long) {
+        applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit().putBoolean("notified_$todoId", true).apply()
     }
 }

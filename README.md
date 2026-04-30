@@ -47,11 +47,13 @@
 
 ### 智能提醒
 
-- **双保险调度**：AlarmManager 精确闹钟 + WorkManager 备用，兼容 MIUI/EMUI/ColorOS
-- 锁屏全屏弹出通知 + Heads-up 横幅提醒
+- **三重保障调度**：AlarmManager 精确闹钟 + WorkManager 备用 + 每 15 分钟定期扫描兜底
+- 通知渠道每次启动自动重建（解决渠道设置陈旧问题）
+- 通知优先级 `CATEGORY_ALARM`，锁屏全屏弹出 + Heads-up 横幅
 - 设备重启后自动重调度所有未触发提醒
 - 点击通知直接跳转对应待办
-- 电池优化检测与自启动引导
+- 电池优化检测 / 自启动引导 / 通知渠道设置入口
+- **测试通知**：一键发送测试通知验证通知功能是否正常
 
 ### 个性化
 
@@ -122,7 +124,7 @@ app/src/main/java/com/mo/todo/
 │   │   ├── todo/                   # TodoScreen / AddEditTodoScreen
 │   │   ├── memo/                   # MemoScreen / AddEditMemoScreen
 │   │   └── profile/                # Profile / About / Label / Personalization / Reminder / WebDAV / Data
-│   └── viewmodel/                  # TodoVM / MemoVM / SettingsVM
+│   └── viewmodel/                  # TodoVM / MemoVM / SettingsVM / StatsVM
 └── worker/
     ├── AlarmReceiver.kt            # 闹钟广播接收器
     ├── BootReceiver.kt             # 开机广播，重调度提醒

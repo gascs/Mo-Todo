@@ -28,17 +28,19 @@ object NotificationHelper {
     fun createAllChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val nm = context.getSystemService(NotificationManager::class.java)
-            val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             val audioAttrs = AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build()
 
-            // 主渠道 - IMPORTANCE_HIGH 触发 heads-up 横幅通知
+            nm.deleteNotificationChannel(CHANNEL_REMINDER)
+            nm.deleteNotificationChannel(CHANNEL_REMINDER_LOW)
+
             val mainChannel = NotificationChannel(CHANNEL_REMINDER, "待办提醒", NotificationManager.IMPORTANCE_HIGH).apply {
                 description = "待办事项到期提醒通知"
                 enableVibration(true)
-                vibrationPattern = longArrayOf(0, 300, 200, 300)
+                vibrationPattern = longArrayOf(0, 500, 200, 500)
                 setSound(soundUri, audioAttrs)
                 setShowBadge(true)
                 enableLights(true)
@@ -47,7 +49,6 @@ object NotificationHelper {
             }
             nm.createNotificationChannel(mainChannel)
 
-            // 低优先级渠道（静默）
             val lowChannel = NotificationChannel(CHANNEL_REMINDER_LOW, "待办提醒（静默）", NotificationManager.IMPORTANCE_LOW).apply {
                 description = "待办事项提醒（无声音振动）"
                 setShowBadge(true)
@@ -55,7 +56,7 @@ object NotificationHelper {
             }
             nm.createNotificationChannel(lowChannel)
 
-            Log.d(TAG, "Notification channels created")
+            Log.d(TAG, "Notification channels recreated")
         }
     }
 
@@ -87,25 +88,27 @@ object NotificationHelper {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
 
             val builder = NotificationCompat.Builder(context, CHANNEL_REMINDER)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("待办提醒")
+                .setContentTitle("⏰ 待办提醒")
                 .setContentText(title)
                 .setSubText("Mo Todo")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setContentIntent(contentPendingIntent)
                 .setFullScreenIntent(fullScreenPendingIntent, true)
                 .setAutoCancel(true)
+                .setOngoing(true)
                 .setSound(soundUri)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setWhen(System.currentTimeMillis())
                 .setShowWhen(true)
 
             if (vibrate) {
-                builder.setVibrate(longArrayOf(0, 300, 200, 300))
+                builder.setVibrate(longArrayOf(0, 500, 200, 500))
             }
 
             // 设置大文本样式，显示更多内容
@@ -115,6 +118,37 @@ object NotificationHelper {
             Log.i(TAG, "Notification sent: id=$todoId, title=$title")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to send notification: ${e.message}", e)
+        }
+    }
+
+    fun sendTestNotification(context: Context) {
+        try {
+            val contentIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            val pendingIntent = PendingIntent.getActivity(
+                context, 999999, contentIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val builder = NotificationCompat.Builder(context, CHANNEL_REMINDER)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle("🔔 测试通知")
+                .setContentText("如果你能看到这条通知，说明通知功能正常！")
+                .setSubText("Mo Todo")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM))
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setVibrate(longArrayOf(0, 500, 200, 500))
+
+            NotificationManagerCompat.from(context).notify(999999, builder.build())
+            Log.i(TAG, "Test notification sent")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to send test notification: ${e.message}", e)
         }
     }
 }

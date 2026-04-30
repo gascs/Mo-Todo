@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.mo.todo.worker.NotificationHelper
+import com.mo.todo.worker.ReminderScheduler
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -18,5 +19,6 @@ class MoApplication : android.app.Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         NotificationHelper.createAllChannels(this)
+        ReminderScheduler.schedulePeriodicCheck(this)
     }
 }
