@@ -1,0 +1,39 @@
+Categories:
+  - Tasks
+  - Notes
+License: MIT
+AuthorName: MoYuan
+SourceCode: https://github.com/gascs/Mo-Todo
+IssueTracker: https://github.com/gascs/Mo-Todo/issues
+
+AutoName: Mo - Todo & Memo
+Summary: A clean and elegant Android todo & memo app
+Description: |-
+    Mo is a clean and elegant Android todo & memo app built with Material 3,
+    focused on local experience and data privacy.
+
+    * Todo management with priority levels, label filtering, and reminders
+    * Memo notes with star/favorite, color labels, and grid/list views
+    * Smart reminders with AlarmManager + WorkManager triple-safeguard
+    * Multiple Morandi color themes and Material You dynamic color
+    * Chinese / English bilingual support
+    * JSON local export/import and WebDAV cloud backup
+
+RepoType: git
+Repo: https://github.com/gascs/Mo-Todo
+
+Builds:
+  - versionName: 1.0.1
+    versionCode: 2
+    commit: v1.0.1
+    subdir: app
+    submodules: false
+    sudo: []
+    init: []
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 1.0.1
+CurrentVersionCode: 2
