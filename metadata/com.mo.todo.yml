@@ -1,0 +1,52 @@
+Categories:
+  - Todo
+  - Office
+License: MIT
+AuthorName: gascs
+AuthorEmail: linpo1438562376@gmail.com
+AuthorWebSite: https://github.com/gascs
+WebSite: https://github.com/gascs/Mo-Todo
+SourceCode: https://github.com/gascs/Mo-Todo
+IssueTracker: https://github.com/gascs/Mo-Todo/issues
+Donate: https://github.com/sponsors/gascs
+
+Name: Mo
+Summary: A clean and elegant todo & memo app with Material 3 design
+Description: |-
+  Mo is a minimalist yet powerful Android todo and memo app built with
+  Jetpack Compose and Material 3 design language.
+
+  Features:
+  * Todo management with priorities, tags, and due dates
+  * Memo notes with rich text editing and color labels
+  * Smart reminders with triple-guarantee scheduling
+  * 5 Morandi color themes with Material You dynamic colors
+  * Full personalization: fonts, corners, list density, themes
+  * Local JSON import/export and WebDAV cloud backup
+  * Privacy-first: all data stored locally on your device
+
+  Mo focuses on simplicity, elegance, and data privacy. No accounts
+  required, no analytics, no tracking. Your data stays on your device.
+
+RepoType: git
+Repo: https://github.com/gascs/Mo-Todo
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 1
+    commit: v1.0.0
+    subdir: app
+    submodules: false
+    gradle:
+      - yes
+    rm:
+      - .idea
+      - build
+      - app/build
+    scandelete:
+      - .idea
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: 1.0.0
+CurrentVersionCode: 1

@@ -1,0 +1,46 @@
+Mo is a minimalist yet powerful Android todo and memo app built with Jetpack Compose and Material 3 design language. It focuses on simplicity, elegance, and data privacy — no accounts required, no analytics, no tracking.
+
+Features:
+
+Todo Management
+• Create, edit and delete todos with title and notes
+• Three priority levels (high/medium/low) with color-coded indicators
+• Tag-based filtering (Work/Personal/Shopping/Notes and custom tags)
+• Quick reminders (Today/Tomorrow 09:00/Next Week) + precise date-time picker
+• Swipe-to-delete with undo via Snackbar
+• Completion animations, collapsible completed section
+• Real-time keyword search, sort by priority or creation time
+
+Memos
+• Create, edit and delete memos with star/favorite support
+• 7 color labels + category filtering
+• Grid/list view toggle, adaptive column count (2 on phones, 3-4 on tablets)
+• Markdown rich text editing (bold/italic/strikethrough/lists)
+• Keyword search
+
+Smart Reminders
+• Triple-guarantee scheduling: AlarmManager + WorkManager backup + 15-minute periodic scan
+• Notification channel auto-rebuilt on every app start
+• CATEGORY_ALARM priority with lockscreen full-screen popup and heads-up banner
+• Auto-reschedule all pending reminders after device reboot
+• Tap notification to jump directly to the corresponding todo
+• Battery optimization detection and auto-start guidance
+• One-tap test notification to verify functionality
+
+Personalization
+• 5 Morandi color themes (Forest Green/Ocean Blue/Sunset Orange/Lavender Purple/Rose Gold)
+• Material You dynamic colors extracted from wallpaper
+• Light/Dark/System-following theme modes
+• Font size (Small/Medium/Large), corner style (Rounded/Square)
+• List density (Compact/Standard/Relaxed)
+
+Data Management
+• JSON local export/import
+• WebDAV cloud backup and restore
+• Tag management: add/delete/rename with batch operations
+
+Privacy
+• All data stored locally on your device
+• No internet permission required for core features
+• No analytics, no tracking, no accounts
+• FOSS (Free and Open Source Software)

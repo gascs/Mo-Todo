@@ -1,0 +1,9 @@
+Initial release
+
+• Todo management with priorities, tags, due dates and smart reminders
+• Memo notes with rich text editing, color labels and star favorites
+• Triple-guarantee reminder system (AlarmManager + WorkManager + periodic scan)
+• 5 Morandi color themes with Material You dynamic colors
+• Light/Dark/System theme modes
+• JSON export/import and WebDAV cloud backup
+• Privacy-first: all data stored locally, no tracking
